@@ -1,5 +1,6 @@
 
 using System.Collections.Concurrent;
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using Imperium.Common;
 using Imperium.Models;
@@ -22,7 +23,6 @@ public class Program
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
@@ -43,6 +43,7 @@ public class Program
             PooledConnectionLifetime = httpClientOptions.ConnectionLifeTime
         };
         var client = new HttpClient(handler);
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         builder.Services.AddSingleton(client);
 
         builder.Services.AddTransient<ISingleOutputBoard, SingleOutputBoard>();
@@ -59,7 +60,6 @@ public class Program
                 .WriteTo.Console()
                 .ReadFrom.Configuration(builder.Configuration);
         });
-        //builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 
         IList<string> urls = [];
         builder.Configuration.Bind("AppUrls", urls);

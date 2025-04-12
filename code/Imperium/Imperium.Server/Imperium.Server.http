@@ -15,7 +15,9 @@ Accept: application/json
 POST {{Imperium.AlfrescoLight}}/outputs
 Accept: application/json
 {
-    "relay": 1
+  "relay": 1,
+  "led": 0,
+  "btn": 0
 }
 ### 
 
@@ -27,6 +29,11 @@ Accept: application/json
 POST {{Imperium.OldAlfrescoPB}}/outputs
 Accept: application/json
 {
-    "relay2": 1
+  "relay1": 1,
+  "relay2": 1,
+  "relay3": 0,
+  "relay4": 0,
+  "usb": 0,
+  "btn": 0
 }
 ### 
