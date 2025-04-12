@@ -31,6 +31,9 @@ RUN usermod -aG sudo $SSH_USER_NAME
 # Create SSH run file directory
 RUN mkdir /var/run/sshd 
 
+# Create imperium directory
+RUN mkdir /imperium 
+
 # Clone the repo
 RUN git clone https://github.com/mekatrol/imperium.git /imperium 
 
@@ -45,7 +48,7 @@ EXPOSE 5000
 RUN pwd
 
 # Build and publish the .NET app
-RUN dotnet restore /imperium/code/Imperium/Imperium.sln && dotnet publish /imperium/code/Imperium/Imperium.sln -c Release -o /app/publish
+RUN dotnet restore /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj && dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj -c Release -o /app/publish
 
 COPY entry-point.sh /entry-point.sh
 RUN chmod +x /entry-point.sh
