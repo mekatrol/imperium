@@ -13,4 +13,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Imperium.Common\Imperium.Common.csproj" />
+    <ProjectReference Include="..\Imperium.Models\Imperium.Models.csproj" />
+    <ProjectReference Include="..\Mekatrol.Devices\Mekatrol.Devices.csproj" />
+  </ItemGroup>
+
 </Project>

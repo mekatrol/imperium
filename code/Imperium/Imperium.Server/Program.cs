@@ -1,4 +1,7 @@
 
+using Imperium.Common;
+using Mekatrol.Devices;
+
 namespace Imperium.Server
 {
     public class Program
@@ -13,6 +16,8 @@ namespace Imperium.Server
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddSingleton<IDevice, SimpleOutputBoard>();
 
             var app = builder.Build();
 
@@ -32,6 +37,8 @@ namespace Imperium.Server
 
 
             app.MapControllers();
+
+            app.Urls.Add("http://*:5000");
 
             app.Run();
         }
