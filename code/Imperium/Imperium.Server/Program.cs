@@ -1,88 +1,95 @@
 
+using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 using Imperium.Common;
 using Imperium.Models;
 using Imperium.Server.Background;
 using Mekatrol.Devices;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Serilog;
 
-namespace Imperium.Server
+namespace Imperium.Server;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container.
+
+        builder.Services.AddControllers().AddJsonOptions(options =>
         {
-            var builder = WebApplication.CreateBuilder(args);
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
 
-            // Add services to the container.
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+        builder.Services.AddSingleton<IDevice, SingleOutputBoard>();
 
-            builder.Services.AddSingleton<IDevice, SimpleOutputBoard>();
+        // Bind http client options
+        var httpClientOptions = new HttpClientOptions();
+        builder.Configuration.Bind(HttpClientOptions.SectionName, httpClientOptions);
+        builder.Services.AddSingleton(httpClientOptions);
 
-            // Bind http client options
-            var httpClientOptions = new HttpClientOptions();
-            builder.Configuration.Bind(HttpClientOptions.SectionName, httpClientOptions);
-            builder.Services.AddSingleton(httpClientOptions);
+        // Bind background service options        
+        var backgroundServiceOptions = new BackgroundServiceOptions();
+        builder.Configuration.Bind(BackgroundServiceOptions.SectionName, backgroundServiceOptions);
+        builder.Services.AddSingleton(backgroundServiceOptions);
 
-            // Bind background service options        
-            var backgroundServiceOptions = new BackgroundServiceOptions();
-            builder.Configuration.Bind(BackgroundServiceOptions.SectionName, backgroundServiceOptions);
-            builder.Services.AddSingleton(backgroundServiceOptions);
+        var handler = new SocketsHttpHandler
+        {
+            PooledConnectionLifetime = httpClientOptions.ConnectionLifeTime
+        };
+        var client = new HttpClient(handler);
+        builder.Services.AddSingleton(client);
 
-            var handler = new SocketsHttpHandler
-            {
-                PooledConnectionLifetime = httpClientOptions.ConnectionLifeTime
-            };
-            var client = new HttpClient(handler);
-            builder.Services.AddSingleton(client);
+        builder.Services.AddTransient<ISingleOutputBoard, SingleOutputBoard>();
+        builder.Services.AddTransient<IFourOutputBoard, FourOutputBoard>();
 
-            builder.Services.AddHostedService<DeviceControllerBackgroundService>();
+        var allPoints = new ConcurrentDictionary<string, Point>(StringComparer.OrdinalIgnoreCase);
+        builder.Services.AddSingleton<ConcurrentDictionary<string, PointSet>>();
 
-            builder.Services.AddSerilog(config => {
-                config
-                    .WriteTo.Console()
-                    .ReadFrom.Configuration(builder.Configuration);
-                });
-            //builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+        builder.Services.AddHostedService<DeviceControllerBackgroundService>();
 
-            IList<string> urls = [];
-            builder.Configuration.Bind("AppUrls", urls);
+        builder.Services.AddSerilog(config =>
+        {
+            config
+                .WriteTo.Console()
+                .ReadFrom.Configuration(builder.Configuration);
+        });
+        //builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 
-            var app = builder.Build();
+        IList<string> urls = [];
+        builder.Configuration.Bind("AppUrls", urls);
 
-            // Configure the HTTP request pipeline.
-            //if (app.Environment.IsDevelopment())
-            //{
-            app.UseSwagger();
-            app.UseSwaggerUI(options =>
-            {
-                options.EnableTryItOutByDefault();
-            });
-            //}
+        var app = builder.Build();
 
-            app.UseHttpsRedirection();
+        // Configure the HTTP request pipeline.
+        //if (app.Environment.IsDevelopment())
+        //{
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.EnableTryItOutByDefault();
+        });
+        //}
 
-            app.UseAuthorization();
+        app.UseHttpsRedirection();
 
+        app.UseAuthorization();
 
-            app.MapControllers();
+        app.MapControllers();
 
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("Listening on URLs: {urls}", $"{string.Join(',', urls)}");
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Listening on URLs: {urls}", $"{string.Join(',', urls)}");
 
-            foreach (var url in urls.Where(x => !string.IsNullOrWhiteSpace(x)))
-            {
-                logger.LogInformation("Adding URL: {url}", $"{url}");
-                app.Urls.Add(url);
-            }
-
-            app.Run();
+        foreach (var url in urls.Where(x => !string.IsNullOrWhiteSpace(x)))
+        {
+            app.Urls.Add(url);
         }
+
+        app.Run();
     }
 }

@@ -1,6 +1,32 @@
 @Imperium.Server_HostAddress = http://localhost:5181
+@Imperium.AlfrescoLight = http://alfresco-light.lan
+@Imperium.OldAlfrescoPB = http://pbalfresco.home.wojcik.com.au
 
 GET {{Imperium.Server_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{Imperium.AlfrescoLight}}/outputs
+Accept: application/json
+
+### 
+
+POST {{Imperium.AlfrescoLight}}/outputs
+Accept: application/json
+{
+    "relay": 1
+}
+### 
+
+GET {{Imperium.OldAlfrescoPB}}/outputs
+Accept: application/json
+
+### 
+
+POST {{Imperium.OldAlfrescoPB}}/outputs
+Accept: application/json
+{
+    "relay2": 1
+}
+### 

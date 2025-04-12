@@ -9,6 +9,7 @@ internal abstract class BaseBackgroundService<T>(
     ILogger<T> logger) : BackgroundService()
 {
     protected ILogger Logger = logger;
+    protected IServiceProvider Services = serviceProvider;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -18,7 +19,7 @@ internal abstract class BaseBackgroundService<T>(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = serviceProvider.CreateScope();
+            using var scope = Services.CreateScope();
             var services = scope.ServiceProvider;
 
             try
