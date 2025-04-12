@@ -45,15 +45,8 @@ EXPOSE 5000
 RUN cat <<EOF > /entry-point.sh
 #!/bin/bash
 
-# Clone the app
-git clone https://github.com/mekatrol/imperium.git /imperium 
-
-# Remove Development settings
-rm /imperium/code/Imperium/Imperium.Server/appsettings.Development.json
-
-# Build and publish the app
-dotnet restore /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj
-dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj -c Release -o /app/publish    
+# Start the SSH daemon
+service ssh start
 
 # Start the .NET app in background
 cd /app/publish
@@ -62,10 +55,21 @@ cd /
 
 # Start the SSH daemon
 /usr/sbin/sshd -D
+
+# Hang tailing a log we know exists
+tail -f /var/log/faillog
 EOF
 
 # Make executable
 RUN chmod +x /entry-point.sh
+
+# Clone the app
+RUN git clone https://github.com/mekatrol/imperium.git /imperium && \
+    rm /imperium/code/Imperium/Imperium.Server/appsettings.Development.json
+
+# Build and publish the app
+RUN dotnet restore /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj && \
+    dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj -c Release -o /app/publish    
 
 # Start SSH and the .NET app
 CMD ["/entry-point.sh"]
