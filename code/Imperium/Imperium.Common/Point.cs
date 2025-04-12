@@ -6,5 +6,7 @@ public abstract class Point(PointType pointType)
 
     public PointType PointType { get; set; } = pointType;
 
-    public object V { get; set; }
+    public object? Current { get; set; }
+
+    public string? FriendlyName { get; set; }
 }

@@ -13,7 +13,7 @@ public static class ClientExtensions
     /// TransferEncodingChunked to true and the content length to zero. This breaks servers
     /// (e.g. simple device HTTP servers) that do not support chunked messages.
     /// </summary>
-    public static Task<HttpResponseMessage> PostAsJsonUnchunked<TModel>(
+    public static async Task<HttpResponseMessage> PostAsJsonUnchunked<TModel>(
         this HttpClient client, 
         [StringSyntax(StringSyntaxAttribute.Uri)] string? requestUri, 
         TModel model, 
@@ -33,6 +33,6 @@ public static class ClientExtensions
         };
 
         // Return task that will post request when awaited
-        return client.SendAsync(request, cancellationToken);
+        return await client.SendAsync(request, cancellationToken);
     }
 }

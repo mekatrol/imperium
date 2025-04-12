@@ -27,43 +27,23 @@ public class FourOutputBoard(HttpClient client, ILogger<FourOutputBoard> logger)
         // Get the body JSON as a ApiResponse object
         var model = await response.Content.ReadFromJsonAsync<FourOutputMessageModel>(_jsonOptions, stoppingToken);
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Relay1),
-            Value = model!.Relay1
-        });
+        var point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(FourOutputMessageModel.Relay1));
+        point.Value = model!.Relay1;
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Relay2),
-            Value = model!.Relay2
-        });
+        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(FourOutputMessageModel.Relay2));
+        point.Value = model!.Relay2;
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Relay3),
-            Value = model!.Relay3
-        });
+        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(FourOutputMessageModel.Relay3));
+        point.Value = model!.Relay3;
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Relay4),
-            Value = model!.Relay4
-        });
+        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(FourOutputMessageModel.Relay4));
+        point.Value = model!.Relay4;
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Led),
-            Value = model!.Led
-        });
+        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(FourOutputMessageModel.Led));
+        point.Value = model!.Led;
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Btn),
-            Value = model!.Btn
-        });
-
-        await Task.Delay(0, stoppingToken);
+        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(FourOutputMessageModel.Btn));
+        point.Value = model!.Btn;
     }
 
     public async Task Write(string url, PointSet pointSet, CancellationToken stoppingToken)

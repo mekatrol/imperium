@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
-using System.Numerics;
 using Imperium.Common;
+using Imperium.Common.Extensions;
+using Imperium.Common.Utils;
 using Imperium.Models;
 using Mekatrol.Devices;
 
@@ -22,14 +23,19 @@ internal class DeviceControllerBackgroundService(
         var carportRelayBoardUrl = "http://pbcarport.home.wojcik.com.au";
 
         var singleBoardPoints = new PointSet(singleRelayBoardUrl);
+        singleBoardPoints.CreatePoint<PointValue<int>>("Relay", "Alfresco Light", 0);
+
         var singleOutputBoard = Services.GetRequiredService<ISingleOutputBoard>();
         await singleOutputBoard.Read(singleRelayBoardUrl, singleBoardPoints, stoppingToken);
 
         var fourOutputPoints = new PointSet(fourRelayBoardUrl);
+        fourOutputPoints.CreatePoint<PointValue<int>>("Relay1", "String Lights", 0);
+
         var fourOutputBoard = Services.GetRequiredService<IFourOutputBoard>();
         await fourOutputBoard.Read(fourRelayBoardUrl, fourOutputPoints, stoppingToken);
 
         var carportOutputPoints = new PointSet(carportRelayBoardUrl);
+        carportOutputPoints.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 0);
         var carportOutputBoard = Services.GetRequiredService<IFourOutputBoard>();
         await carportOutputBoard.Read(carportRelayBoardUrl, carportOutputPoints, stoppingToken);
 
@@ -45,9 +51,14 @@ internal class DeviceControllerBackgroundService(
 
         var now = DateTime.Now;
 
-        var alfrescoOn = (now.Hour >= 19 && now.Minute > 30) || now.Hour > 19 || now.Hour <= 6 || (now.Hour < 8 && now.Minute < 30);
-        var stringOn = (now.Hour == 19 && now.Minute > 30) || now.Hour == 20 || now.Hour == 21 || (now.Hour == 22 && now.Minute < 33);
-        var fishPlantsOn = (now.Hour == 7 && now.Minute > 30) || (now.Hour > 7 && now.Hour < 21);
+        // Alfresco on between 19:30 and 07:30
+        var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(7, 30));
+
+        // Alfresco on between 19:30 and 22:30
+        var stringOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(22, 30));
+
+        // Fish plant pump on between 07:30 and 19:30
+        var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
 
         var alfrescoLightPoint = singleBoardPoints.Points
             .Cast<PointValue<int>>()
@@ -73,9 +84,9 @@ internal class DeviceControllerBackgroundService(
 
 
         // Update devices
-        await singleOutputBoard.Write(singleRelayBoardUrl, singleBoardPoints, stoppingToken);
-        await fourOutputBoard.Write(fourRelayBoardUrl, fourOutputPoints, stoppingToken);
-        await carportOutputBoard.Write(carportRelayBoardUrl, carportOutputPoints, stoppingToken);
+        try { await singleOutputBoard.Write(singleRelayBoardUrl, singleBoardPoints, stoppingToken); } catch(Exception ex) { Logger.LogError(ex); }
+        try { await fourOutputBoard.Write(fourRelayBoardUrl, fourOutputPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
+        try { await carportOutputBoard.Write(carportRelayBoardUrl, carportOutputPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
 
         return true;
     }

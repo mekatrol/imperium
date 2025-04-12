@@ -30,25 +30,14 @@ public class SingleOutputBoard(HttpClient client, ILogger<SingleOutputBoard> log
         // Get the body JSON as a ApiResponse object
         var model = await response.Content.ReadFromJsonAsync<SingleOutputMessageModel>(_jsonOptions, stoppingToken);
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Relay),
-            Value = model!.Relay
-        });
+        var point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Relay));
+        point.Value = model!.Relay;
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Led),
-            Value = model!.Led
-        });
+        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Led));
+        point.Value = model!.Led;
 
-        pointSet.Points.Add(new PointValue<int>(PointType.Integer)
-        {
-            Id = nameof(model.Btn),
-            Value = model!.Btn
-        });
-
-        await Task.Delay(0, stoppingToken);
+        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Btn));
+        point.Value = model!.Btn;
     }
 
     public async Task Write(string url, PointSet pointSet, CancellationToken stoppingToken)
@@ -60,8 +49,6 @@ public class SingleOutputBoard(HttpClient client, ILogger<SingleOutputBoard> log
             Relay = points.SingleOrDefault(x => x.Id == nameof(SingleOutputMessageModel.Relay))?.Value ?? 0,
             Led = points.SingleOrDefault(x => x.Id == nameof(SingleOutputMessageModel.Led))?.Value ?? 0
         };
-
-        var json = JsonSerializer.Serialize(model, _jsonOptions);
 
         var response = await client.PostAsJsonUnchunked($"{url}/outputs", model, _jsonOptions, stoppingToken);
 
