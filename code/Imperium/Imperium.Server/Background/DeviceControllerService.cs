@@ -18,32 +18,29 @@ internal class DeviceControllerBackgroundService(
 {
     protected override async Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
     {
-        var singleRelayBoardUrl = "http://alfresco-light.lan";
-        var fourRelayBoardUrl = "http://pbalfresco.home.wojcik.com.au";
-        var carportRelayBoardUrl = "http://pbcarport.home.wojcik.com.au";
+        var alfrescoLightUrl = "http://alfresco-light.lan";
+        var kitchenViewPowerboardUrl = "http://pbalfresco.home.wojcik.com.au";
+        var carportPowerboardUrl = "http://pbcarport.home.wojcik.com.au";
 
-        var singleBoardPoints = new PointSet(singleRelayBoardUrl);
-        singleBoardPoints.CreatePoint<PointValue<int>>("Relay", "Alfresco Light", 0);
+        var alfrescoLightPoints = new PointSet(alfrescoLightUrl);
+        alfrescoLightPoints.CreatePoint<PointValue<int>>("Relay", "Alfresco Light", 0);
+        var kitchenViewPoints = new PointSet(kitchenViewPowerboardUrl);
+        kitchenViewPoints.CreatePoint<PointValue<int>>("Relay1", "String Lights", 0);
+        var carportPoints = new PointSet(carportPowerboardUrl);
+        carportPoints.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 0);
 
-        var singleOutputBoard = Services.GetRequiredService<ISingleOutputBoard>();
-        await singleOutputBoard.Read(singleRelayBoardUrl, singleBoardPoints, stoppingToken);
+        var singleOutputConroller = Services.GetRequiredService<ISingleOutputBoard>();
+        var fourOutputController = Services.GetRequiredService<IFourOutputBoard>();
 
-        var fourOutputPoints = new PointSet(fourRelayBoardUrl);
-        fourOutputPoints.CreatePoint<PointValue<int>>("Relay1", "String Lights", 0);
-
-        var fourOutputBoard = Services.GetRequiredService<IFourOutputBoard>();
-        await fourOutputBoard.Read(fourRelayBoardUrl, fourOutputPoints, stoppingToken);
-
-        var carportOutputPoints = new PointSet(carportRelayBoardUrl);
-        carportOutputPoints.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 0);
-        var carportOutputBoard = Services.GetRequiredService<IFourOutputBoard>();
-        await carportOutputBoard.Read(carportRelayBoardUrl, carportOutputPoints, stoppingToken);
+        await singleOutputConroller.Read(alfrescoLightUrl, alfrescoLightPoints, stoppingToken);
+        await fourOutputController.Read(kitchenViewPowerboardUrl, kitchenViewPoints, stoppingToken);
+        await fourOutputController.Read(carportPowerboardUrl, carportPoints, stoppingToken);
 
         var allPoints = Services.GetRequiredService<ConcurrentDictionary<string, PointSet>>();
 
-        allPoints[singleRelayBoardUrl] = singleBoardPoints;
-        allPoints[fourRelayBoardUrl] = fourOutputPoints;
-        allPoints[carportRelayBoardUrl] = carportOutputPoints;
+        allPoints[alfrescoLightUrl] = alfrescoLightPoints;
+        allPoints[kitchenViewPowerboardUrl] = kitchenViewPoints;
+        allPoints[carportPowerboardUrl] = carportPoints;
 
         /*****************************************************************************
          * START FLOW LOGIC
@@ -51,28 +48,28 @@ internal class DeviceControllerBackgroundService(
 
         var now = DateTime.Now;
 
-        // Alfresco on between 19:30 and 07:30
-        var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(7, 30));
+        // Alfresco on between 19:30 and 06:45
+        var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(6, 45));
 
-        // Alfresco on between 19:30 and 22:30
+        // String lights on between 19:30 and 22:30
         var stringOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(22, 30));
 
         // Fish plant pump on between 07:30 and 19:30
         var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
 
-        var alfrescoLightPoint = singleBoardPoints.Points
+        var alfrescoLightPoint = alfrescoLightPoints.Points
             .Cast<PointValue<int>>()
             .SingleOrDefault(x => x.Id == "Relay");
 
         alfrescoLightPoint!.Value = alfrescoOn ? 1 : 0;
 
-        var stringLightPoint = fourOutputPoints.Points
+        var stringLightPoint = kitchenViewPoints.Points
             .Cast<PointValue<int>>()
             .SingleOrDefault(x => x.Id == "Relay1");
 
         stringLightPoint!.Value = stringOn ? 1 : 0;
 
-        var fishPlantPump = carportOutputPoints.Points
+        var fishPlantPump = carportPoints.Points
             .Cast<PointValue<int>>()
             .SingleOrDefault(x => x.Id == "Relay4");
 
@@ -84,9 +81,9 @@ internal class DeviceControllerBackgroundService(
 
 
         // Update devices
-        try { await singleOutputBoard.Write(singleRelayBoardUrl, singleBoardPoints, stoppingToken); } catch(Exception ex) { Logger.LogError(ex); }
-        try { await fourOutputBoard.Write(fourRelayBoardUrl, fourOutputPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
-        try { await carportOutputBoard.Write(carportRelayBoardUrl, carportOutputPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
+        try { await singleOutputConroller.Write(alfrescoLightUrl, alfrescoLightPoints, stoppingToken); } catch(Exception ex) { Logger.LogError(ex); }
+        try { await fourOutputController.Write(kitchenViewPowerboardUrl, kitchenViewPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
+        try { await fourOutputController.Write(carportPowerboardUrl, carportPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
 
         return true;
     }
