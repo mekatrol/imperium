@@ -48,7 +48,7 @@ POST {{Imperium.CPPB}}/outputs
 Accept: application/json
 {
   "relay1": 0,
-  "relay2": 1,
+  "relay2": 0,
   "relay3": 0,
   "relay4": 0,
   "usb": 0,

@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ="Australia/Sydney"
 
 # Expected arguments
 ARG SSH_USER_NAME
