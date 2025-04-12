@@ -1,7 +1,12 @@
 
 using Imperium.Common;
+using Imperium.Models;
+using Imperium.Server.Background;
 using Mekatrol.Devices;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace Imperium.Server
 {
@@ -19,6 +24,32 @@ namespace Imperium.Server
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddSingleton<IDevice, SimpleOutputBoard>();
+
+            // Bind http client options
+            var httpClientOptions = new HttpClientOptions();
+            builder.Configuration.Bind(HttpClientOptions.SectionName, httpClientOptions);
+            builder.Services.AddSingleton(httpClientOptions);
+
+            // Bind background service options        
+            var backgroundServiceOptions = new BackgroundServiceOptions();
+            builder.Configuration.Bind(BackgroundServiceOptions.SectionName, backgroundServiceOptions);
+            builder.Services.AddSingleton(backgroundServiceOptions);
+
+            var handler = new SocketsHttpHandler
+            {
+                PooledConnectionLifetime = httpClientOptions.ConnectionLifeTime
+            };
+            var client = new HttpClient(handler);
+            builder.Services.AddSingleton(client);
+
+            builder.Services.AddHostedService<DeviceControllerBackgroundService>();
+
+            builder.Services.AddSerilog(config => {
+                config
+                    .WriteTo.Console()
+                    .ReadFrom.Configuration(builder.Configuration);
+                });
+            //builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 
             IList<string> urls = [];
             builder.Configuration.Bind("AppUrls", urls);
