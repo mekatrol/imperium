@@ -1,6 +1,7 @@
 @Imperium.Server_HostAddress = http://localhost:5181
 @Imperium.AlfrescoLight = http://alfresco-light.lan
 @Imperium.OldAlfrescoPB = http://pbalfresco.home.wojcik.com.au
+@Imperium.CPPB = http://pbcarport.home.wojcik.com.au
 
 GET {{Imperium.Server_HostAddress}}/weatherforecast/
 Accept: application/json
@@ -30,6 +31,23 @@ POST {{Imperium.OldAlfrescoPB}}/outputs
 Accept: application/json
 {
   "relay1": 1,
+  "relay2": 0,
+  "relay3": 0,
+  "relay4": 0,
+  "usb": 0,
+  "btn": 0
+}
+### 
+
+GET {{Imperium.CPPB}}/outputs
+Accept: application/json
+
+### 
+
+POST {{Imperium.CPPB}}/outputs
+Accept: application/json
+{
+  "relay1": 0,
   "relay2": 1,
   "relay3": 0,
   "relay4": 0,

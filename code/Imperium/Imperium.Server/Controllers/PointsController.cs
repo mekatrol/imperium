@@ -11,9 +11,9 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
     private readonly ILogger<PointsController> _logger = logger;
 
     [HttpGet(Name = "all")]
-    public ConcurrentDictionary<string, PointSet> Get()
+    public IEnumerable<PointSet> Get()
     {
         var allPoints = services.GetRequiredService<ConcurrentDictionary<string, PointSet>>();
-        return allPoints;
+        return allPoints.Values;
     }
 }
