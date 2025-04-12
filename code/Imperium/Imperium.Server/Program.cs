@@ -1,6 +1,7 @@
 
 using Imperium.Common;
 using Mekatrol.Devices;
+using Microsoft.Extensions.Configuration;
 
 namespace Imperium.Server
 {
@@ -18,6 +19,9 @@ namespace Imperium.Server
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddSingleton<IDevice, SimpleOutputBoard>();
+
+            IList<string> urls = [];
+            builder.Configuration.Bind("AppUrls", urls);
 
             var app = builder.Build();
 
@@ -38,7 +42,10 @@ namespace Imperium.Server
 
             app.MapControllers();
 
-            app.Urls.Add("http://*:5000");
+            foreach (var url in urls.Where(x => !string.IsNullOrWhiteSpace(x)))
+            {
+                app.Urls.Add(url);
+            }
 
             app.Run();
         }
