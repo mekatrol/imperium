@@ -35,7 +35,8 @@ RUN mkdir /var/run/sshd
 RUN mkdir /imperium 
 
 # Clone the repo
-RUN git clone https://github.com/mekatrol/imperium.git /imperium 
+RUN git clone https://github.com/mekatrol/imperium.git /imperium && \
+    rm /imperium/code/Imperium/Imperium.Server/appsettings.Development.json
 
 # Allow password auth
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
@@ -45,12 +46,21 @@ RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/
 EXPOSE 22
 EXPOSE 5000
 
-RUN pwd
-
 # Build and publish the .NET app
-RUN dotnet restore /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj && dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj -c Release -o /app/publish
+RUN dotnet restore /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj && \
+    dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj -c Release -o /app/publish    
 
-COPY entry-point.sh /entry-point.sh
+RUN cat <<EOF > /entry-point.sh
+#!/bin/bash
+
+# Start the .NET app in background
+dotnet /app/publish/Imperium.Server.dll &
+
+# Start the SSH daemon
+/usr/sbin/sshd -D
+EOF
+
+# COPY entry-point.sh /entry-point.sh
 RUN chmod +x /entry-point.sh
 
 # Start SSH and the .NET app

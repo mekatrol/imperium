@@ -73,8 +73,12 @@ namespace Imperium.Server
 
             app.MapControllers();
 
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("Listening on URLs: {urls}", $"{string.Join(',', urls)}");
+
             foreach (var url in urls.Where(x => !string.IsNullOrWhiteSpace(x)))
             {
+                logger.LogInformation("Adding URL: {url}", $"{url}");
                 app.Urls.Add(url);
             }
 
