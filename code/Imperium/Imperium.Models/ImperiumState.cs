@@ -1,8 +1,11 @@
-﻿using Imperium.Common;
+﻿using System.Runtime.CompilerServices;
+using System.Text.Json;
+using Imperium.Common;
+using Imperium.Common.Extensions;
 
 namespace Imperium.Models;
 
-public class ImperiumState
+public class ImperiumState : IPointState
 {
     // An object to use as sync lock for multithreaded access
     // TODO: .NET 9+ now has 'System.Threading.Lock' that can be used instead of an object (for better performance) 
@@ -117,9 +120,7 @@ public class ImperiumState
         }
     }
 
-    /// <summary>
-    /// Get a single point for a specific device. Returns null if the point was not found for the specified device.
-    /// </summary>
+    /// <inheritdoc/>
     public Point? GetDevicePoint(string deviceKey, string pointKey)
     {
         if (string.IsNullOrWhiteSpace(deviceKey))
@@ -136,7 +137,7 @@ public class ImperiumState
 
         lock (_sync)
         {
-            if(!_points.TryGetValue(devicePointKey, out Point? point))
+            if (!_points.TryGetValue(devicePointKey, out Point? point))
             {
                 return null;
             }
@@ -209,17 +210,116 @@ public class ImperiumState
         }
     }
 
+    /// <inheritdoc/>
+    public object? GetPointValue(string deviceKey, string pointKey)
+    {
+        // Get a copy of the point
+        var point = GetPointCopy(deviceKey, pointKey);
+
+        // Return its value
+        return point?.Value;
+    }
+
+    /// <inheritdoc/>
+    public T? GetPointValue<T>(string deviceKey, string pointKey) where T : class
+    {
+        // Get a copy of the point
+        var point = GetPointCopy(deviceKey, pointKey);
+
+        if (point== null)
+        {
+            return null;
+        }
+
+        var expectedType = typeof(T).GetPointType();
+
+        if(expectedType == null || expectedType != point.PointType)
+        {
+            throw new InvalidOperationException($"The point type is not compatible with the return value type.");
+        }
+
+        return (T?) point.Value;
+    }
+
+    /// <inheritdoc/>
+    public bool UpdatePointValue(string deviceKey, string pointKey, object? value)
+    {
+        // Create the key used for points list
+        var key = CreateDevicePointKey(deviceKey, pointKey);
+
+        // Try and get the point
+        if (_points.TryGetValue(key, out Point? point))
+        {
+            // Make sure types match
+            if(value != null)
+            {
+                var pointType = value.GetType().GetPointType();
+
+                if(pointType == null || pointType != point.PointType)
+                {
+                    throw new InvalidOperationException($"The point type is not compatible with the provided value type.");
+                }
+            }
+
+            // Lock on the point, that way we do not have to lock all points
+            // (it is a ref value so this works as all callers will get the same instance)
+            lock (point)
+            {
+                // Update its value
+                point.Value = value;
+            }
+
+            // Return true to indicate that the point value was updated
+            return true;
+        }
+
+        // Return false to indicate that the point was not updated because it does not exist
+        return false;
+    }
+
+    private Point? GetPointCopy(string deviceKey, string pointKey)
+    {
+        // Create the key used for points list
+        var key = CreateDevicePointKey(deviceKey, pointKey);
+
+        // Try and get the point
+        if (!_points.TryGetValue(key, out Point? point))
+        {
+            // Return null to indicate that the point does not exist
+            return null;
+        }
+
+        // Lock on the point, that way we do not have to lock all points
+        // (it is a ref value so this works as all callers will get the same instance)
+        lock (point)
+        {
+            // Return a copy
+            return CopyPoint(point);
+        }
+    }
+
+    private static string CreateDevicePointKey(string deviceKey, string pointKey)
+    {
+        return $"{deviceKey}.{pointKey}";
+    }
+
     private void SetDeviceInstancePoints(IDeviceInstance deviceInstance)
     {
         lock (_sync)
         {
             deviceInstance.Points.Clear();
             var points = GetDevicePoints(deviceInstance.Key);
-            
+
             foreach (var point in points)
             {
-                deviceInstance.Points.Add(point);
+                // We serialize and deserialize to ensure we add a copy
+                deviceInstance.Points.Add(CopyPoint(point));
             }
         }
+    }
+
+    private static Point CopyPoint(Point point)
+    {
+        return JsonSerializer.Deserialize<Point>(JsonSerializer.Serialize(point))!;
     }
 }

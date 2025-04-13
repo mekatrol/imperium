@@ -44,9 +44,12 @@ public class Program
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         builder.Services.AddSingleton(client);
 
-        builder.Services.AddSingleton(new ImperiumState());
+        var imperiumState = new ImperiumState();
+        builder.Services.AddSingleton(imperiumState);
+        builder.Services.AddSingleton<IPointState>(imperiumState);
 
         builder.Services.AddHostedService<DeviceControllerBackgroundService>();
+        builder.Services.AddHostedService<FlowExecutorBackgroundService>();
 
         builder.Services.AddSerilog(config =>
         {
@@ -96,28 +99,28 @@ public class Program
         var singleOutputBoardController = new SingleOutputController(
             services.GetRequiredService<HttpClient>(),
             services.GetRequiredService<ILogger<SingleOutputController>>());
-        
+
         var fourOutputBoardController = new FourOutputController(
-            services.GetRequiredService<HttpClient>(), 
+            services.GetRequiredService<HttpClient>(),
             services.GetRequiredService<ILogger<FourOutputController>>());
 
         state.AddDeviceController(nameof(ISingleOutputController), singleOutputBoardController);
         state.AddDeviceController(nameof(IFourOutputController), fourOutputBoardController);
 
         var alfrescoLight = new DeviceInstance<OutputControllerConfiguration>(
-            "device.alfrescolight", 
+            "device.alfrescolight",
             nameof(ISingleOutputController),
             new OutputControllerConfiguration { Url = "http://alfresco-light.lan" });
         alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light", 0);
-        
+
         var kitchenView = new DeviceInstance<OutputControllerConfiguration>(
-            "device.kitchenview.powerboard", 
+            "device.kitchenview.powerboard",
             nameof(IFourOutputController),
             new OutputControllerConfiguration { Url = "http://pbalfresco.home.wojcik.com.au" });
         kitchenView.CreatePoint<int>("Relay1", "String Lights", 0);
-        
+
         var carport = new DeviceInstance<OutputControllerConfiguration>(
-            "device.carport.powerboard", 
+            "device.carport.powerboard",
             nameof(IFourOutputController),
             new OutputControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
         carport.CreatePoint<int>("Relay4", "Fish Plant Pump", 1);

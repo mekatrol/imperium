@@ -1,4 +1,6 @@
-﻿namespace Imperium.Common;
+﻿using Imperium.Common.Extensions;
+
+namespace Imperium.Common;
 
 public class DeviceInstance<T>(string key, string deviceControllerKey, object? data = null, bool enabled = true) : IDeviceInstance
 {
@@ -47,7 +49,7 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
             return point;
         }
 
-        var pointType = GetPointType(typeof(TType)) ?? throw new InvalidOperationException($"The type of point '{typeof(TType).FullName}' is not valid for the type.");
+        var pointType = typeof(TType).GetPointType() ?? throw new InvalidOperationException($"The type of point '{typeof(TType).FullName}' is not valid for the type.");
 
         // Not found then use default or create new
         point = defaultValue ?? new Point(pointType) { Key = pointKey, FriendlyName = pointKey, DeviceKey = Key };
@@ -62,15 +64,5 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
     public override string ToString()
     {
         return $"{{ Key='{Key}', ControllerKey='{ControllerKey}' }}";
-    }
-
-    public static PointType? GetPointType(Type type)
-    {
-        if (type == typeof(int)) return PointType.Integer;
-        if (type == typeof(float)) return PointType.Floating;
-        if (type == typeof(double)) return PointType.Floating;
-        if (type.IsEnum) return PointType.Enum;
-
-        return null;
     }
 }
