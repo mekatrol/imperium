@@ -1,6 +1,6 @@
 ﻿namespace Imperium.Common;
 
-public class DeviceInstance(string key, string deviceControllerKey, bool enabled = true) : IDeviceInstance
+public class DeviceInstance<T>(string key, string deviceControllerKey, object? data = null, bool enabled = true) : IDeviceInstance
 {
     private readonly IList<Point> _points = [];
 
@@ -9,6 +9,8 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
     public string ControllerKey { get; } = deviceControllerKey;
 
     public bool Enabled { get; set; } = enabled;
+
+    public object? Data { get; } = data;
 
     public IList<Point> Points
     {
@@ -19,10 +21,10 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
         }
     }
 
-    public Point CreatePoint<T>(string key, string friendlyName, object value) where T : struct
+    public Point CreatePoint<TPointNativeType>(string key, string friendlyName, object value) where TPointNativeType : struct
     {
         // Get with default value
-        var point = GetPointWithDefault<T>(key);
+        var point = GetPointWithDefault<TPointNativeType>(key);
 
         // Set friendly name
         point.FriendlyName = friendlyName;
@@ -34,7 +36,7 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
         return point;
     }
 
-    public Point GetPointWithDefault<T>(string pointKey, Point? defaultValue = null) where T : struct
+    public Point GetPointWithDefault<TType>(string pointKey, Point? defaultValue = null) where TType : struct
     {
         // Try and get existing by key
         var point = _points.SingleOrDefault(p => p.Key == pointKey);
@@ -45,7 +47,7 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
             return point;
         }
 
-        var pointType = GetPointType(typeof(T)) ?? throw new InvalidOperationException($"The type of point '{typeof(T).FullName}' is not valid for the type.");
+        var pointType = GetPointType(typeof(TType)) ?? throw new InvalidOperationException($"The type of point '{typeof(TType).FullName}' is not valid for the type.");
 
         // Not found then use default or create new
         point = defaultValue ?? new Point(pointType) { Key = pointKey, FriendlyName = pointKey, DeviceKey = Key };

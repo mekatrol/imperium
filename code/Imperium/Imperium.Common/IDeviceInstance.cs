@@ -23,7 +23,12 @@ public interface IDeviceInstance
     IList<Point> Points { get; }
 
     /// <summary>
+    /// Instance specific data
+    /// </summary>
+    object? Data { get; }
+
+    /// <summary>
     /// Helper method to get the existing point or create it new if it does not exist
     /// </summary>
-    Point GetPointWithDefault<T>(string key, Point? defaultValue = null) where T : struct;
+    Point GetPointWithDefault<TType>(string key, Point? defaultValue = null) where TType : struct;
 }

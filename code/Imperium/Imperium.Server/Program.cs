@@ -44,9 +44,6 @@ public class Program
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         builder.Services.AddSingleton(client);
 
-        builder.Services.AddTransient<ISingleOutputController, SingleOutputController>();
-        builder.Services.AddTransient<IFourOutputController, FourOutputController>();
-
         builder.Services.AddSingleton(new ImperiumState());
 
         builder.Services.AddHostedService<DeviceControllerBackgroundService>();
@@ -96,55 +93,38 @@ public class Program
     {
         var state = services.GetRequiredService<ImperiumState>();
 
-        var singleOutputBoardController = services.GetRequiredService<ISingleOutputController>();
-        var fourOutputBoardController = services.GetRequiredService<IFourOutputController>();
+        var singleOutputBoardController = new SingleOutputController(
+            services.GetRequiredService<HttpClient>(),
+            services.GetRequiredService<ILogger<SingleOutputController>>());
+        
+        var fourOutputBoardController = new FourOutputController(
+            services.GetRequiredService<HttpClient>(), 
+            services.GetRequiredService<ILogger<FourOutputController>>());
 
         state.AddDeviceController(nameof(ISingleOutputController), singleOutputBoardController);
         state.AddDeviceController(nameof(IFourOutputController), fourOutputBoardController);
 
-        var alfrescoLightUrl = "http://alfresco-light.lan";
-        var kitchenViewPowerboardUrl = "http://pbalfresco.home.wojcik.com.au";
-        var carportPowerboardUrl = "http://pbcarport.home.wojcik.com.au";
-
-        var alfrescoLight = new DeviceInstance(alfrescoLightUrl, nameof(ISingleOutputController));
+        var alfrescoLight = new DeviceInstance<OutputControllerConfiguration>(
+            "device.alfrescolight", 
+            nameof(ISingleOutputController),
+            new OutputControllerConfiguration { Url = "http://alfresco-light.lan" });
         alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light", 0);
-        var kitchenView = new DeviceInstance(kitchenViewPowerboardUrl, nameof(IFourOutputController));
+        
+        var kitchenView = new DeviceInstance<OutputControllerConfiguration>(
+            "device.kitchenview.powerboard", 
+            nameof(IFourOutputController),
+            new OutputControllerConfiguration { Url = "http://pbalfresco.home.wojcik.com.au" });
         kitchenView.CreatePoint<int>("Relay1", "String Lights", 0);
-        var carport = new DeviceInstance(carportPowerboardUrl, nameof(IFourOutputController));
+        
+        var carport = new DeviceInstance<OutputControllerConfiguration>(
+            "device.carport.powerboard", 
+            nameof(IFourOutputController),
+            new OutputControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
         carport.CreatePoint<int>("Relay4", "Fish Plant Pump", 1);
 
         state.AddDeviceAndPoints(alfrescoLight);
         state.AddDeviceAndPoints(kitchenView);
         state.AddDeviceAndPoints(carport);
-
-        //var alfrescoLightUrl = "http://alfresco-light.lan";
-        //var kitchenViewPowerboardUrl = "http://pbalfresco.home.wojcik.com.au";
-        //var carportPowerboardUrl = "http://pbcarport.home.wojcik.com.au";
-
-        //var alfrescoLightPoints = new DeviceInstance(alfrescoLightUrl, alfrescoLightUrl);
-        //alfrescoLightPoints.CreatePoint<int>("Relay", "Alfresco Light", 0);
-        //var kitchenViewPoints = new DeviceInstance(kitchenViewPowerboardUrl, kitchenViewPowerboardUrl);
-        //kitchenViewPoints.CreatePoint<int>("Relay1", "String Lights", 0);
-        //var carportPoints = new DeviceInstance(carportPowerboardUrl, carportPowerboardUrl);
-        //carportPoints.CreatePoint<int>("Relay4", "Fish Plant Pump", 0);
-
-        //var singleOutputConroller = Services.GetRequiredService<ISingleOutputBoard>();
-        //var fourOutputController = Services.GetRequiredService<IFourOutputBoard>();
-
-        //await singleOutputConroller.Read(alfrescoLightUrl, alfrescoLightPoints, stoppingToken);
-        //await fourOutputController.Read(kitchenViewPowerboardUrl, kitchenViewPoints, stoppingToken);
-        //await fourOutputController.Read(carportPowerboardUrl, carportPoints, stoppingToken);
-
-
-        //allPoints[alfrescoLightUrl] = alfrescoLightPoints;
-        //allPoints[kitchenViewPowerboardUrl] = kitchenViewPoints;
-        //allPoints[carportPowerboardUrl] = carportPoints;
-
-        //// Update devices
-        //try { await singleOutputConroller.Write(alfrescoLightUrl, alfrescoLightPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
-        //try { await fourOutputController.Write(kitchenViewPowerboardUrl, kitchenViewPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
-        //try { await fourOutputController.Write(carportPowerboardUrl, carportPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
-
 
         return state;
     }

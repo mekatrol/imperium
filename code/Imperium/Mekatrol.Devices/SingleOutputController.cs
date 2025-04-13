@@ -18,7 +18,17 @@ public class SingleOutputController(HttpClient client, ILogger<SingleOutputContr
     {
         logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        var response = await client.GetAsync($"{deviceInstance.Key}/outputs", stoppingToken);
+        if(deviceInstance.Data == null)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
+        }
+
+        if(deviceInstance.Data is not OutputControllerConfiguration config)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(OutputControllerConfiguration).FullName}'.");
+        }
+
+        var response = await client.GetAsync($"{config.Url}/outputs", stoppingToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -43,13 +53,23 @@ public class SingleOutputController(HttpClient client, ILogger<SingleOutputContr
     {
         logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance.Key}' using device controller '{this}'");
 
+        if (deviceInstance.Data == null)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
+        }
+
+        if (deviceInstance.Data is not OutputControllerConfiguration config)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(OutputControllerConfiguration).FullName}'.");
+        }
+
         var model = new SingleOutputControllerModel
         {
             Relay = GetIntValue(nameof(SingleOutputControllerModel.Relay), deviceInstance, 0),
             Led = GetIntValue(nameof(SingleOutputControllerModel.Led), deviceInstance, 0)
         };
 
-        var response = await client.PostAsJsonUnchunked($"{deviceInstance.Key}/outputs", model, _jsonOptions, stoppingToken);
+        var response = await client.PostAsJsonUnchunked($"{config.Url}/outputs", model, _jsonOptions, stoppingToken);
 
         if (!response.IsSuccessStatusCode)
         {

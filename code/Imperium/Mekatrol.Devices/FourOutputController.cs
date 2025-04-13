@@ -18,7 +18,17 @@ public class FourOutputController(HttpClient client, ILogger<FourOutputControlle
     {
         logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        var response = await client.GetAsync($"{deviceInstance.Key}/outputs", stoppingToken);
+        if (deviceInstance.Data == null)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
+        }
+
+        if (deviceInstance.Data is not OutputControllerConfiguration config)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(OutputControllerConfiguration).FullName}'.");
+        }
+
+        var response = await client.GetAsync($"{config.Url}/outputs", stoppingToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -52,6 +62,16 @@ public class FourOutputController(HttpClient client, ILogger<FourOutputControlle
     {
         logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance.Key}' using device controller '{this}'");
 
+        if (deviceInstance.Data == null)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
+        }
+
+        if (deviceInstance.Data is not OutputControllerConfiguration config)
+        {
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(OutputControllerConfiguration).FullName}'.");
+        }
+
         var model = new FourOutputControllerModel
         {
             Relay1 = GetIntValue(nameof(FourOutputControllerModel.Relay1), deviceInstance, 0),
@@ -61,7 +81,7 @@ public class FourOutputController(HttpClient client, ILogger<FourOutputControlle
             Led = GetIntValue(nameof(FourOutputControllerModel.Led), deviceInstance, 0)
         };
 
-        var response = await client.PostAsJsonUnchunked($"{deviceInstance.Key}/outputs", model, _jsonOptions, stoppingToken);
+        var response = await client.PostAsJsonUnchunked($"{config.Url}/outputs", model, _jsonOptions, stoppingToken);
 
         if (!response.IsSuccessStatusCode)
         {

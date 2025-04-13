@@ -8,4 +8,3 @@ internal class SingleOutputControllerModel
     
     public int Btn { get; set; }
 }
-
