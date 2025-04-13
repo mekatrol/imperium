@@ -39,13 +39,8 @@ public class SingleOutputController(HttpClient client, ILogger<SingleOutputContr
         // Get the body JSON as a ApiResponse object
         var model = await response.Content.ReadFromJsonAsync<SingleOutputControllerModel>(_jsonOptions, stoppingToken);
 
-        var point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Relay));
-        point.Value = model!.Relay;
-
-        point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Led));
-        point.Value = model!.Led;
-
-        point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Btn));
+        // Only the button is an input
+        var point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Btn));
         point.Value = model!.Btn;
     }
 

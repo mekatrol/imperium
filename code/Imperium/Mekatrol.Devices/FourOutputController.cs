@@ -39,22 +39,8 @@ public class FourOutputController(HttpClient client, ILogger<FourOutputControlle
         // Get the body JSON as a ApiResponse object
         var model = await response.Content.ReadFromJsonAsync<FourOutputControllerModel>(_jsonOptions, stoppingToken);
 
-        var point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay1));
-        point.Value = model!.Relay1;
-
-        point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay2));
-        point.Value = model!.Relay2;
-
-        point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay3));
-        point.Value = model!.Relay3;
-
-        point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay4));
-        point.Value = model!.Relay4;
-
-        point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Led));
-        point.Value = model!.Led;
-
-        point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Btn));
+        // Only the button is an input
+        var point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Btn));
         point.Value = model!.Btn;
     }
 
