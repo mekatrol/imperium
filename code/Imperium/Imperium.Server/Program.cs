@@ -1,5 +1,3 @@
-
-using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using Imperium.Common;
@@ -113,7 +111,7 @@ public class Program
         var kitchenView = new DeviceInstance(kitchenViewPowerboardUrl, nameof(IFourOutputBoard));
         kitchenView.CreatePoint<PointValue<int>>("Relay1", "String Lights", 0);
         var carport = new DeviceInstance(carportPowerboardUrl, nameof(IFourOutputBoard));
-        carport.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 0);
+        carport.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 1);
 
         state.AddDeviceAndPoints(alfrescoLight);
         state.AddDeviceAndPoints(kitchenView);

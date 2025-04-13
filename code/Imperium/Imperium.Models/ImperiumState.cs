@@ -125,12 +125,12 @@ public class ImperiumState
     {
         lock (_sync)
         {
-            if (!_deviceControllers.TryGetValue(key, out IDeviceController? value))
+            if (!_deviceControllers.TryGetValue(key, out IDeviceController? deviceController))
             {
                 return null;
             }
 
-            return value;
+            return deviceController;
         }
     }
 
@@ -138,28 +138,60 @@ public class ImperiumState
     /// Get the instance for the specified key, will return null if no matching device instance. 
     /// The key is case insensitive.
     /// </summary>
-    public IDeviceInstance? GetDeviceInstance(string key)
+    public IDeviceInstance? GetDeviceInstance(string key, bool includePoints)
     {
         lock (_sync)
         {
-            if (!_deviceInstances.TryGetValue(key, out IDeviceInstance? value))
+            if (!_deviceInstances.TryGetValue(key, out IDeviceInstance? deviceInstance))
             {
                 return null;
             }
 
-            return value;
+            if (includePoints)
+            {
+                SetDeviceInstancePoints(deviceInstance);
+            }
+            else
+            {
+                deviceInstance.Points.Clear();
+            }
+
+            return deviceInstance;
         }
     }
 
     /// <summary>
     /// Get all of the device instances that are currently enabled
     /// </summary>
-    public IList<IDeviceInstance> GetEnabledDeviceInstances()
+    public IList<IDeviceInstance> GetEnabledDeviceInstances(bool includePoints)
     {
         lock (_sync)
         {
             var enabledDeviceInstances = _deviceInstances.Values.Where(di => di.Enabled).ToList();
+
+            if (includePoints)
+            {
+                foreach (var deviceInstance in enabledDeviceInstances)
+                {
+                    SetDeviceInstancePoints(deviceInstance);
+                }
+            }
+
             return enabledDeviceInstances;
+        }
+    }
+
+    private void SetDeviceInstancePoints(IDeviceInstance deviceInstance)
+    {
+        lock (_sync)
+        {
+            deviceInstance.Points.Clear();
+            var points = GetDevicePoints(deviceInstance.Key);
+            
+            foreach (var point in points)
+            {
+                deviceInstance.Points.Add(point);
+            }
         }
     }
 }

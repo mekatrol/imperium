@@ -14,7 +14,7 @@ public class FourOutputBoard(HttpClient client, ILogger<FourOutputBoard> logger)
         WriteIndented = true
     };
 
-    public async Task Read(IDeviceInstance deviceInstance, IList<Point> points, CancellationToken stoppingToken)
+    public async Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
         logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance}' using device controller '{this}'");
 
@@ -48,11 +48,11 @@ public class FourOutputBoard(HttpClient client, ILogger<FourOutputBoard> logger)
         point.Value = model!.Btn;
     }
 
-    public async Task Write(IDeviceInstance deviceInstance, IList<Point> points, CancellationToken stoppingToken)
+    public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
         logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance}' using device controller '{this}'");
 
-        var pointValues = points.Cast<PointValue<int>>().ToList();
+        var pointValues = deviceInstance.Points.Cast<PointValue<int>>().ToList();
 
         var model = new FourOutputMessageModel
         {

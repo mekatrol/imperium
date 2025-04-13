@@ -15,7 +15,7 @@ internal class DeviceControllerBackgroundService(
     protected override async Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
     {
         var state = Services.GetRequiredService<ImperiumState>();
-        var deviceInstances = state.GetEnabledDeviceInstances();
+        var deviceInstances = state.GetEnabledDeviceInstances(true);
 
         foreach (var deviceInstance in deviceInstances)
         {
@@ -29,10 +29,8 @@ internal class DeviceControllerBackgroundService(
                 continue;
             }
 
-            // Get all points for this device instance
-            var points = state.GetDevicePoints(deviceInstance.Key);
-
-            await deviceController.Read(deviceInstance, points, stoppingToken);
+            // Read all points for this device instance
+            await deviceController.Read(deviceInstance, stoppingToken);
         }
 
         /*****************************************************************************
@@ -87,7 +85,7 @@ internal class DeviceControllerBackgroundService(
             // Get all points for this device instance
             var points = state.GetDevicePoints(deviceInstance.Key);
 
-            await deviceController.Write(deviceInstance, points, stoppingToken);
+            await deviceController.Write(deviceInstance, stoppingToken);
         }
 
         return true;
