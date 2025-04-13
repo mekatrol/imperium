@@ -24,7 +24,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddSingleton<IDeviceController, SingleOutputBoard>();
+        builder.Services.AddSingleton<IDeviceController, SingleOutputController>();
 
         // Bind http client options
         var httpClientOptions = new HttpClientOptions();
@@ -44,8 +44,8 @@ public class Program
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         builder.Services.AddSingleton(client);
 
-        builder.Services.AddTransient<ISingleOutputBoard, SingleOutputBoard>();
-        builder.Services.AddTransient<IFourOutputBoard, FourOutputBoard>();
+        builder.Services.AddTransient<ISingleOutputController, SingleOutputController>();
+        builder.Services.AddTransient<IFourOutputController, FourOutputController>();
 
         builder.Services.AddSingleton(new ImperiumState());
 
@@ -96,22 +96,22 @@ public class Program
     {
         var state = services.GetRequiredService<ImperiumState>();
 
-        var singleOutputBoardController = services.GetRequiredService<ISingleOutputBoard>();
-        var fourOutputBoardController = services.GetRequiredService<IFourOutputBoard>();
+        var singleOutputBoardController = services.GetRequiredService<ISingleOutputController>();
+        var fourOutputBoardController = services.GetRequiredService<IFourOutputController>();
 
-        state.AddDeviceController(nameof(ISingleOutputBoard), singleOutputBoardController);
-        state.AddDeviceController(nameof(IFourOutputBoard), fourOutputBoardController);
+        state.AddDeviceController(nameof(ISingleOutputController), singleOutputBoardController);
+        state.AddDeviceController(nameof(IFourOutputController), fourOutputBoardController);
 
         var alfrescoLightUrl = "http://alfresco-light.lan";
         var kitchenViewPowerboardUrl = "http://pbalfresco.home.wojcik.com.au";
         var carportPowerboardUrl = "http://pbcarport.home.wojcik.com.au";
 
-        var alfrescoLight = new DeviceInstance(alfrescoLightUrl, nameof(ISingleOutputBoard));
-        alfrescoLight.CreatePoint<PointValue<int>>("Relay", "Alfresco Light", 0);
-        var kitchenView = new DeviceInstance(kitchenViewPowerboardUrl, nameof(IFourOutputBoard));
-        kitchenView.CreatePoint<PointValue<int>>("Relay1", "String Lights", 0);
-        var carport = new DeviceInstance(carportPowerboardUrl, nameof(IFourOutputBoard));
-        carport.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 1);
+        var alfrescoLight = new DeviceInstance(alfrescoLightUrl, nameof(ISingleOutputController));
+        alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light", 0);
+        var kitchenView = new DeviceInstance(kitchenViewPowerboardUrl, nameof(IFourOutputController));
+        kitchenView.CreatePoint<int>("Relay1", "String Lights", 0);
+        var carport = new DeviceInstance(carportPowerboardUrl, nameof(IFourOutputController));
+        carport.CreatePoint<int>("Relay4", "Fish Plant Pump", 1);
 
         state.AddDeviceAndPoints(alfrescoLight);
         state.AddDeviceAndPoints(kitchenView);
@@ -122,11 +122,11 @@ public class Program
         //var carportPowerboardUrl = "http://pbcarport.home.wojcik.com.au";
 
         //var alfrescoLightPoints = new DeviceInstance(alfrescoLightUrl, alfrescoLightUrl);
-        //alfrescoLightPoints.CreatePoint<PointValue<int>>("Relay", "Alfresco Light", 0);
+        //alfrescoLightPoints.CreatePoint<int>("Relay", "Alfresco Light", 0);
         //var kitchenViewPoints = new DeviceInstance(kitchenViewPowerboardUrl, kitchenViewPowerboardUrl);
-        //kitchenViewPoints.CreatePoint<PointValue<int>>("Relay1", "String Lights", 0);
+        //kitchenViewPoints.CreatePoint<int>("Relay1", "String Lights", 0);
         //var carportPoints = new DeviceInstance(carportPowerboardUrl, carportPowerboardUrl);
-        //carportPoints.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 0);
+        //carportPoints.CreatePoint<int>("Relay4", "Fish Plant Pump", 0);
 
         //var singleOutputConroller = Services.GetRequiredService<ISingleOutputBoard>();
         //var fourOutputController = Services.GetRequiredService<IFourOutputBoard>();

@@ -1,6 +1,6 @@
 ﻿namespace Mekatrol.Devices;
 
-internal class FourOutputMessageModel
+internal class FourOutputControllerModel
 {
     public int Relay1 { get; set; }
 

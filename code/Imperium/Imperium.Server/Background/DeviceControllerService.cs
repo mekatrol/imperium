@@ -49,19 +49,19 @@ internal class DeviceControllerBackgroundService(
         //var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
 
         //var alfrescoLightPoint = alfrescoLightPoints.Points
-        //    .Cast<PointValue<int>>()
+        //    .Cast<int>()
         //    .SingleOrDefault(x => x.Key == "Relay");
 
         //alfrescoLightPoint!.Value = alfrescoOn ? 1 : 0;
 
         //var stringLightPoint = kitchenViewPoints.Points
-        //    .Cast<PointValue<int>>()
+        //    .Cast<int>()
         //    .SingleOrDefault(x => x.Key == "Relay1");
 
         //stringLightPoint!.Value = stringOn ? 1 : 0;
 
         //var fishPlantPump = carportPoints.Points
-        //    .Cast<PointValue<int>>()
+        //    .Cast<int>()
         //    .SingleOrDefault(x => x.Key == "Relay4");
 
         //fishPlantPump!.Value = fishPlantsOn ? 1 : 0;

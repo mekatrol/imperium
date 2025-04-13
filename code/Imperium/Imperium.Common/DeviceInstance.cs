@@ -19,7 +19,7 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
         }
     }
 
-    public T CreatePoint<T>(string key, string friendlyName, object value) where T : Point, new()
+    public Point CreatePoint<T>(string key, string friendlyName, object value) where T : struct
     {
         // Get with default value
         var point = GetPointWithDefault<T>(key);
@@ -28,16 +28,16 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
         point.FriendlyName = friendlyName;
 
         // Set initial value
-        point.Current = value;
+        point.Value = value;
 
         // Return created point
         return point;
     }
 
-    public T GetPointWithDefault<T>(string key, T? defaultValue = null) where T : Point, new()
+    public Point GetPointWithDefault<T>(string pointKey, Point? defaultValue = null) where T : struct
     {
         // Try and get existing by key
-        var point = (T?)_points.SingleOrDefault(p => p.Key == key);
+        var point = _points.SingleOrDefault(p => p.Key == pointKey);
 
         // If found then return it
         if (point != null)
@@ -45,8 +45,10 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
             return point;
         }
 
+        var pointType = GetPointType(typeof(T)) ?? throw new InvalidOperationException($"The type of point '{typeof(T).FullName}' is not valid for the type.");
+
         // Not found then use default or create new
-        point = defaultValue ?? new T() { Key = key, FriendlyName = key, DeviceKey = this.Key };
+        point = defaultValue ?? new Point(pointType) { Key = pointKey, FriendlyName = pointKey, DeviceKey = Key };
 
         // Add the new point
         _points.Add(point);
@@ -58,5 +60,15 @@ public class DeviceInstance(string key, string deviceControllerKey, bool enabled
     public override string ToString()
     {
         return $"{{ Key='{Key}', ControllerKey='{ControllerKey}' }}";
+    }
+
+    public static PointType? GetPointType(Type type)
+    {
+        if (type == typeof(int)) return PointType.Integer;
+        if (type == typeof(float)) return PointType.Floating;
+        if (type == typeof(double)) return PointType.Floating;
+        if (type.IsEnum) return PointType.Enum;
+
+        return null;
     }
 }

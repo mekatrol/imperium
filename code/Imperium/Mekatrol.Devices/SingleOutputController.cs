@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Mekatrol.Devices;
 
-public class SingleOutputBoard(HttpClient client, ILogger<SingleOutputBoard> logger) : ISingleOutputBoard
+public class SingleOutputController(HttpClient client, ILogger<SingleOutputController> logger) : BaseOutputController(), ISingleOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -16,7 +16,7 @@ public class SingleOutputBoard(HttpClient client, ILogger<SingleOutputBoard> log
 
     public async Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
-        logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance}' using device controller '{this}'");
+        logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
         var response = await client.GetAsync($"{deviceInstance.Key}/outputs", stoppingToken);
 
@@ -27,28 +27,26 @@ public class SingleOutputBoard(HttpClient client, ILogger<SingleOutputBoard> log
         }
 
         // Get the body JSON as a ApiResponse object
-        var model = await response.Content.ReadFromJsonAsync<SingleOutputMessageModel>(_jsonOptions, stoppingToken);
+        var model = await response.Content.ReadFromJsonAsync<SingleOutputControllerModel>(_jsonOptions, stoppingToken);
 
-        var point = deviceInstance.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Relay));
+        var point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Relay));
         point.Value = model!.Relay;
 
-        point = deviceInstance.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Led));
+        point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Led));
         point.Value = model!.Led;
 
-        point = deviceInstance.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Btn));
+        point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Btn));
         point.Value = model!.Btn;
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
-        logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance}' using device controller '{this}'");
+        logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        var pointValues = deviceInstance.Points.Cast<PointValue<int>>().ToList();
-
-        var model = new SingleOutputMessageModel
+        var model = new SingleOutputControllerModel
         {
-            Relay = pointValues.SingleOrDefault(x => x.Key == nameof(SingleOutputMessageModel.Relay))?.Value ?? 0,
-            Led = pointValues.SingleOrDefault(x => x.Key == nameof(SingleOutputMessageModel.Led))?.Value ?? 0
+            Relay = GetIntValue(nameof(SingleOutputControllerModel.Relay), deviceInstance, 0),
+            Led = GetIntValue(nameof(SingleOutputControllerModel.Led), deviceInstance, 0)
         };
 
         var response = await client.PostAsJsonUnchunked($"{deviceInstance.Key}/outputs", model, _jsonOptions, stoppingToken);
@@ -61,6 +59,6 @@ public class SingleOutputBoard(HttpClient client, ILogger<SingleOutputBoard> log
 
     public override string ToString()
     {
-        return nameof(SingleOutputBoard);
+        return nameof(SingleOutputController);
     }
 }

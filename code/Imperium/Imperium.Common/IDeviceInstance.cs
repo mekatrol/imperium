@@ -25,5 +25,5 @@ public interface IDeviceInstance
     /// <summary>
     /// Helper method to get the existing point or create it new if it does not exist
     /// </summary>
-    T GetPointWithDefault<T>(string id, T? defaultValue = null) where T : Point, new();
+    Point GetPointWithDefault<T>(string key, Point? defaultValue = null) where T : struct;
 }

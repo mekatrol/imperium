@@ -1,12 +1,17 @@
 ﻿namespace Imperium.Common;
 
-public abstract class Point(PointType pointType)
+public class Point(PointType pointType)
 {
     public string Key { get; set; } = string.Empty;
 
     public PointType PointType { get; set; } = pointType;
 
-    public object? Current { get; set; }
+    public object? Value { get; set; }
+
+    /// <summary>
+    /// The most recent time the point was updated
+    /// </summary>
+    public DateTime? LastUpdated { get; set; }
 
     public string? FriendlyName { get; set; }
 
@@ -15,4 +20,9 @@ public abstract class Point(PointType pointType)
     /// It can be null where the point is a virtual in memory point (no physical device)
     /// </summary>
     public string? DeviceKey { get; set; }
+
+    public override string ToString()
+    {
+        return $"Id={Key}, Value = {Value}, Type = {PointType}";
+    }
 }
