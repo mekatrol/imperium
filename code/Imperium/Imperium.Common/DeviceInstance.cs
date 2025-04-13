@@ -1,10 +1,14 @@
 ﻿namespace Imperium.Common;
 
-public class PointSet(string key)
+public class DeviceInstance(string key, string deviceControllerKey, bool enabled = true) : IDeviceInstance
 {
     private readonly IList<Point> _points = [];
 
     public string Key { get; } = key;
+
+    public string ControllerKey { get; } = deviceControllerKey;
+
+    public bool Enabled { get; set; } = enabled;
 
     public IList<Point> Points
     {
@@ -15,10 +19,10 @@ public class PointSet(string key)
         }
     }
 
-    public T CreatePoint<T>(string id, string friendlyName, object value) where T : Point, new()
+    public T CreatePoint<T>(string key, string friendlyName, object value) where T : Point, new()
     {
         // Get with default value
-        var point = GetPointWithDefault<T>(id);
+        var point = GetPointWithDefault<T>(key);
 
         // Set friendly name
         point.FriendlyName = friendlyName;
@@ -30,10 +34,10 @@ public class PointSet(string key)
         return point;
     }
 
-    public T GetPointWithDefault<T>(string id, T? defaultValue = null) where T : Point, new()
+    public T GetPointWithDefault<T>(string key, T? defaultValue = null) where T : Point, new()
     {
-        // Try and get existing by ID
-        var point = (T?)_points.SingleOrDefault(p => p.Id == id);
+        // Try and get existing by key
+        var point = (T?)_points.SingleOrDefault(p => p.Key == key);
 
         // If found then return it
         if (point != null)
@@ -42,12 +46,17 @@ public class PointSet(string key)
         }
 
         // Not found then use default or create new
-        point = defaultValue ?? new T() { Id = id, FriendlyName = id };
+        point = defaultValue ?? new T() { Key = key, FriendlyName = key, DeviceKey = this.Key };
 
         // Add the new point
         _points.Add(point);
 
         // Return the point
         return point;
+    }
+
+    public override string ToString()
+    {
+        return $"{{ Key='{Key}', ControllerKey='{ControllerKey}' }}";
     }
 }

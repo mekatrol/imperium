@@ -16,7 +16,7 @@ public class PointValue<T>() : Point(GetPointType(typeof(T))) where T : struct
 
     public override string ToString()
     {
-        return $"Id={ Id }, Value = { Value }, Type = { PointType }";
+        return $"Id={ Key }, Value = { Value }, Type = { PointType }";
     }
 
     private static PointType GetPointType(Type type) 

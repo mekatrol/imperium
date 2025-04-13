@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using Imperium.Common;
 using Imperium.Common.Extensions;
@@ -17,44 +14,53 @@ public class SingleOutputBoard(HttpClient client, ILogger<SingleOutputBoard> log
         WriteIndented = true
     };
 
-    public async Task Read(string url, PointSet pointSet, CancellationToken stoppingToken)
+    public async Task Read(IDeviceInstance deviceInstance, IList<Point> points, CancellationToken stoppingToken)
     {
-        var response = await client.GetAsync($"{url}/outputs", stoppingToken);
+        logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance}' using device controller '{this}'");
+
+        var response = await client.GetAsync($"{deviceInstance.Key}/outputs", stoppingToken);
 
         if (!response.IsSuccessStatusCode)
         {
             // TODO: throw a proper error
-            throw new Exception($"Failed to read from URL: '{url}'");
+            throw new Exception($"Failed to read from URL: '{deviceInstance.Key}'");
         }
 
         // Get the body JSON as a ApiResponse object
         var model = await response.Content.ReadFromJsonAsync<SingleOutputMessageModel>(_jsonOptions, stoppingToken);
 
-        var point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Relay));
+        var point = deviceInstance.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Relay));
         point.Value = model!.Relay;
 
-        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Led));
+        point = deviceInstance.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Led));
         point.Value = model!.Led;
 
-        point = pointSet.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Btn));
+        point = deviceInstance.GetPointWithDefault<PointValue<int>>(nameof(SingleOutputMessageModel.Btn));
         point.Value = model!.Btn;
     }
 
-    public async Task Write(string url, PointSet pointSet, CancellationToken stoppingToken)
+    public async Task Write(IDeviceInstance deviceInstance, IList<Point> points, CancellationToken stoppingToken)
     {
-        var points = pointSet.Points.Cast<PointValue<int>>().ToList();
+        logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance}' using device controller '{this}'");
+
+        var pointValues = points.Cast<PointValue<int>>().ToList();
 
         var model = new SingleOutputMessageModel
         {
-            Relay = points.SingleOrDefault(x => x.Id == nameof(SingleOutputMessageModel.Relay))?.Value ?? 0,
-            Led = points.SingleOrDefault(x => x.Id == nameof(SingleOutputMessageModel.Led))?.Value ?? 0
+            Relay = pointValues.SingleOrDefault(x => x.Key == nameof(SingleOutputMessageModel.Relay))?.Value ?? 0,
+            Led = pointValues.SingleOrDefault(x => x.Key == nameof(SingleOutputMessageModel.Led))?.Value ?? 0
         };
 
-        var response = await client.PostAsJsonUnchunked($"{url}/outputs", model, _jsonOptions, stoppingToken);
+        var response = await client.PostAsJsonUnchunked($"{deviceInstance.Key}/outputs", model, _jsonOptions, stoppingToken);
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception($"Failed to update '{url}'");
+            throw new Exception($"Failed to update '{deviceInstance.Key}'");
         }
+    }
+
+    public override string ToString()
+    {
+        return nameof(SingleOutputBoard);
     }
 }

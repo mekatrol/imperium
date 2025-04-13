@@ -1,19 +1,18 @@
 using Imperium.Common;
-using System.Collections.Concurrent;
+using Imperium.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Imperium.Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("points")]
 public class PointsController(ILogger<PointsController> logger, IServiceProvider services) : ControllerBase
 {
-    private readonly ILogger<PointsController> _logger = logger;
-
-    [HttpGet(Name = "all")]
-    public IEnumerable<PointSet> Get()
+    [HttpGet]
+    public IList<Point> Get()
     {
-        var allPoints = services.GetRequiredService<ConcurrentDictionary<string, PointSet>>();
-        return allPoints.Values;
+        logger.LogDebug("{msg}", $"Getting all points.");
+        var state = services.GetRequiredService<ImperiumState>();
+        return state.GetAllPoints();
     }
 }

@@ -2,4 +2,4 @@
 
 namespace Mekatrol.Devices;
 
-public interface ISingleOutputBoard : IDevice {}
+public interface ISingleOutputBoard : IDeviceController {}

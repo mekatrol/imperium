@@ -1,0 +1,14 @@
+﻿namespace Imperium.Common;
+
+public interface IDeviceController
+{
+    /// <summary>
+    /// Read all points and data from the device.
+    /// </summary>
+    Task Read(IDeviceInstance deviceInstance, IList<Point> points, CancellationToken stoppingToken);
+
+    /// <summary>
+    /// Write all points and data to device.
+    /// </summary>
+    Task Write(IDeviceInstance deviceInstance, IList<Point> points, CancellationToken stoppingToken);
+}

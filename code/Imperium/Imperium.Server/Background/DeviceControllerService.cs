@@ -1,9 +1,5 @@
-﻿using System.Collections.Concurrent;
-using Imperium.Common;
-using Imperium.Common.Extensions;
-using Imperium.Common.Utils;
+﻿using Imperium.Common.Extensions;
 using Imperium.Models;
-using Mekatrol.Devices;
 
 namespace Imperium.Server.Background;
 
@@ -18,72 +14,81 @@ internal class DeviceControllerBackgroundService(
 {
     protected override async Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
     {
-        var alfrescoLightUrl = "http://alfresco-light.lan";
-        var kitchenViewPowerboardUrl = "http://pbalfresco.home.wojcik.com.au";
-        var carportPowerboardUrl = "http://pbcarport.home.wojcik.com.au";
+        var state = Services.GetRequiredService<ImperiumState>();
+        var deviceInstances = state.GetEnabledDeviceInstances();
 
-        var alfrescoLightPoints = new PointSet(alfrescoLightUrl);
-        alfrescoLightPoints.CreatePoint<PointValue<int>>("Relay", "Alfresco Light", 0);
-        var kitchenViewPoints = new PointSet(kitchenViewPowerboardUrl);
-        kitchenViewPoints.CreatePoint<PointValue<int>>("Relay1", "String Lights", 0);
-        var carportPoints = new PointSet(carportPowerboardUrl);
-        carportPoints.CreatePoint<PointValue<int>>("Relay4", "Fish Plant Pump", 0);
+        foreach (var deviceInstance in deviceInstances)
+        {
+            // Get controller used for this instance
+            var deviceController = state.GetDeviceController(deviceInstance.ControllerKey);
 
-        var singleOutputConroller = Services.GetRequiredService<ISingleOutputBoard>();
-        var fourOutputController = Services.GetRequiredService<IFourOutputBoard>();
+            if (deviceController == null)
+            {
+                // No controller found, log warning and continue
+                Logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
+                continue;
+            }
 
-        await singleOutputConroller.Read(alfrescoLightUrl, alfrescoLightPoints, stoppingToken);
-        await fourOutputController.Read(kitchenViewPowerboardUrl, kitchenViewPoints, stoppingToken);
-        await fourOutputController.Read(carportPowerboardUrl, carportPoints, stoppingToken);
+            // Get all points for this device instance
+            var points = state.GetDevicePoints(deviceInstance.Key);
 
-        var allPoints = Services.GetRequiredService<ConcurrentDictionary<string, PointSet>>();
-
-        allPoints[alfrescoLightUrl] = alfrescoLightPoints;
-        allPoints[kitchenViewPowerboardUrl] = kitchenViewPoints;
-        allPoints[carportPowerboardUrl] = carportPoints;
+            await deviceController.Read(deviceInstance, points, stoppingToken);
+        }
 
         /*****************************************************************************
          * START FLOW LOGIC
          *****************************************************************************/
 
-        var now = DateTime.Now;
+        //var now = DateTime.Now;
 
-        // Alfresco on between 19:30 and 06:45
-        var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(6, 45));
+        //// Alfresco on between 19:30 and 06:45
+        //var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(6, 45));
 
-        // String lights on between 19:30 and 22:30
-        var stringOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(22, 30));
+        //// String lights on between 19:30 and 22:30
+        //var stringOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(22, 30));
 
-        // Fish plant pump on between 07:30 and 19:30
-        var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
+        //// Fish plant pump on between 07:30 and 19:30
+        //var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
 
-        var alfrescoLightPoint = alfrescoLightPoints.Points
-            .Cast<PointValue<int>>()
-            .SingleOrDefault(x => x.Id == "Relay");
+        //var alfrescoLightPoint = alfrescoLightPoints.Points
+        //    .Cast<PointValue<int>>()
+        //    .SingleOrDefault(x => x.Key == "Relay");
 
-        alfrescoLightPoint!.Value = alfrescoOn ? 1 : 0;
+        //alfrescoLightPoint!.Value = alfrescoOn ? 1 : 0;
 
-        var stringLightPoint = kitchenViewPoints.Points
-            .Cast<PointValue<int>>()
-            .SingleOrDefault(x => x.Id == "Relay1");
+        //var stringLightPoint = kitchenViewPoints.Points
+        //    .Cast<PointValue<int>>()
+        //    .SingleOrDefault(x => x.Key == "Relay1");
 
-        stringLightPoint!.Value = stringOn ? 1 : 0;
+        //stringLightPoint!.Value = stringOn ? 1 : 0;
 
-        var fishPlantPump = carportPoints.Points
-            .Cast<PointValue<int>>()
-            .SingleOrDefault(x => x.Id == "Relay4");
+        //var fishPlantPump = carportPoints.Points
+        //    .Cast<PointValue<int>>()
+        //    .SingleOrDefault(x => x.Key == "Relay4");
 
-        fishPlantPump!.Value = fishPlantsOn ? 1 : 0;
+        //fishPlantPump!.Value = fishPlantsOn ? 1 : 0;
 
         /*****************************************************************************
          * END FLOW LOGIC
          *****************************************************************************/
 
+        foreach (var deviceInstance in deviceInstances)
+        {
+            // Get controller used for this instance
+            var deviceController = state.GetDeviceController(deviceInstance.ControllerKey);
 
-        // Update devices
-        try { await singleOutputConroller.Write(alfrescoLightUrl, alfrescoLightPoints, stoppingToken); } catch(Exception ex) { Logger.LogError(ex); }
-        try { await fourOutputController.Write(kitchenViewPowerboardUrl, kitchenViewPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
-        try { await fourOutputController.Write(carportPowerboardUrl, carportPoints, stoppingToken); } catch (Exception ex) { Logger.LogError(ex); }
+            if (deviceController == null)
+            {
+                // No controller found, log warning and continue
+                Logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
+                continue;
+            }
+
+            // Get all points for this device instance
+            var points = state.GetDevicePoints(deviceInstance.Key);
+
+            await deviceController.Write(deviceInstance, points, stoppingToken);
+        }
 
         return true;
     }
