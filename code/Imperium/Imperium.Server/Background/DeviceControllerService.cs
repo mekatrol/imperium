@@ -1,4 +1,5 @@
 ﻿using Imperium.Common.Extensions;
+using Imperium.Common.Utils;
 using Imperium.Models;
 
 namespace Imperium.Server.Background;
@@ -37,34 +38,32 @@ internal class DeviceControllerBackgroundService(
          * START FLOW LOGIC
          *****************************************************************************/
 
-        //var now = DateTime.Now;
+        var now = DateTime.Now;
 
-        //// Alfresco on between 19:30 and 06:45
-        //var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(6, 45));
+        // Alfresco on between 19:30 and 06:45
+        var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(6, 45));
+        var alfrescoLightPoint = state.GetDevicePoint("device.alfrescolight", "Relay");
 
-        //// String lights on between 19:30 and 22:30
-        //var stringOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(22, 30));
+        if (alfrescoLightPoint != null)
+        {
+            alfrescoLightPoint.Value = alfrescoOn ? 1 : 0;
+        }
 
-        //// Fish plant pump on between 07:30 and 19:30
-        //var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
+        // String lights on between 19:30 and 22:30
+        var stringOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(22, 30));
+        var stringLightPoint = state.GetDevicePoint("device.kitchenview.powerboard", "Relay1");
+        if (stringLightPoint != null)
+        {
+            stringLightPoint.Value = stringOn ? 1 : 0;
+        }
 
-        //var alfrescoLightPoint = alfrescoLightPoints.Points
-        //    .Cast<int>()
-        //    .SingleOrDefault(x => x.Key == "Relay");
-
-        //alfrescoLightPoint!.Value = alfrescoOn ? 1 : 0;
-
-        //var stringLightPoint = kitchenViewPoints.Points
-        //    .Cast<int>()
-        //    .SingleOrDefault(x => x.Key == "Relay1");
-
-        //stringLightPoint!.Value = stringOn ? 1 : 0;
-
-        //var fishPlantPump = carportPoints.Points
-        //    .Cast<int>()
-        //    .SingleOrDefault(x => x.Key == "Relay4");
-
-        //fishPlantPump!.Value = fishPlantsOn ? 1 : 0;
+        // Fish plant pump on between 07:30 and 19:30
+        var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
+        var fishPlantPump = state.GetDevicePoint("device.carport.powerboard", "Relay4");
+        if (fishPlantPump != null)
+        {
+            fishPlantPump.Value = fishPlantsOn ? 1 : 0;
+        }
 
         /*****************************************************************************
          * END FLOW LOGIC
@@ -81,9 +80,6 @@ internal class DeviceControllerBackgroundService(
                 Logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
                 continue;
             }
-
-            // Get all points for this device instance
-            var points = state.GetDevicePoints(deviceInstance.Key);
 
             await deviceController.Write(deviceInstance, stoppingToken);
         }

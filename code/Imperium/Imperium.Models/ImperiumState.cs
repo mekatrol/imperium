@@ -108,12 +108,40 @@ public class ImperiumState
             throw new InvalidOperationException($"{nameof(deviceKey)}' must be a valid key");
         }
 
-        var deviceIdPrefix = $"{deviceKey}.";
+        var keyPrefix = $"{deviceKey}.";
 
         lock (_sync)
         {
-            IList<Point> devicePoints = [.. _points.Values.Where(p => p.Key.StartsWith(deviceIdPrefix, StringComparison.OrdinalIgnoreCase)).ToList()];
+            IList<Point> devicePoints = [.. _points.Values.Where(p => p.Key.StartsWith(keyPrefix, StringComparison.OrdinalIgnoreCase)).ToList()];
             return devicePoints;
+        }
+    }
+
+    /// <summary>
+    /// Get a single point for a specific device. Returns null if the point was not found for the specified device.
+    /// </summary>
+    public Point? GetDevicePoint(string deviceKey, string pointKey)
+    {
+        if (string.IsNullOrWhiteSpace(deviceKey))
+        {
+            throw new InvalidOperationException($"{nameof(deviceKey)}' must be a valid key");
+        }
+
+        if (string.IsNullOrWhiteSpace(pointKey))
+        {
+            throw new InvalidOperationException($"{nameof(pointKey)}' must be a valid key");
+        }
+
+        var devicePointKey = $"{deviceKey}.{pointKey}";
+
+        lock (_sync)
+        {
+            if(!_points.TryGetValue(devicePointKey, out Point? point))
+            {
+                return null;
+            }
+
+            return point;
         }
     }
 
