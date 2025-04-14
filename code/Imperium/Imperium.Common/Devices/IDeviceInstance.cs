@@ -1,4 +1,6 @@
-﻿namespace Imperium.Common;
+﻿using Imperium.Common.Points;
+
+namespace Imperium.Common.Devices;
 
 public interface IDeviceInstance
 {

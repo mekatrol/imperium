@@ -1,6 +1,7 @@
 ﻿using Imperium.Common.Extensions;
 using Imperium.Common.Utils;
-using Imperium.Models;
+using Imperium.Server.Options;
+using Imperium.Server.State;
 
 namespace Imperium.Server.Background;
 

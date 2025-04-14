@@ -1,8 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+using Imperium.Common.Json;
 
-namespace Imperium.Common;
+namespace Imperium.Common.Points;
 
-[JsonConverter(typeof(PointConverter))]
+[JsonConverter(typeof(PointJsonConverter))]
 public class Point(PointType pointType)
 {
     // An object to use as sync lock for multithreaded access

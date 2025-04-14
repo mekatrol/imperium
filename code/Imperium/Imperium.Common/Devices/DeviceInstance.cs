@@ -1,6 +1,7 @@
 ﻿using Imperium.Common.Extensions;
+using Imperium.Common.Points;
 
-namespace Imperium.Common;
+namespace Imperium.Common.Devices;
 
 public class DeviceInstance<T>(string key, string deviceControllerKey, object? data = null, bool enabled = true) : IDeviceInstance
 {

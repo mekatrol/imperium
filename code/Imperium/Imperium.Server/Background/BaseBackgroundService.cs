@@ -1,5 +1,5 @@
 ﻿using Imperium.Common.Extensions;
-using Imperium.Models;
+using Imperium.Server.Options;
 
 namespace Imperium.Server.Background;
 

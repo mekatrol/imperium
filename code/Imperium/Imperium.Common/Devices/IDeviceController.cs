@@ -1,4 +1,4 @@
-﻿namespace Imperium.Common;
+﻿namespace Imperium.Common.Devices;
 
 public interface IDeviceController
 {

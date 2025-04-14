@@ -1,4 +1,4 @@
-﻿namespace Imperium.Common;
+﻿namespace Imperium.Common.Points;
 
 public enum PointType
 {

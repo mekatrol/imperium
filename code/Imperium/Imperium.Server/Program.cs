@@ -1,8 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
-using Imperium.Common;
-using Imperium.Models;
+using Imperium.Common.Devices;
+using Imperium.Common.Points;
 using Imperium.Server.Background;
+using Imperium.Server.Options;
+using Imperium.Server.State;
 using Mekatrol.Devices;
 using Serilog;
 
@@ -44,8 +46,8 @@ public class Program
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         builder.Services.AddSingleton(client);
 
-        var imperiumStateConfig = new ImperiumStateConfig();
-        builder.Configuration.Bind(ImperiumStateConfig.SectionName, imperiumStateConfig);
+        var imperiumStateConfig = new ImperiumStateOptions();
+        builder.Configuration.Bind(ImperiumStateOptions.SectionName, imperiumStateConfig);
         builder.Services.AddSingleton(imperiumStateConfig);
 
         var imperiumState = new ImperiumState

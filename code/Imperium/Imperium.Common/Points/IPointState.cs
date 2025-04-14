@@ -1,6 +1,6 @@
-﻿using Imperium.Common;
+﻿using Imperium.Common.Devices;
 
-namespace Imperium.Models;
+namespace Imperium.Common.Points;
 
 public interface IPointState
 {

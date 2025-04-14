@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using Imperium.Common.Points;
 using Imperium.Common.Utils;
-using Imperium.Models;
+using Imperium.Server.Options;
 
 namespace Imperium.Server.Background;
 

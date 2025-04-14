@@ -1,9 +1,10 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Imperium.Common.Points;
 
-namespace Imperium.Common;
+namespace Imperium.Common.Json;
 
-public class PointConverter : JsonConverter<Point>
+public class PointJsonConverter : JsonConverter<Point>
 {
     public override Point? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -19,7 +20,7 @@ public class PointConverter : JsonConverter<Point>
 
         var point = new Point(pointType)
         {
-            Key = root.GetProperty(nameof(Point.Key)).GetString()!,
+            Key = root.GetProperty(nameof(Point.Key)).GetString() ?? throw new JsonException($"'{nameof(Point.Key)}' is required and cannot be null."),
             LastUpdated = root.TryGetProperty(nameof(Point.LastUpdated), out var lastUpdated) ? lastUpdated.GetDateTime() : null,
             FriendlyName = root.TryGetProperty(nameof(Point.FriendlyName), out var friendlyName) ? friendlyName.GetString() : null,
             DeviceKey = root.TryGetProperty(nameof(Point.DeviceKey), out var deviceKey) ? deviceKey.GetString() : null

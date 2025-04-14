@@ -1,11 +1,11 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.Json;
-using Imperium.Common;
+﻿using System.Text.Json;
+using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
+using Imperium.Common.Points;
 
-namespace Imperium.Models;
+namespace Imperium.Server.State;
 
-public class ImperiumState : IPointState
+internal class ImperiumState : IPointState
 {
     // An object to use as sync lock for multithreaded access
     private readonly Lock _threadLock = new();

@@ -1,4 +1,4 @@
-﻿namespace Imperium.Models;
+﻿namespace Imperium.Server.Options;
 
 public class BackgroundServiceOptions
 {

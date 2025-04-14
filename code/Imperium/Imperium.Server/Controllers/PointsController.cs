@@ -1,5 +1,5 @@
-using Imperium.Common;
-using Imperium.Models;
+using Imperium.Common.Points;
+using Imperium.Server.State;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Imperium.Server.Controllers;

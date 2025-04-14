@@ -1,4 +1,4 @@
-﻿using Imperium.Common;
+﻿using Imperium.Common.Devices;
 
 namespace Mekatrol.Devices;
 

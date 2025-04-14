@@ -1,4 +1,6 @@
-﻿namespace Imperium.Common.Extensions;
+﻿using Imperium.Common.Points;
+
+namespace Imperium.Common.Extensions;
 
 public static class PointExtensions
 {

@@ -1,6 +1,6 @@
-﻿namespace Imperium.Models;
+﻿namespace Imperium.Server.Options;
 
-public class ImperiumStateConfig
+public class ImperiumStateOptions
 {
     public const string SectionName = "State";
 

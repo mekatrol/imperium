@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Imperium.Common\Imperium.Common.csproj" />
-    <ProjectReference Include="..\Imperium.Models\Imperium.Models.csproj" />
   </ItemGroup>
 
 </Project>

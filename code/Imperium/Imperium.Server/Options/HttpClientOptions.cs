@@ -1,8 +1,7 @@
-﻿namespace Imperium.Models;
+﻿namespace Imperium.Server.Options;
 
 public class HttpClientOptions
 {
-
     public const string SectionName = "HttpClient";
 
     // <summary>
