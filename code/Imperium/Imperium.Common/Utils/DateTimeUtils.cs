@@ -19,6 +19,6 @@ public static class DateTimeUtils
         }
 
         // Testing range that spans overnight
-        return timeOnly >= start || timeOnly <= end ;
+        return timeOnly >= start || timeOnly <= end;
     }
 }

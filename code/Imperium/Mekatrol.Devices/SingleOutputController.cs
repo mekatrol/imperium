@@ -1,9 +1,9 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json;
-using Imperium.Common.Devices;
+﻿using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
@@ -19,12 +19,12 @@ public class SingleOutputController(HttpClient client, IPointState pointState, I
     {
         logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        if(deviceInstance.Data == null)
+        if (deviceInstance.Data == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if(deviceInstance.Data is not ControllerConfiguration config)
+        if (deviceInstance.Data is not ControllerConfiguration config)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
         }

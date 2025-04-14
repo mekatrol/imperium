@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using Imperium.Common.Json;
+﻿using Imperium.Common.Json;
+using System.Text.Json.Serialization;
 
 namespace Imperium.Common.Points;
 

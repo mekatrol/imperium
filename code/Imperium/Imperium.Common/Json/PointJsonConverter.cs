@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+﻿using Imperium.Common.Points;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using Imperium.Common.Points;
 
 namespace Imperium.Common.Json;
 
@@ -166,16 +166,26 @@ public class PointJsonConverter : JsonConverter<Point>
 
                 case PointType.DateOnly:
                     if (point.Value is DateOnly dateOnly)
+                    {
                         writer.WriteStringValue(dateOnly.ToString("yyyy-MM-dd"));
+                    }
                     else
+                    {
                         writer.WriteNullValue();
+                    }
+
                     break;
 
                 case PointType.TimeOnly:
                     if (point.Value is TimeOnly timeOnly)
+                    {
                         writer.WriteStringValue(timeOnly.ToString("HH:mm:ss"));
+                    }
                     else
+                    {
                         writer.WriteNullValue();
+                    }
+
                     break;
 
                 default:

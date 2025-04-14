@@ -1,10 +1,10 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json;
-using Imperium.Common.Devices;
+﻿using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Common.Utils;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Mekatrol.Devices;
 

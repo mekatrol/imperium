@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 
@@ -14,10 +12,10 @@ public static class ClientExtensions
     /// (e.g. simple device HTTP servers) that do not support chunked messages.
     /// </summary>
     public static async Task<HttpResponseMessage> PostAsJsonUnchunked<TModel>(
-        this HttpClient client, 
-        [StringSyntax(StringSyntaxAttribute.Uri)] string? requestUri, 
-        TModel model, 
-        JsonSerializerOptions? options = null, 
+        this HttpClient client,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string? requestUri,
+        TModel model,
+        JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         // Serialise model

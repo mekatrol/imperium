@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
 using Imperium.Common.Devices;
 using Imperium.Common.Points;
 using Imperium.Server.Background;
@@ -7,6 +5,8 @@ using Imperium.Server.Options;
 using Imperium.Server.State;
 using Mekatrol.Devices;
 using Serilog;
+using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 
 namespace Imperium.Server;
 

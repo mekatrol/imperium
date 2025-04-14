@@ -1,6 +1,6 @@
-using System.Text.Json;
 using Imperium.Common.Json;
 using Imperium.Common.Points;
+using System.Text.Json;
 
 namespace Imperium.Tests.Unit;
 

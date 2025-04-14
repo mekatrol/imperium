@@ -46,7 +46,6 @@ internal abstract class BaseBackgroundService<T>(
                     return;
                 }
 
-
                 // Sleep for configured number seconds to try and let things settle (esp if exception keeps occuring)
                 await Task.Delay(backgroundServiceOptions.LoopExceptionSleep, stoppingToken);
             }

@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using Imperium.Common.Devices;
+﻿using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
+using System.Text.Json;
 
 namespace Imperium.Server.State;
 
@@ -162,7 +162,7 @@ internal class ImperiumState : IPointState
 
         lock (_threadLock)
         {
-            if (!_points.TryGetValue(devicePointKey, out Point? point))
+            if (!_points.TryGetValue(devicePointKey, out var point))
             {
                 return null;
             }
@@ -179,7 +179,7 @@ internal class ImperiumState : IPointState
     {
         lock (_threadLock)
         {
-            if (!_deviceControllers.TryGetValue(key, out IDeviceController? deviceController))
+            if (!_deviceControllers.TryGetValue(key, out var deviceController))
             {
                 return null;
             }
@@ -196,7 +196,7 @@ internal class ImperiumState : IPointState
     {
         lock (_threadLock)
         {
-            if (!_deviceInstances.TryGetValue(key, out IDeviceInstance? deviceInstance))
+            if (!_deviceInstances.TryGetValue(key, out var deviceInstance))
             {
                 return null;
             }
@@ -273,7 +273,7 @@ internal class ImperiumState : IPointState
         var key = CreateDevicePointKey(deviceKey, pointKey);
 
         // Try and get the point
-        if (_points.TryGetValue(key, out Point? point))
+        if (_points.TryGetValue(key, out var point))
         {
             // Make sure types match
             if (value != null)
@@ -314,7 +314,7 @@ internal class ImperiumState : IPointState
         var key = CreateDevicePointKey(deviceKey, pointKey);
 
         // Try and get the point
-        if (!_points.TryGetValue(key, out Point? point))
+        if (!_points.TryGetValue(key, out var point))
         {
             // Return null to indicate that the point does not exist
             return null;
