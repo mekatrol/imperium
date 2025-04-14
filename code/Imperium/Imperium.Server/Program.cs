@@ -44,7 +44,14 @@ public class Program
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         builder.Services.AddSingleton(client);
 
-        var imperiumState = new ImperiumState();
+        var imperiumStateConfig = new ImperiumStateConfig();
+        builder.Configuration.Bind(ImperiumStateConfig.SectionName, imperiumStateConfig);
+        builder.Services.AddSingleton(imperiumStateConfig);
+
+        var imperiumState = new ImperiumState
+        {
+            IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode
+        };
         builder.Services.AddSingleton(imperiumState);
         builder.Services.AddSingleton<IPointState>(imperiumState);
 
@@ -58,12 +65,9 @@ public class Program
                 .ReadFrom.Configuration(builder.Configuration);
         });
 
-        IList<string> urls = [];
-        builder.Configuration.Bind("AppUrls", urls);
-
         var app = builder.Build();
 
-        InitialiseImporiumState(app.Services);
+        InitialiseImperiumState(app.Services);
 
         // Configure the HTTP request pipeline.
         //if (app.Environment.IsDevelopment())
@@ -81,18 +85,21 @@ public class Program
 
         app.MapControllers();
 
-        var logger = app.Services.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("Listening on URLs: {urls}", $"{string.Join(',', urls)}");
-
-        foreach (var url in urls.Where(x => !string.IsNullOrWhiteSpace(x)))
+        if (!app.Environment.IsDevelopment())
         {
-            app.Urls.Add(url);
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("Listening on URLs: {urls}", $"{string.Join(',', imperiumStateConfig.ApplicationUrls)}");
+
+            foreach (var url in imperiumStateConfig.ApplicationUrls)
+            {
+                app.Urls.Add(url);
+            }
         }
 
         app.Run();
     }
 
-    private static ImperiumState InitialiseImporiumState(IServiceProvider services)
+    private static ImperiumState InitialiseImperiumState(IServiceProvider services)
     {
         var state = services.GetRequiredService<ImperiumState>();
 

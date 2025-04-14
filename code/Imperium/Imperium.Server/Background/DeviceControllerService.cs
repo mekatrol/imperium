@@ -33,7 +33,9 @@ internal class DeviceControllerBackgroundService(
             // Read all points for this device instance
             await deviceController.Read(deviceInstance, stoppingToken);
         }
-       
+
+        var isReadOnlyMode = state.IsReadOnlyMode;
+
         foreach (var deviceInstance in deviceInstances)
         {
             // Get controller used for this instance
@@ -46,7 +48,10 @@ internal class DeviceControllerBackgroundService(
                 continue;
             }
 
-            await deviceController.Write(deviceInstance, stoppingToken);
+            if (!isReadOnlyMode)
+            {
+                await deviceController.Write(deviceInstance, stoppingToken);
+            }
         }
 
         return true;

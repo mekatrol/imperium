@@ -11,6 +11,8 @@ public class ImperiumState : IPointState
     // TODO: .NET 9+ now has 'System.Threading.Lock' that can be used instead of an object (for better performance) 
     private readonly object _sync = new();
 
+    private bool _serverReadOnlyMode = false;
+
     // The list of devices currently being managed
     private readonly Dictionary<string, IDeviceController> _deviceControllers = new(StringComparer.OrdinalIgnoreCase);
 
@@ -19,6 +21,30 @@ public class ImperiumState : IPointState
 
     // The list of device instances currently being managed, this is typically the definition of the device along with state (but not point state)
     private readonly Dictionary<string, Point> _points = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// When the server read only mode is true then the server will read IO, but not update IO. Useful when testing a server that you
+    /// don't want to update the IO
+    /// </summary>
+    public bool IsReadOnlyMode
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _serverReadOnlyMode;
+            }
+        }
+
+        set
+        {
+            lock (_sync)
+            {
+                _serverReadOnlyMode = value;
+            }
+
+        }
+    }
 
     /// <summary>
     /// Add the device along with its points.
@@ -226,19 +252,19 @@ public class ImperiumState : IPointState
         // Get a copy of the point
         var point = GetPointCopy(deviceKey, pointKey);
 
-        if (point== null)
+        if (point == null)
         {
             return null;
         }
 
         var expectedType = typeof(T).GetPointType();
 
-        if(expectedType == null || expectedType != point.PointType)
+        if (expectedType == null || expectedType != point.PointType)
         {
             throw new InvalidOperationException($"The point type is not compatible with the return value type.");
         }
 
-        return (T?) point.Value;
+        return (T?)point.Value;
     }
 
     /// <inheritdoc/>
@@ -251,11 +277,11 @@ public class ImperiumState : IPointState
         if (_points.TryGetValue(key, out Point? point))
         {
             // Make sure types match
-            if(value != null)
+            if (value != null)
             {
                 var pointType = value.GetType().GetPointType();
 
-                if(pointType == null || pointType != point.PointType)
+                if (pointType == null || pointType != point.PointType)
                 {
                     throw new InvalidOperationException($"The point type is not compatible with the provided value type.");
                 }
