@@ -1,5 +1,8 @@
-﻿namespace Imperium.Common;
+﻿using System.Text.Json.Serialization;
 
+namespace Imperium.Common;
+
+[JsonConverter(typeof(PointConverter))]
 public class Point(PointType pointType)
 {
     // An object to use as sync lock for multithreaded access

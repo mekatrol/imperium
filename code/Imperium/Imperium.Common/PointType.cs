@@ -3,9 +3,11 @@
 public enum PointType
 {
     Integer,
-    Floating,
+    SingleFloat,
+    DoubleFloat,
     Boolean,
     String,
-    Enum,
-    DateTime
+    DateTime,
+    DateOnly,
+    TimeOnly
 }

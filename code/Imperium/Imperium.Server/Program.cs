@@ -127,36 +127,36 @@ public class Program
             "device.sunrise.sunset",
             nameof(SunriseSunsetController),
             new ControllerConfiguration { Url = "https://api.sunrise-sunset.org/json?lat=-35.2809&lng=149.1300&date=today&formatted=0" });
-        sunriseSunset.CreatePoint("Sunrise", "Sunrise", DateTime.MinValue);
-        sunriseSunset.CreatePoint("Sunset", "Sunset", DateTime.MinValue);
-        sunriseSunset.CreatePoint("SolarNoon", "Solar Noon", DateTime.MinValue);
-        sunriseSunset.CreatePoint("DayLength", "Day Length", 0);
-        sunriseSunset.CreatePoint("CivilTwilightBegin", "Civil Twilight Begin", DateTime.MinValue);
-        sunriseSunset.CreatePoint("CivilTwilightEnd", "Civil TwilightEnd", DateTime.MinValue);
-        sunriseSunset.CreatePoint("NauticalTwilightBegin", "Nautical Twilight Begin", DateTime.MinValue);
-        sunriseSunset.CreatePoint("NauticalTwilightEnd", "Nautical Twilight End", DateTime.MinValue);
-        sunriseSunset.CreatePoint("AstronomicalTwilightBegin", "Astronomical Twilight Begin", DateTime.MinValue);
-        sunriseSunset.CreatePoint("AstronomicalTwilightEnd", "Astronomical Twilight End", DateTime.MinValue);
-        sunriseSunset.CreatePoint("IsDaytime", "Is Daytime", true);
-        sunriseSunset.CreatePoint("IsNighttime", "Is Nighttime", false);
+        sunriseSunset.CreatePoint<DateTime>("Sunrise", "Sunrise");
+        sunriseSunset.CreatePoint<DateTime>("Sunset", "Sunset");
+        sunriseSunset.CreatePoint<DateTime>("SolarNoon", "Solar Noon");
+        sunriseSunset.CreatePoint<int>("DayLength", "Day Length");
+        sunriseSunset.CreatePoint<DateTime>("CivilTwilightBegin", "Civil Twilight Begin");
+        sunriseSunset.CreatePoint<DateTime>("CivilTwilightEnd", "Civil TwilightEnd");
+        sunriseSunset.CreatePoint<DateTime>("NauticalTwilightBegin", "Nautical Twilight Begin");
+        sunriseSunset.CreatePoint<DateTime>("NauticalTwilightEnd", "Nautical Twilight End");
+        sunriseSunset.CreatePoint<DateTime>("AstronomicalTwilightBegin", "Astronomical Twilight Begin");
+        sunriseSunset.CreatePoint<DateTime>("AstronomicalTwilightEnd", "Astronomical Twilight End");
+        sunriseSunset.CreatePoint<bool>("IsDaytime", "Is Daytime");
+        sunriseSunset.CreatePoint<bool>("IsNighttime", "Is Nighttime");
 
         var alfrescoLight = new DeviceInstance<ControllerConfiguration>(
             "device.alfrescolight",
             nameof(ISingleOutputController),
             new ControllerConfiguration { Url = "http://alfresco-light.lan" });
-        alfrescoLight.CreatePoint("Relay", "Alfresco Light", 0);
+        alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light");
 
         var kitchenView = new DeviceInstance<ControllerConfiguration>(
             "device.kitchenview.powerboard",
             nameof(IFourOutputController),
             new ControllerConfiguration { Url = "http://pbalfresco.home.wojcik.com.au" });
-        kitchenView.CreatePoint("Relay1", "String Lights", 0);
+        kitchenView.CreatePoint<int>("Relay1", "String Lights");
 
         var carport = new DeviceInstance<ControllerConfiguration>(
             "device.carport.powerboard",
             nameof(IFourOutputController),
             new ControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
-        carport.CreatePoint("Relay4", "Fish Plant Pump", 1);
+        carport.CreatePoint<int>("Relay4", "Fish Plant Pump");
 
         state.AddDeviceAndPoints(sunriseSunset);
         state.AddDeviceAndPoints(alfrescoLight);
