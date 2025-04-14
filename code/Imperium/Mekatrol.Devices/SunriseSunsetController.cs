@@ -99,7 +99,7 @@ public class SunriseSunsetController(HttpClient client, IPointState pointState, 
     private void UpdateIsDaytime(IDeviceInstance deviceInstance)
     {
         var sunrise = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise)).Value;
-        var sunset = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise)).Value;
+        var sunset = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunset)).Value;
 
         if (sunrise == null || sunset == null)
         {
