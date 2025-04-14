@@ -103,6 +103,10 @@ public class Program
     {
         var state = services.GetRequiredService<ImperiumState>();
 
+        var sunriseSunsetController = new SunriseSunsetController(
+            services.GetRequiredService<HttpClient>(),
+            services.GetRequiredService<ILogger<SunriseSunsetController>>());
+
         var singleOutputBoardController = new SingleOutputController(
             services.GetRequiredService<HttpClient>(),
             services.GetRequiredService<ILogger<SingleOutputController>>());
@@ -111,27 +115,44 @@ public class Program
             services.GetRequiredService<HttpClient>(),
             services.GetRequiredService<ILogger<FourOutputController>>());
 
+        state.AddDeviceController(nameof(SunriseSunsetController), sunriseSunsetController);
         state.AddDeviceController(nameof(ISingleOutputController), singleOutputBoardController);
         state.AddDeviceController(nameof(IFourOutputController), fourOutputBoardController);
 
-        var alfrescoLight = new DeviceInstance<OutputControllerConfiguration>(
+        var sunriseSunset = new DeviceInstance<ControllerConfiguration>(
+            "device.sunrise.sunset",
+            nameof(SunriseSunsetController),
+            new ControllerConfiguration { Url = "https://api.sunrise-sunset.org/json?lat=-35.2809&lng=149.1300&date=today&formatted=0" });
+        sunriseSunset.CreatePoint<DateTime>("Sunrise", "Sunrise", DateTime.MinValue);
+        sunriseSunset.CreatePoint<DateTime>("Sunset", "Sunset", DateTime.MinValue);
+        sunriseSunset.CreatePoint<DateTime>("SolarNoon", "SolarNoon", DateTime.MinValue);
+        sunriseSunset.CreatePoint<int>("DayLength", "DayLength", 0);
+        sunriseSunset.CreatePoint<DateTime>("CivilTwilightBegin", "CivilTwilightBegin", DateTime.MinValue);
+        sunriseSunset.CreatePoint<DateTime>("CivilTwilightEnd", "CivilTwilightEnd", DateTime.MinValue);
+        sunriseSunset.CreatePoint<DateTime>("NauticalTwilightBegin", "NauticalTwilightBegin", DateTime.MinValue);
+        sunriseSunset.CreatePoint<DateTime>("NauticalTwilightEnd", "NauticalTwilightEnd", DateTime.MinValue);
+        sunriseSunset.CreatePoint<DateTime>("AstronomicalTwilightBegin", "AstronomicalTwilightBegin", DateTime.MinValue);
+        sunriseSunset.CreatePoint<DateTime>("AstronomicalTwilightEnd", "AstronomicalTwilightEnd", DateTime.MinValue);
+
+        var alfrescoLight = new DeviceInstance<ControllerConfiguration>(
             "device.alfrescolight",
             nameof(ISingleOutputController),
-            new OutputControllerConfiguration { Url = "http://alfresco-light.lan" });
+            new ControllerConfiguration { Url = "http://alfresco-light.lan" });
         alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light", 0);
 
-        var kitchenView = new DeviceInstance<OutputControllerConfiguration>(
+        var kitchenView = new DeviceInstance<ControllerConfiguration>(
             "device.kitchenview.powerboard",
             nameof(IFourOutputController),
-            new OutputControllerConfiguration { Url = "http://pbalfresco.home.wojcik.com.au" });
+            new ControllerConfiguration { Url = "http://pbalfresco.home.wojcik.com.au" });
         kitchenView.CreatePoint<int>("Relay1", "String Lights", 0);
 
-        var carport = new DeviceInstance<OutputControllerConfiguration>(
+        var carport = new DeviceInstance<ControllerConfiguration>(
             "device.carport.powerboard",
             nameof(IFourOutputController),
-            new OutputControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
+            new ControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
         carport.CreatePoint<int>("Relay4", "Fish Plant Pump", 1);
 
+        state.AddDeviceAndPoints(sunriseSunset);
         state.AddDeviceAndPoints(alfrescoLight);
         state.AddDeviceAndPoints(kitchenView);
         state.AddDeviceAndPoints(carport);

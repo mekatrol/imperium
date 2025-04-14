@@ -23,9 +23,9 @@ public class FourOutputController(HttpClient client, ILogger<FourOutputControlle
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not OutputControllerConfiguration config)
+        if (deviceInstance.Data is not ControllerConfiguration config)
         {
-            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(OutputControllerConfiguration).FullName}'.");
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
         }
 
         var response = await client.GetAsync($"{config.Url}/outputs", stoppingToken);
@@ -53,9 +53,9 @@ public class FourOutputController(HttpClient client, ILogger<FourOutputControlle
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not OutputControllerConfiguration config)
+        if (deviceInstance.Data is not ControllerConfiguration config)
         {
-            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(OutputControllerConfiguration).FullName}'.");
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
         }
 
         var model = new FourOutputControllerModel

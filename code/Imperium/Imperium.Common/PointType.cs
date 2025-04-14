@@ -6,5 +6,6 @@ public enum PointType
     Floating,
     Boolean,
     String,
-    Enum
+    Enum,
+    DateTime
 }

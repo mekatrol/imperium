@@ -8,6 +8,7 @@ public static class PointExtensions
         if (type == typeof(float)) return PointType.Floating;
         if (type == typeof(double)) return PointType.Floating;
         if (type == typeof(bool)) return PointType.Boolean;
+        if (type == typeof(DateTime)) return PointType.DateTime;
         if (type.IsEnum) return PointType.Enum;
 
         return null;
