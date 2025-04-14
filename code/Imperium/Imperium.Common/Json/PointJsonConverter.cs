@@ -6,6 +6,9 @@ namespace Imperium.Common.Json;
 
 public class PointJsonConverter : JsonConverter<Point>
 {
+    public const string InvalidPointTypeMessage = $"Missing or invalid '{nameof(Point.PointType)}' during '{nameof(Point)}' deserialization.";
+    public const string InvalidKeyMessage = $"'{nameof(Point.Key)}' is required and cannot be null, empty or whitespace.";
+
     public override Point? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var doc = JsonDocument.ParseValue(ref reader);
@@ -15,12 +18,23 @@ public class PointJsonConverter : JsonConverter<Point>
         if (!root.TryGetProperty(nameof(Point.PointType), out var pointTypeProp) ||
             !Enum.TryParse<PointType>(pointTypeProp.GetString(), out var pointType))
         {
-            throw new JsonException($"Missing or invalid '{nameof(Point.PointType)}' during '{nameof(Point)}' deserialization.");
+            throw new JsonException(InvalidPointTypeMessage);
         }
 
-        var point = new Point(pointType)
+        if (!root.TryGetProperty(nameof(Point.Key), out var keyElement))
         {
-            Key = root.GetProperty(nameof(Point.Key)).GetString() ?? throw new JsonException($"'{nameof(Point.Key)}' is required and cannot be null."),
+            throw new JsonException(InvalidKeyMessage);
+        }
+
+        var key = keyElement.GetString();
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new JsonException(InvalidKeyMessage);
+        }
+
+        // Trim key any whitespace for safety
+        var point = new Point(key.Trim(), pointType)
+        {
             LastUpdated = root.TryGetProperty(nameof(Point.LastUpdated), out var lastUpdated) ? lastUpdated.GetDateTime() : null,
             FriendlyName = root.TryGetProperty(nameof(Point.FriendlyName), out var friendlyName) ? friendlyName.GetString() : null,
             DeviceKey = root.TryGetProperty(nameof(Point.DeviceKey), out var deviceKey) ? deviceKey.GetString() : null

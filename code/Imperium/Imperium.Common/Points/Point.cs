@@ -4,13 +4,13 @@ using Imperium.Common.Json;
 namespace Imperium.Common.Points;
 
 [JsonConverter(typeof(PointJsonConverter))]
-public class Point(PointType pointType)
+public class Point(string key, PointType pointType)
 {
     // An object to use as sync lock for multithreaded access
     private readonly Lock _threadLock = new();
     private object? _value = null;
 
-    public string Key { get; set; } = string.Empty;
+    public string Key { get; set; } = key;
 
     public PointType PointType { get; set; } = pointType;
 
@@ -48,6 +48,6 @@ public class Point(PointType pointType)
 
     public override string ToString()
     {
-        return $"Id={Key}, Value = {Value}, Type = {PointType}";
+        return $"{nameof(Key)}='{Key}',{nameof(Value)}='{Value}',{nameof(PointType)}='{PointType}'";
     }
 }
