@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Json;
+﻿using System.Drawing;
+using System.Net.Http.Json;
+using System.Reflection;
 using System.Text.Json;
 using Imperium.Common;
 using Imperium.Common.Extensions;
@@ -10,6 +12,8 @@ namespace Mekatrol.Devices;
 
 public class SunriseSunsetController(HttpClient client, IPointState pointState, ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
 {
+    private DateOnly _lastReadApi = DateOnly.MinValue;
+
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
@@ -30,16 +34,22 @@ public class SunriseSunsetController(HttpClient client, IPointState pointState, 
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
         }
 
-        var response = await client.GetAsync(config.Url, stoppingToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            // Do nothing, try next time
-            return;
-        }
-
         try
         {
+            // Only once per day
+            if (_lastReadApi != DateOnly.MinValue && DateOnly.FromDateTime(DateTime.Now) <= _lastReadApi)
+            {
+                return;
+            }
+
+            var response = await client.GetAsync(config.Url, stoppingToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Do nothing, try next time
+                return;
+            }
+
             // Get the body JSON as a ApiResponse object
             var model = await response.Content.ReadFromJsonAsync<SunriseSunsetModel>(_jsonOptions, stoppingToken);
 
@@ -73,19 +83,39 @@ public class SunriseSunsetController(HttpClient client, IPointState pointState, 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.AstronomicalTwilightEnd));
             pointState.UpdatePointValue(deviceInstance, point, model!.Results.AstronomicalTwilightEnd);
 
-            var now = DateTime.Now;
-            var isDaytime = now.WithinTimeRange(TimeOnly.FromDateTime(model.Results.Sunrise), TimeOnly.FromDateTime(model.Results.Sunset));
+            // Update last read date
+            _lastReadApi = DateOnly.FromDateTime(DateTime.Now);
 
-            point = deviceInstance.GetPointWithDefault<bool>("IsDaytime");
-            pointState.UpdatePointValue(deviceInstance, point, isDaytime);
-
-            point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");
-            pointState.UpdatePointValue(deviceInstance, point, !isDaytime);
-}
+        }
         catch (Exception ex)
         {
             logger.LogError(ex);
         }
+        finally
+        {
+            // Make sure to update daytime flags
+            UpdateIsDaytime(deviceInstance);
+        }
+    }
+
+    private void UpdateIsDaytime(IDeviceInstance deviceInstance)
+    {
+        var sunrise = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise)).Value;
+        var sunset = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise)).Value;
+
+        if (sunrise == null || sunset == null)
+        {
+            return;
+        }
+
+        var now = DateTime.Now;
+        var isDaytime = now.WithinTimeRange(TimeOnly.FromDateTime(sunrise.Value), TimeOnly.FromDateTime(sunset.Value));
+
+        var point = deviceInstance.GetPointWithDefault<bool>("IsDaytime");
+        pointState.UpdatePointValue(deviceInstance, point, isDaytime);
+
+        point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");
+        pointState.UpdatePointValue(deviceInstance, point, !isDaytime);
     }
 
     public Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
