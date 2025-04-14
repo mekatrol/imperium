@@ -24,4 +24,9 @@ public interface IPointState
     /// Update a single point value, this is done in a thread safe way.
     /// </summary>
     bool UpdatePointValue(string deviceKey, string pointKey, object? value);
+
+    /// <summary>
+    /// Update a single point value, this is done in a thread safe way.
+    /// </summary>
+    bool UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value);
 }

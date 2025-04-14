@@ -8,8 +8,7 @@ namespace Imperium.Models;
 public class ImperiumState : IPointState
 {
     // An object to use as sync lock for multithreaded access
-    // TODO: .NET 9+ now has 'System.Threading.Lock' that can be used instead of an object (for better performance) 
-    private readonly object _sync = new();
+    private readonly Lock _threadLock = new();
 
     private bool _serverReadOnlyMode = false;
 
@@ -30,7 +29,7 @@ public class ImperiumState : IPointState
     {
         get
         {
-            lock (_sync)
+            lock (_threadLock)
             {
                 return _serverReadOnlyMode;
             }
@@ -38,7 +37,7 @@ public class ImperiumState : IPointState
 
         set
         {
-            lock (_sync)
+            lock (_threadLock)
             {
                 _serverReadOnlyMode = value;
             }
@@ -62,7 +61,7 @@ public class ImperiumState : IPointState
             throw new InvalidOperationException($"The device controller key must be set");
         }
 
-        lock (_sync)
+        lock (_threadLock)
         {
             // Make sure the key does not already exist
             if (_deviceInstances.ContainsKey(deviceInstance.Key))
@@ -103,7 +102,7 @@ public class ImperiumState : IPointState
             throw new InvalidOperationException($"The device controller key must be set");
         }
 
-        lock (_sync)
+        lock (_threadLock)
         {
             // Make sure the key does not already exist
             if (_deviceInstances.ContainsKey(key))
@@ -121,7 +120,7 @@ public class ImperiumState : IPointState
     /// </summary>
     public IList<Point> GetAllPoints()
     {
-        lock (_sync)
+        lock (_threadLock)
         {
             return [.. _points.Values];
         }
@@ -139,7 +138,7 @@ public class ImperiumState : IPointState
 
         var keyPrefix = $"{deviceKey}.";
 
-        lock (_sync)
+        lock (_threadLock)
         {
             IList<Point> devicePoints = [.. _points.Values.Where(p => p.Key.StartsWith(keyPrefix, StringComparison.OrdinalIgnoreCase)).ToList()];
             return devicePoints;
@@ -161,7 +160,7 @@ public class ImperiumState : IPointState
 
         var devicePointKey = $"{deviceKey}.{pointKey}";
 
-        lock (_sync)
+        lock (_threadLock)
         {
             if (!_points.TryGetValue(devicePointKey, out Point? point))
             {
@@ -178,7 +177,7 @@ public class ImperiumState : IPointState
     /// </summary>
     public IDeviceController? GetDeviceController(string key)
     {
-        lock (_sync)
+        lock (_threadLock)
         {
             if (!_deviceControllers.TryGetValue(key, out IDeviceController? deviceController))
             {
@@ -195,7 +194,7 @@ public class ImperiumState : IPointState
     /// </summary>
     public IDeviceInstance? GetDeviceInstance(string key, bool includePoints)
     {
-        lock (_sync)
+        lock (_threadLock)
         {
             if (!_deviceInstances.TryGetValue(key, out IDeviceInstance? deviceInstance))
             {
@@ -220,7 +219,7 @@ public class ImperiumState : IPointState
     /// </summary>
     public IList<IDeviceInstance> GetEnabledDeviceInstances(bool includePoints)
     {
-        lock (_sync)
+        lock (_threadLock)
         {
             var enabledDeviceInstances = _deviceInstances.Values.Where(di => di.Enabled).ToList();
 
@@ -287,13 +286,8 @@ public class ImperiumState : IPointState
                 }
             }
 
-            // Lock on the point, that way we do not have to lock all points
-            // (it is a ref value so this works as all callers will get the same instance)
-            lock (point)
-            {
-                // Update its value
-                point.Value = value;
-            }
+            // Update its value
+            point.Value = value;
 
             // Return true to indicate that the point value was updated
             return true;
@@ -301,6 +295,14 @@ public class ImperiumState : IPointState
 
         // Return false to indicate that the point was not updated because it does not exist
         return false;
+    }
+
+    /// <summary>
+    /// Update a single point value, this is done in a thread safe way.
+    /// </summary>
+    public bool UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value)
+    {
+        return UpdatePointValue(deviceInstance.Key, point.Key, value);
     }
 
     private Point? GetPointCopy(string deviceKey, string pointKey)
@@ -331,7 +333,7 @@ public class ImperiumState : IPointState
 
     private void SetDeviceInstancePoints(IDeviceInstance deviceInstance)
     {
-        lock (_sync)
+        lock (_threadLock)
         {
             deviceInstance.Points.Clear();
             var points = GetDevicePoints(deviceInstance.Key);

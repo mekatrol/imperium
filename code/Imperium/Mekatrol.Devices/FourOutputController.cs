@@ -2,11 +2,12 @@
 using System.Text.Json;
 using Imperium.Common;
 using Imperium.Common.Extensions;
+using Imperium.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Mekatrol.Devices;
 
-public class FourOutputController(HttpClient client, ILogger<FourOutputController> logger) : BaseOutputController(), IFourOutputController
+public class FourOutputController(HttpClient client, IPointState pointState, ILogger<FourOutputController> logger) : BaseOutputController(), IFourOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -41,7 +42,7 @@ public class FourOutputController(HttpClient client, ILogger<FourOutputControlle
 
         // Only the button is an input
         var point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Btn));
-        point.Value = model!.Btn;
+        pointState.UpdatePointValue(deviceInstance, point, model!.Btn);
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)

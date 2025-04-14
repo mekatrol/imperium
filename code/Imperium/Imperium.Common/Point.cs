@@ -2,11 +2,32 @@
 
 public class Point(PointType pointType)
 {
+    // An object to use as sync lock for multithreaded access
+    private readonly Lock _threadLock = new();
+    private object? _value = null;
+
     public string Key { get; set; } = string.Empty;
 
     public PointType PointType { get; set; } = pointType;
 
-    public object? Value { get; set; }
+    public object? Value
+    {
+        get
+        {
+            lock (_threadLock)
+            {
+                return _value;
+            }
+        }
+
+        set
+        {
+            lock (_threadLock)
+            {
+                _value = value;
+            }
+        }
+    }
 
     /// <summary>
     /// The most recent time the point was updated

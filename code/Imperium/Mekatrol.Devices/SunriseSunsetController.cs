@@ -3,11 +3,12 @@ using System.Text.Json;
 using Imperium.Common;
 using Imperium.Common.Extensions;
 using Imperium.Common.Utils;
+using Imperium.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Mekatrol.Devices;
 
-public class SunriseSunsetController(HttpClient client, ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
+public class SunriseSunsetController(HttpClient client, IPointState pointState, ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -43,44 +44,44 @@ public class SunriseSunsetController(HttpClient client, ILogger<SunriseSunsetCon
             var model = await response.Content.ReadFromJsonAsync<SunriseSunsetModel>(_jsonOptions, stoppingToken);
 
             var point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise));
-            point.Value = model!.Results.Sunrise;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.Sunrise);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunset));
-            point.Value = model!.Results.Sunset;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.Sunset);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.SolarNoon));
-            point.Value = model!.Results.SolarNoon;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.SolarNoon);
 
             point = deviceInstance.GetPointWithDefault<int>(nameof(SunriseSunsetResultsModel.DayLength));
-            point.Value = model!.Results.DayLength;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.DayLength);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.CivilTwilightBegin));
-            point.Value = model!.Results.CivilTwilightBegin;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.CivilTwilightBegin);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.CivilTwilightEnd));
-            point.Value = model!.Results.CivilTwilightEnd;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.CivilTwilightEnd);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.NauticalTwilightBegin));
-            point.Value = model!.Results.NauticalTwilightBegin;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.NauticalTwilightBegin);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.NauticalTwilightEnd));
-            point.Value = model!.Results.NauticalTwilightEnd;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.NauticalTwilightEnd);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.AstronomicalTwilightBegin));
-            point.Value = model!.Results.AstronomicalTwilightBegin;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.AstronomicalTwilightBegin);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.AstronomicalTwilightEnd));
-            point.Value = model!.Results.AstronomicalTwilightEnd;
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.AstronomicalTwilightEnd);
 
             var now = DateTime.Now;
             var isDaytime = now.WithinTimeRange(TimeOnly.FromDateTime(model.Results.Sunrise), TimeOnly.FromDateTime(model.Results.Sunset));
 
             point = deviceInstance.GetPointWithDefault<bool>("IsDaytime");
-            point.Value = isDaytime;
-                
-            point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");            
-            point.Value = !isDaytime;
-        }
+            pointState.UpdatePointValue(deviceInstance, point, isDaytime);
+
+            point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");
+            pointState.UpdatePointValue(deviceInstance, point, !isDaytime);
+}
         catch (Exception ex)
         {
             logger.LogError(ex);

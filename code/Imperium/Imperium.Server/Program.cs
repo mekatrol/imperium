@@ -102,17 +102,21 @@ public class Program
     private static ImperiumState InitialiseImperiumState(IServiceProvider services)
     {
         var state = services.GetRequiredService<ImperiumState>();
+        var pointState = services.GetRequiredService<IPointState>();
 
         var sunriseSunsetController = new SunriseSunsetController(
             services.GetRequiredService<HttpClient>(),
+            pointState,
             services.GetRequiredService<ILogger<SunriseSunsetController>>());
 
         var singleOutputBoardController = new SingleOutputController(
             services.GetRequiredService<HttpClient>(),
+            pointState,
             services.GetRequiredService<ILogger<SingleOutputController>>());
 
         var fourOutputBoardController = new FourOutputController(
             services.GetRequiredService<HttpClient>(),
+            pointState,
             services.GetRequiredService<ILogger<FourOutputController>>());
 
         state.AddDeviceController(nameof(SunriseSunsetController), sunriseSunsetController);
