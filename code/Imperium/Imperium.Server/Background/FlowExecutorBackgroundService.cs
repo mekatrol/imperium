@@ -1,4 +1,6 @@
-﻿using Imperium.Common.Utils;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using Imperium.Common.Utils;
 using Imperium.Models;
 
 namespace Imperium.Server.Background;
@@ -21,9 +23,13 @@ internal class FlowExecutorBackgroundService(
          * START FLOW LOGIC
          *****************************************************************************/
 
-        // Alfresco on between 19:30 and 06:45
-        var alfrescoOn = now.WithinTimeRange(new TimeOnly(18, 00), new TimeOnly(6, 45));
-        pointState.UpdatePointValue("device.alfrescolight", "Relay", alfrescoOn ? 1 : 0);
+        var isNighttime = (bool?)pointState.GetPointValue("device.sunrise.sunset", "IsNighttime");
+
+        if (isNighttime.HasValue)
+        {
+            // Alfresco on when night time
+            pointState.UpdatePointValue("device.alfrescolight", "Relay", isNighttime.Value ? 1 : 0);
+        }
 
         // String lights on between 19:30 and 22:30
         var stringOn = now.WithinTimeRange(new TimeOnly(18, 00), new TimeOnly(22, 30));
