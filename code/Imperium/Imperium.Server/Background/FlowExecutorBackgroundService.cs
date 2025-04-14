@@ -22,11 +22,11 @@ internal class FlowExecutorBackgroundService(
          *****************************************************************************/
 
         // Alfresco on between 19:30 and 06:45
-        var alfrescoOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(6, 45));
+        var alfrescoOn = now.WithinTimeRange(new TimeOnly(18, 00), new TimeOnly(6, 45));
         pointState.UpdatePointValue("device.alfrescolight", "Relay", alfrescoOn ? 1 : 0);
 
         // String lights on between 19:30 and 22:30
-        var stringOn = now.WithinTimeRange(new TimeOnly(19, 30), new TimeOnly(22, 30));
+        var stringOn = now.WithinTimeRange(new TimeOnly(18, 00), new TimeOnly(22, 30));
         pointState.UpdatePointValue("device.kitchenview.powerboard", "Relay1", stringOn ? 1 : 0);
 
         // Fish plant pump on between 07:30 and 19:30
