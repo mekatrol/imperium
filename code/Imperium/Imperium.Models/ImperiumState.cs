@@ -289,6 +289,9 @@ public class ImperiumState : IPointState
             // Update its value
             point.Value = value;
 
+            // Set last updated
+            point.LastUpdated = DateTime.UtcNow;
+
             // Return true to indicate that the point value was updated
             return true;
         }

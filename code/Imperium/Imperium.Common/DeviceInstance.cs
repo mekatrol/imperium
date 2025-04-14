@@ -23,7 +23,7 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
         }
     }
 
-    public Point CreatePoint<TPointNativeType>(string key, string friendlyName, object value) where TPointNativeType : struct
+    public Point CreatePoint<TPointNativeType>(string key, string friendlyName, TPointNativeType value) where TPointNativeType : struct
     {
         // Get with default value
         var point = GetPointWithDefault<TPointNativeType>(key);
