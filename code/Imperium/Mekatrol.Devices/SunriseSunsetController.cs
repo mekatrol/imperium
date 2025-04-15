@@ -114,6 +114,8 @@ public class SunriseSunsetController(HttpClient client, IPointState pointState, 
 
         point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");
         pointState.UpdatePointValue(deviceInstance, point, !isDaytime);
+
+        logger.LogDebug("{msg}", $"Sunrise: '{sunrise:HH:mm:ss}', Sunset: '{sunset:HH:mm:ss}', is daytime: '{isDaytime}', now: '{DateTime.Now}', kind: '{DateTime.Now.Kind}'");
     }
 
     public Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
