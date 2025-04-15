@@ -7,4 +7,8 @@ public class ImperiumStateOptions
     public bool IsReadOnlyMode { get; set; } = false;
 
     public IList<string> ApplicationUrls { get; set; } = [];
+
+    public string MqttUser { get; set; } = string.Empty;
+
+    public string MqttPassword { get; set; } = string.Empty;
 }

@@ -55,13 +55,18 @@ public class Program
 
         var imperiumState = new ImperiumState
         {
-            IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode
+            IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode,
+            MqttUser = imperiumStateConfig.MqttUser,
+            MqttPassword = imperiumStateConfig.MqttPassword
         };
+
         builder.Services.AddSingleton(imperiumState);
         builder.Services.AddSingleton<IPointState>(imperiumState);
+        builder.Services.AddSingleton<IImperiumState>(imperiumState);
 
         builder.Services.AddHostedService<DeviceControllerBackgroundService>();
         builder.Services.AddHostedService<FlowExecutorBackgroundService>();
+        builder.Services.AddHostedService<MqttClientBackgroundService>();
 
         builder.Services.AddSerilog(config =>
         {
@@ -166,6 +171,27 @@ public class Program
         state.AddDeviceAndPoints(kitchenView);
         state.AddDeviceAndPoints(carport);
 
+        AddHouseAlarmPoint(1, "Lounge room", state);
+        AddHouseAlarmPoint(2, "Dining room", state);
+        AddHouseAlarmPoint(3, "Bedroom 1", state);
+        AddHouseAlarmPoint(4, "Bedroom 2", state);
+        AddHouseAlarmPoint(5, "Bedroom 3", state);
+        AddHouseAlarmPoint(6, "Bedroom 4", state);
+        AddHouseAlarmPoint(7, "Front door", state);
+        AddHouseAlarmPoint(8, "Back door", state);
+
         return state;
+    }
+
+    private static void AddHouseAlarmPoint(int zone, string friendlyName, ImperiumState state)
+    {
+        // Get with default value
+        var point = new Point($"zone{zone}", PointType.String)
+        {
+            // Set friendly name
+            FriendlyName = friendlyName
+        };
+
+        state.AddPoint("housealarm", point);
     }
 }

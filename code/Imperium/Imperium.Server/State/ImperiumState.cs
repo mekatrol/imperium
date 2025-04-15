@@ -5,7 +5,7 @@ using Imperium.Common.Points;
 
 namespace Imperium.Server.State;
 
-internal class ImperiumState : IPointState
+internal class ImperiumState : IPointState, IImperiumState
 {
     // An object to use as sync lock for multithreaded access
     private readonly Lock _threadLock = new();
@@ -45,6 +45,25 @@ internal class ImperiumState : IPointState
         }
     }
 
+    public string MqttUser { get; set; } = string.Empty;
+
+    public string MqttPassword { get; set; } = string.Empty;
+
+    public void AddPoint(string deviceKey, Point point)
+    {
+        if (string.IsNullOrWhiteSpace(deviceKey))
+        {
+            throw new InvalidOperationException($"The device key must be set");
+        }
+
+        var pointKey = CreateDevicePointKey(deviceKey, point.Key);
+
+        lock (_threadLock)
+        { 
+            _points.Add(pointKey, point);
+        }
+    }
+
     /// <summary>
     /// Add the device along with its points.
     /// The key is case insensitive.
@@ -77,7 +96,7 @@ internal class ImperiumState : IPointState
             {
                 // The unique point key is a combination of the device instance key and the point key
                 // This ensures all points are unique within this imperium state object
-                var pointKey = $"{deviceInstance.Key}.{point.Key}";
+                var pointKey = CreateDevicePointKey(deviceInstance.Key, point.Key);
 
                 // Make sure it does not already exist (e.g. the deviceInstance has multiple points with the same key)
                 if (_points.ContainsKey(pointKey))

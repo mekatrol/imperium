@@ -38,6 +38,14 @@ internal class FlowExecutorBackgroundService(
         var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
         pointState.UpdatePointValue("device.carport.powerboard", "Relay4", fishPlantsOn ? 1 : 0);
 
+
+        var alarmZone2Value = (string?)pointState.GetPointValue("housealarm", "zone2");
+
+        if ("EVT_UNSEALED" == alarmZone2Value)
+        {
+            Logger.LogDebug("{Massage}", alarmZone2Value);
+        }
+
         /*****************************************************************************
          * END FLOW LOGIC
          *****************************************************************************/
