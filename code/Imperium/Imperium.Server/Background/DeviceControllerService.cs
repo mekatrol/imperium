@@ -30,8 +30,17 @@ internal class DeviceControllerBackgroundService(
                 continue;
             }
 
-            // Read all points for this device instance
-            await deviceController.Read(deviceInstance, stoppingToken);
+            try
+            {
+                Logger.LogDebug("{msg}", $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
+             
+                // Read all points for this device instance
+                await deviceController.Read(deviceInstance, stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex);
+            }
         }
 
         var isReadOnlyMode = state.IsReadOnlyMode;
@@ -50,7 +59,15 @@ internal class DeviceControllerBackgroundService(
 
             if (!isReadOnlyMode)
             {
-                await deviceController.Write(deviceInstance, stoppingToken);
+                try
+                {
+                    Logger.LogDebug("{msg}", $"Writing the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
+                    await deviceController.Write(deviceInstance, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex);
+                }
             }
         }
 
