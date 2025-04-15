@@ -48,4 +48,53 @@ public static class PointExtensions
 
         return null;
     }
+
+    public static Type? GetPointNativeType(this PointType type)
+    {
+        switch (type)
+        {
+            case PointType.Integer: return typeof(int);
+            case PointType.SingleFloat: return typeof(float);
+            case PointType.DoubleFloat: return typeof(double);
+            case PointType.Boolean: return typeof(bool);
+            case PointType.String: return typeof(string);
+            case PointType.DateTime: return typeof(DateTime);
+            case PointType.DateOnly: return typeof(DateOnly);
+            case PointType.TimeOnly: return typeof(TimeOnly);
+            default: return null;
+        }
+    }
+
+    public static bool TryCastValueFromString(this PointType pointType, ref object value)
+    {
+        var valueType = value.GetType();
+
+        if (valueType != typeof(string))
+        {
+            // We only support converting from string
+            return false;
+        }
+
+        var nativePointType = pointType.GetPointNativeType();
+
+        if (nativePointType == null)
+        {
+            // oops, should not happen here but fail safe...
+            return false;
+        }
+
+        try
+        {
+            // Convert to expected value type
+            var valueWithCorrectType = ((string)value).ConvertToType(nativePointType);
+            value = valueWithCorrectType;
+
+            return true;
+        }
+        catch { }
+        {
+            // Failed to convert, so return false
+            return false;
+        }
+    }
 }

@@ -23,10 +23,15 @@ public interface IPointState
     /// <summary>
     /// Update a single point value, this is done in a thread safe way.
     /// </summary>
-    bool UpdatePointValue(string deviceKey, string pointKey, object? value);
+    Point? UpdatePointValue(Guid pointId, object? value);
 
     /// <summary>
     /// Update a single point value, this is done in a thread safe way.
     /// </summary>
-    bool UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value);
+    Point? UpdatePointValue(string deviceKey, string pointKey, object? value);
+
+    /// <summary>
+    /// Update a single point value, this is done in a thread safe way.
+    /// </summary>
+    Point? UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value);
 }

@@ -1,6 +1,7 @@
 using Imperium.Common.Devices;
 using Imperium.Common.Points;
 using Imperium.Server.Background;
+using Imperium.Server.Middleware;
 using Imperium.Server.Options;
 using Imperium.Server.State;
 using Mekatrol.Devices;
@@ -25,6 +26,8 @@ public class Program
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddExceptionMiddleware();
 
         builder.Services.AddSingleton<IDeviceController, SingleOutputController>();
 
@@ -71,15 +74,13 @@ public class Program
 
         InitialiseImperiumState(app.Services);
 
-        // Configure the HTTP request pipeline.
-        //if (app.Environment.IsDevelopment())
-        //{
+        app.UseExceptionMiddleware();
+
         app.UseSwagger();
         app.UseSwaggerUI(options =>
         {
             options.EnableTryItOutByDefault();
         });
-        //}
 
         app.UseHttpsRedirection();
 

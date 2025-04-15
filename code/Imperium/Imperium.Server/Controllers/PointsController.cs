@@ -1,3 +1,4 @@
+using Imperium.Common.Exceptions;
 using Imperium.Common.Points;
 using Imperium.Server.State;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,16 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
     public Point? Post(PointUpdateValueModel pointUpdate)
     {
         logger.LogDebug("{msg}", $"Updating point '{pointUpdate}'");
-        return new Point("a", PointType.Integer);
+
+        var pointState = services.GetRequiredService<IPointState>();
+
+        var updatedPoint = pointState.UpdatePointValue(pointUpdate.Id, pointUpdate.Value);
+
+        if(updatedPoint == null)
+        {
+            throw new NotFoundException($"A point with the ID '{pointUpdate.Id}' was not found.", nameof(PointUpdateValueModel.Id));
+        }
+
+        return updatedPoint;
     }
 }

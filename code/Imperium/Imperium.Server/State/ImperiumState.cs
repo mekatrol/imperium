@@ -1,7 +1,7 @@
 ﻿using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
+using Imperium.Common.Json;
 using Imperium.Common.Points;
-using System.Text.Json;
 
 namespace Imperium.Server.State;
 
@@ -267,7 +267,20 @@ internal class ImperiumState : IPointState
     }
 
     /// <inheritdoc/>
-    public bool UpdatePointValue(string deviceKey, string pointKey, object? value)
+    public Point? UpdatePointValue(Guid pointId, object? value)
+    {
+        var point = _points.Values.SingleOrDefault(p => p.Id == pointId);
+
+        if (point == null)
+        {
+            return null;
+        }
+
+        return UpdatePointValue(point, value);
+    }
+
+    /// <inheritdoc/>
+    public Point? UpdatePointValue(string deviceKey, string pointKey, object? value)
     {
         // Create the key used for points list
         var key = CreateDevicePointKey(deviceKey, pointKey);
@@ -275,35 +288,17 @@ internal class ImperiumState : IPointState
         // Try and get the point
         if (_points.TryGetValue(key, out var point))
         {
-            // Make sure types match
-            if (value != null)
-            {
-                var pointType = value.GetType().GetPointType();
-
-                if (pointType == null || pointType != point.PointType)
-                {
-                    throw new InvalidOperationException($"The point type is not compatible with the provided value type.");
-                }
-            }
-
-            // Update its value
-            point.Value = value;
-
-            // Set last updated
-            point.LastUpdated = DateTime.UtcNow;
-
-            // Return true to indicate that the point value was updated
-            return true;
+            return UpdatePointValue(point, value);
         }
 
-        // Return false to indicate that the point was not updated because it does not exist
-        return false;
+        // Return null to indicate that the point was not updated because it does not exist
+        return null;
     }
 
     /// <summary>
     /// Update a single point value, this is done in a thread safe way.
     /// </summary>
-    public bool UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value)
+    public Point? UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value)
     {
         return UpdatePointValue(deviceInstance.Key, point.Key, value);
     }
@@ -325,7 +320,7 @@ internal class ImperiumState : IPointState
         lock (point)
         {
             // Return a copy
-            return CopyPoint(point);
+            return point.SerializeCopy();
         }
     }
 
@@ -344,13 +339,35 @@ internal class ImperiumState : IPointState
             foreach (var point in points)
             {
                 // We serialize and deserialize to ensure we add a copy
-                deviceInstance.Points.Add(CopyPoint(point));
+                deviceInstance.Points.Add(point.SerializeCopy()!);
             }
         }
     }
 
-    private static Point CopyPoint(Point point)
+    private static Point UpdatePointValue(Point point, object? value)
     {
-        return JsonSerializer.Deserialize<Point>(JsonSerializer.Serialize(point))!;
+        // Make sure types match
+        if (value != null)
+        {
+            var pointType = value.GetType().GetPointType();
+
+            if (pointType == null || pointType != point.PointType)
+            {
+                // Calls from API clients may serialize as a string, so try to cast.
+                if (!point.PointType.TryCastValueFromString(ref value))
+                {
+                    throw new InvalidOperationException($"The point value '{value} cannot be converted to the point type '{point.PointType}'.");
+                }
+            }
+        }
+
+        // Update its value
+        point.Value = value;
+
+        // Set last updated
+        point.LastUpdated = DateTime.UtcNow;
+
+        // Return the updated point
+        return point;
     }
 }
