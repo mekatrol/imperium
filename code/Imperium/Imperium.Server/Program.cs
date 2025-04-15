@@ -56,6 +56,7 @@ public class Program
         var imperiumState = new ImperiumState
         {
             IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode,
+            MqttServer = imperiumStateConfig.MqttServer,
             MqttUser = imperiumStateConfig.MqttUser,
             MqttPassword = imperiumStateConfig.MqttPassword
         };

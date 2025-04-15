@@ -8,6 +8,8 @@ public class ImperiumStateOptions
 
     public IList<string> ApplicationUrls { get; set; } = [];
 
+    public string MqttServer { get; set; } = string.Empty;
+
     public string MqttUser { get; set; } = string.Empty;
 
     public string MqttPassword { get; set; } = string.Empty;

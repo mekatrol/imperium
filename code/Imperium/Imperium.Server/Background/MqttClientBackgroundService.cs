@@ -1,7 +1,6 @@
 ﻿
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
-using Imperium.Server.State;
 using MQTTnet;
 using System.Buffers;
 using System.Text;
@@ -23,7 +22,7 @@ public class MqttClientBackgroundService(
             using var mqttClient = mqttFactory.CreateMqttClient();
 
             var mqttClientOptions = new MqttClientOptionsBuilder()
-                .WithTcpServer("mqtt.lan")
+                .WithTcpServer(state.MqttServer)
                 .WithCredentials(state.MqttUser, state.MqttPassword)
                 .Build();
 

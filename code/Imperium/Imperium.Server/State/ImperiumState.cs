@@ -45,6 +45,8 @@ internal class ImperiumState : IPointState, IImperiumState
         }
     }
 
+    public string MqttServer { get; set; } = string.Empty;
+
     public string MqttUser { get; set; } = string.Empty;
 
     public string MqttPassword { get; set; } = string.Empty;
