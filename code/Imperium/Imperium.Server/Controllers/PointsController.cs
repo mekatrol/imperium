@@ -15,4 +15,11 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
         var state = services.GetRequiredService<ImperiumState>();
         return state.GetAllPoints();
     }
+
+    [HttpPost]
+    public Point? Post(PointUpdateValueModel pointUpdate)
+    {
+        logger.LogDebug("{msg}", $"Updating point '{pointUpdate}'");
+        return new Point("a", PointType.Integer);
+    }
 }

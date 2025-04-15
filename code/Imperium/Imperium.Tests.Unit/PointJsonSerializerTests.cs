@@ -76,8 +76,10 @@ public class PointJsonSerializerTests
     [TestMethod]
     public void TestEmptyKey()
     {
-        var point = new Point("", PointType.Integer);
+        var point = new Point("abc", PointType.Integer);
         var json = JsonSerializer.Serialize(point);
+
+        json = json.Replace("\"Key\":\"abc\",", "");
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -101,5 +103,54 @@ public class PointJsonSerializerTests
 
         Assert.AreEqual("da-key", deserialized.Key);
         Assert.AreEqual("Key='da-key',Value='',PointType='DoubleFloat'", deserialized.ToString());
+    }
+
+    [TestMethod]
+    public void TestMissingId()
+    {
+        var guid = Guid.NewGuid();
+        var point = new Point("k", PointType.Integer) { Id = guid };
+        var json = JsonSerializer.Serialize(point);
+
+        // Remove key
+        json = json.Replace($"\"Id\":\"{point.Id}\",", "");
+
+        var ex = Assert.ThrowsExactly<JsonException>(() =>
+        {
+            JsonSerializer.Deserialize<Point>(json);
+        });
+
+        Assert.AreEqual(PointJsonConverter.InvalidIdMessage, ex.Message);
+    }
+
+    [TestMethod]
+    public void TestEmptyId()
+    {
+        var guid = Guid.NewGuid();
+        var point = new Point("abc", PointType.Integer) { Id = guid };
+        var json = JsonSerializer.Serialize(point);
+
+        json = json.Replace($"{point.Id}", "");
+
+        var ex = Assert.ThrowsExactly<JsonException>(() =>
+        {
+            JsonSerializer.Deserialize<Point>(json);
+        });
+
+        Assert.AreEqual(PointJsonConverter.InvalidIdMessage, ex.Message);
+    }
+
+    [TestMethod]
+    public void TestEmptyGuidId()
+    {
+        var point = new Point("k", PointType.TimeOnly) {  Id = Guid.Empty };
+        var json = JsonSerializer.Serialize(point);
+
+        var ex = Assert.ThrowsExactly<JsonException>(() =>
+        {
+            JsonSerializer.Deserialize<Point>(json);
+        });
+
+        Assert.AreEqual(PointJsonConverter.InvalidIdMessage, ex.Message);
     }
 }

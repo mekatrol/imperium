@@ -8,11 +8,18 @@ public class PointJsonConverter : JsonConverter<Point>
 {
     public const string InvalidPointTypeMessage = $"Missing or invalid '{nameof(Point.PointType)}' during '{nameof(Point)}' deserialization.";
     public const string InvalidKeyMessage = $"'{nameof(Point.Key)}' is required and cannot be null, empty or whitespace.";
+    public const string InvalidIdMessage = $"'{nameof(Point.Id)}' is required and cannot be null, empty or whitespace and must not be a all zero GUID value.";
 
     public override Point? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var doc = JsonDocument.ParseValue(ref reader);
         var root = doc.RootElement;
+
+        if (!root.TryGetProperty(nameof(Point.Id), out var idProp) ||
+            !Guid.TryParse(idProp.GetString(), out var id) || id == Guid.Empty)
+        {
+            throw new JsonException(InvalidIdMessage);
+        }
 
         // We deserialize value based on point type
         if (!root.TryGetProperty(nameof(Point.PointType), out var pointTypeProp) ||
@@ -32,9 +39,15 @@ public class PointJsonConverter : JsonConverter<Point>
             throw new JsonException(InvalidKeyMessage);
         }
 
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new JsonException(InvalidKeyMessage);
+        }
+
         // Trim key any whitespace for safety
         var point = new Point(key.Trim(), pointType)
         {
+            Id = id,
             LastUpdated = root.TryGetProperty(nameof(Point.LastUpdated), out var lastUpdated) ? lastUpdated.GetDateTime() : null,
             FriendlyName = root.TryGetProperty(nameof(Point.FriendlyName), out var friendlyName) ? friendlyName.GetString() : null,
             DeviceKey = root.TryGetProperty(nameof(Point.DeviceKey), out var deviceKey) ? deviceKey.GetString() : null
@@ -104,6 +117,7 @@ public class PointJsonConverter : JsonConverter<Point>
     {
         writer.WriteStartObject();
 
+        writer.WriteString(nameof(Point.Id), point.Id.ToString());
         writer.WriteString(nameof(Point.Key), point.Key);
         writer.WriteString(nameof(Point.PointType), point.PointType.ToString());
 

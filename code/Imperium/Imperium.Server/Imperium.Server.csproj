@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Imperium.Common\Imperium.Common.csproj" />
+		<ProjectReference Include="..\Imperium.Services\Imperium.Services.csproj" />
 		<ProjectReference Include="..\Mekatrol.Devices\Mekatrol.Devices.csproj" />
 	</ItemGroup>
 
