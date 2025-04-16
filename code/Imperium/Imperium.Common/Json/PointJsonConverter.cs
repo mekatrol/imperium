@@ -102,6 +102,10 @@ public class PointJsonConverter : JsonConverter<Point>
                     value = TimeOnly.Parse(valueProp.GetString()!);
                     break;
 
+                case PointType.TimeSpan:
+                    value = TimeSpan.Parse(valueProp.GetString()!);
+                    break;
+
                 default:
                     value = JsonSerializer.Deserialize<object>(valueProp.GetRawText(), options);
                     break;
@@ -194,6 +198,17 @@ public class PointJsonConverter : JsonConverter<Point>
                     if (point.Value is TimeOnly timeOnly)
                     {
                         writer.WriteStringValue(timeOnly.ToString("HH:mm:ss"));
+                    }
+                    else
+                    {
+                        writer.WriteNullValue();
+                    }
+                    break;
+
+                case PointType.TimeSpan:
+                    if (point.Value is TimeSpan timeSpan)
+                    {
+                        writer.WriteStringValue(timeSpan.ToString("HH:mm:ss"));
                     }
                     else
                     {

@@ -188,6 +188,8 @@ public class Program
         AddHouseAlarmPoint(7, "Front door", state);
         AddHouseAlarmPoint(8, "Back door", state);
 
+        AddVirtualPoint("kitchen.light.timer", PointType.DateTime, "Litchen light timer", state);
+
         return state;
     }
 
@@ -201,5 +203,17 @@ public class Program
         };
 
         state.AddPoint("housealarm", point);
+    }
+
+    private static void AddVirtualPoint(string key, PointType type, string friendlyName, ImperiumState state)
+    {
+        // Get with default value
+        var point = new Point(key, type)
+        {
+            // Set friendly name
+            FriendlyName = friendlyName
+        };
+
+        state.AddPoint("virtual", point);
     }
 }

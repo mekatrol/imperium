@@ -9,5 +9,6 @@ public enum PointType
     String,
     DateTime,
     DateOnly,
-    TimeOnly
+    TimeOnly,
+    TimeSpan
 }

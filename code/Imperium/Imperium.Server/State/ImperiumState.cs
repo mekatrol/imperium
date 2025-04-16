@@ -267,14 +267,14 @@ internal class ImperiumState : IPointState, IImperiumState
     }
 
     /// <inheritdoc/>
-    public T? GetPointValue<T>(string deviceKey, string pointKey) where T : class
+    public T? GetPointValue<T>(string deviceKey, string pointKey)
     {
         // Get a copy of the point
         var point = GetPointCopy(deviceKey, pointKey);
 
         if (point == null)
         {
-            return null;
+            return default;
         }
 
         var expectedType = typeof(T).GetPointType();

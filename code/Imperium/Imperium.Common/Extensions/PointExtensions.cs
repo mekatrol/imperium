@@ -6,6 +6,8 @@ public static class PointExtensions
 {
     public static PointType? GetPointType(this Type type)
     {
+        type = Nullable.GetUnderlyingType(type) ?? type;
+
         if (type == typeof(int))
         {
             return PointType.Integer;
@@ -46,6 +48,11 @@ public static class PointExtensions
             return PointType.TimeOnly;
         }
 
+        if (type == typeof(TimeSpan))
+        {
+            return PointType.TimeSpan;
+        }
+
         return null;
     }
 
@@ -61,6 +68,7 @@ public static class PointExtensions
             case PointType.DateTime: return typeof(DateTime);
             case PointType.DateOnly: return typeof(DateOnly);
             case PointType.TimeOnly: return typeof(TimeOnly);
+            case PointType.TimeSpan: return typeof(TimeSpan);
             default: return null;
         }
     }
