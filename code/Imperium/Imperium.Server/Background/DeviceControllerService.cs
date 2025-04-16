@@ -5,7 +5,7 @@ using Imperium.Server.State;
 namespace Imperium.Server.Background;
 
 internal class DeviceControllerBackgroundService(
-    BackgroundServiceOptions backgroundServiceOptions,
+    DeviceControllerBackgroundServiceOptions backgroundServiceOptions,
     IServiceProvider serviceProvider,
     ILogger<DeviceControllerBackgroundService> logger)
     : BaseBackgroundService<DeviceControllerBackgroundService>(

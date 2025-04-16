@@ -37,9 +37,13 @@ public class Program
         builder.Services.AddSingleton(httpClientOptions);
 
         // Bind background service options        
-        var backgroundServiceOptions = new BackgroundServiceOptions();
-        builder.Configuration.Bind(BackgroundServiceOptions.SectionName, backgroundServiceOptions);
-        builder.Services.AddSingleton(backgroundServiceOptions);
+        var deviceControllerOptions = new DeviceControllerBackgroundServiceOptions();
+        builder.Configuration.Bind(DeviceControllerBackgroundServiceOptions.SectionName, deviceControllerOptions);
+        builder.Services.AddSingleton(deviceControllerOptions);
+
+        var flowExecutorControllerOptions = new FlowExecutorBackgroundServiceOptions();
+        builder.Configuration.Bind(FlowExecutorBackgroundServiceOptions.SectionName, flowExecutorControllerOptions);
+        builder.Services.AddSingleton(flowExecutorControllerOptions);
 
         var handler = new SocketsHttpHandler
         {

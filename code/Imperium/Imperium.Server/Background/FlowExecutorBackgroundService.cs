@@ -5,7 +5,7 @@ using Imperium.Server.Options;
 namespace Imperium.Server.Background;
 
 internal class FlowExecutorBackgroundService(
-    BackgroundServiceOptions backgroundServiceOptions,
+    FlowExecutorBackgroundServiceOptions backgroundServiceOptions,
     IServiceProvider serviceProvider,
     ILogger<FlowExecutorBackgroundService> logger)
     : BaseBackgroundService<FlowExecutorBackgroundService>(

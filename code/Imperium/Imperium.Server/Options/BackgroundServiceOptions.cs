@@ -1,9 +1,7 @@
 ﻿namespace Imperium.Server.Options;
 
-public class BackgroundServiceOptions
+public abstract class BackgroundServiceOptions
 {
-    public const string SectionName = "BackgroundServices";
-
     /// <summary>
     /// The maximum number of consecutive exceptions in the background service
     /// main service loop before it will just exit the service loop (and not run again till a restart).
@@ -21,4 +19,14 @@ public class BackgroundServiceOptions
     /// The number of milliseconds to sleep after each iteration of the loop
     /// </summary>
     public int LoopIterationSleep { get; set; } = 500;
+}
+
+public class DeviceControllerBackgroundServiceOptions : BackgroundServiceOptions
+{
+    public static string SectionName { get; } = "DeviceController";
+}
+
+public class FlowExecutorBackgroundServiceOptions : BackgroundServiceOptions
+{
+    public static string SectionName { get; } = "FlowExecutor";
 }
