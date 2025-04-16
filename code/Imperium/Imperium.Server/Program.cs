@@ -47,9 +47,18 @@ public class Program
 
         var handler = new SocketsHttpHandler
         {
-            PooledConnectionLifetime = httpClientOptions.ConnectionLifeTime
+            // ConnectTimeout: Timeout for the initial TCP connection.
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+
+            PooledConnectionLifetime = httpClientOptions.ConnectionLifeTime,
+
+            ResponseDrainTimeout = TimeSpan.FromSeconds(5)
         };
-        var client = new HttpClient(handler);
+        var client = new HttpClient(handler)
+        {
+            // HttpClient.Timeout: Overall timeout for the entire request (connect + send + receive).
+            Timeout = TimeSpan.FromSeconds(2)
+        };
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         builder.Services.AddSingleton(client);
 
