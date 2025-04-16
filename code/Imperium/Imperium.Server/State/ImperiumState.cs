@@ -340,8 +340,7 @@ internal class ImperiumState : IPointState, IImperiumState
         // (it is a ref value so this works as all callers will get the same instance)
         lock (point)
         {
-            // Return a copy
-            return point.SerializeCopy();
+            return point;
         }
     }
 
@@ -360,7 +359,7 @@ internal class ImperiumState : IPointState, IImperiumState
             foreach (var point in points)
             {
                 // We serialize and deserialize to ensure we add a copy
-                deviceInstance.Points.Add(point.SerializeCopy()!);
+                deviceInstance.Points.Add(point);
             }
         }
     }

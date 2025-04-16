@@ -33,7 +33,7 @@ internal class DeviceControllerBackgroundService(
             try
             {
                 Logger.LogDebug("{msg}", $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
-             
+
                 // Read all points for this device instance
                 await deviceController.Read(deviceInstance, stoppingToken);
             }
@@ -61,8 +61,22 @@ internal class DeviceControllerBackgroundService(
             {
                 try
                 {
-                    Logger.LogDebug("{msg}", $"Writing the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
-                    await deviceController.Write(deviceInstance, stoppingToken);
+                    var changedPoints = deviceInstance.Points
+                        .Where(p => p.HasChanged)
+                        .ToList();
+
+                    if (changedPoints.Count > 0)
+                    {
+                        Logger.LogDebug("{msg}", $"Writing the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
+                        await deviceController.Write(deviceInstance, stoppingToken);
+                    }
+
+                    // Clear all changed
+                    foreach (var point in changedPoints)
+                    {
+                        // TODO: this only updates the devic instance copy
+                        point.HasChanged = false;
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -9,6 +9,8 @@ public class Point
     // An object to use as sync lock for multithreaded access
     private readonly Lock _threadLock = new();
     private object? _value = null;
+    private object? _prevValue = null;
+    private bool _hasChanged = false;
 
     public Point()
     {
@@ -58,7 +60,43 @@ public class Point
         {
             lock (_threadLock)
             {
+                if (value?.ToString() == _value?.ToString())
+                {
+                    return;
+                }
+
+                _hasChanged = _prevValue != _value;
+                _prevValue = _value;
                 _value = value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The previous value when the point was last updated
+    /// </summary>
+    [JsonIgnore]
+    public object? PrevValue
+    {
+        get
+        {
+            lock (_threadLock)
+            {
+                return _prevValue;
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool HasChanged
+    {
+        get => _hasChanged;
+        set
+        {
+            lock (_threadLock)
+            {
+                _hasChanged = value;
+                _prevValue = value;
             }
         }
     }
