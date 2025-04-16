@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
-public class FourOutputController(HttpClient client, IPointState pointState, ILogger<FourOutputController> logger) : BaseOutputController(), IFourOutputController
+public class FourOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<FourOutputController> logger) : BaseOutputController(), IFourOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -29,6 +29,7 @@ public class FourOutputController(HttpClient client, IPointState pointState, ILo
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
         }
 
+        var client = clientFactory.CreateClient(nameof(HttpClient));
         var response = await client.GetAsync($"{config.Url}/outputs", stoppingToken);
 
         if (!response.IsSuccessStatusCode)
@@ -68,6 +69,7 @@ public class FourOutputController(HttpClient client, IPointState pointState, ILo
             Led = GetIntValue(nameof(FourOutputControllerModel.Led), deviceInstance, 0)
         };
 
+        var client = clientFactory.CreateClient(nameof(HttpClient));
         var response = await client.PostAsJsonUnchunked($"{config.Url}/outputs", model, _jsonOptions, stoppingToken);
 
         if (!response.IsSuccessStatusCode)

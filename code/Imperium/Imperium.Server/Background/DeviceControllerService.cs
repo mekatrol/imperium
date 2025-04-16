@@ -20,24 +20,44 @@ internal class DeviceControllerBackgroundService(
         var state = Services.GetRequiredService<ImperiumState>();
         var deviceInstances = state.GetEnabledDeviceInstances(true);
 
-        foreach (var deviceInstance in deviceInstances)
-        {
-            // Get controller used for this instance
-            var deviceController = state.GetDeviceController(deviceInstance.ControllerKey);
+        // Force an update every 5 secornds or so (just to cover cases where an update message was not successful, ie lost packets)
+        var forceUpdate = _nextForceUpdate < (DateTime.Now - TimeSpan.FromSeconds(5));
 
-            if (deviceController == null)
+        if (forceUpdate)
+        {
+            _nextForceUpdate = DateTime.Now;
+
+            var readTasks = new List<Task>();
+
+            // We only read devices every force update period
+            foreach (var deviceInstance in deviceInstances)
             {
-                // No controller found, log warning and continue
-                Logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
-                continue;
+                // Get controller used for this instance
+                var deviceController = state.GetDeviceController(deviceInstance.ControllerKey);
+
+                if (deviceController == null)
+                {
+                    // No controller found, log warning and continue
+                    Logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
+                    continue;
+                }
+
+                try
+                {
+                    Logger.LogDebug("{msg}", $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
+
+                    // Read all points for this device instance
+                    readTasks.Add(deviceController.Read(deviceInstance, stoppingToken));
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex);
+                }
             }
 
             try
             {
-                Logger.LogDebug("{msg}", $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
-
-                // Read all points for this device instance
-                await deviceController.Read(deviceInstance, stoppingToken);
+                await Task.WhenAll(readTasks);
             }
             catch (Exception ex)
             {
@@ -47,10 +67,7 @@ internal class DeviceControllerBackgroundService(
 
         var isReadOnlyMode = state.IsReadOnlyMode;
 
-        // Force an update every 5 secornds or so (just to cover cases where an update message was not successful, ie lost packets)
-        var forceWrite = _nextForceUpdate < (DateTime.Now - TimeSpan.FromSeconds(5));
-        _nextForceUpdate = DateTime.Now;
-
+        var writeTasks = new List<Task>();
         foreach (var deviceInstance in deviceInstances)
         {
             // Get controller used for this instance
@@ -71,10 +88,10 @@ internal class DeviceControllerBackgroundService(
                         .Where(p => p.HasChanged)
                         .ToList();
 
-                    if (changedPoints.Count > 0 || forceWrite)
+                    if (changedPoints.Count > 0 || forceUpdate)
                     {
                         Logger.LogDebug("{msg}", $"Writing the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
-                        await deviceController.Write(deviceInstance, stoppingToken);
+                        writeTasks.Add(deviceController.Write(deviceInstance, stoppingToken));
                     }
 
                     // Clear all changed
@@ -89,6 +106,15 @@ internal class DeviceControllerBackgroundService(
                     Logger.LogWarning(ex);
                 }
             }
+        }
+
+        try
+        {
+            await Task.WhenAll(writeTasks);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex);
         }
 
         return true;

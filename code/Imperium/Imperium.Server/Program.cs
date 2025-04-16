@@ -55,8 +55,15 @@ public class Program
         {
             Timeout = httpClientOptions.Timeout
         };
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
         builder.Services.AddSingleton(client);
+
+        builder.Services.AddHttpClient(nameof(HttpClient), client =>
+        {
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.Timeout = httpClientOptions.Timeout;
+
+        });
 
         var imperiumStateConfig = new ImperiumStateOptions();
         builder.Configuration.Bind(ImperiumStateOptions.SectionName, imperiumStateConfig);
@@ -123,17 +130,17 @@ public class Program
         var pointState = services.GetRequiredService<IPointState>();
 
         var sunriseSunsetController = new SunriseSunsetController(
-            services.GetRequiredService<HttpClient>(),
+            services.GetRequiredService<IHttpClientFactory>(),
             pointState,
             services.GetRequiredService<ILogger<SunriseSunsetController>>());
 
         var singleOutputBoardController = new SingleOutputController(
-            services.GetRequiredService<HttpClient>(),
+            services.GetRequiredService<IHttpClientFactory>(),
             pointState,
             services.GetRequiredService<ILogger<SingleOutputController>>());
 
         var fourOutputBoardController = new FourOutputController(
-            services.GetRequiredService<HttpClient>(),
+            services.GetRequiredService<IHttpClientFactory>(),
             pointState,
             services.GetRequiredService<ILogger<FourOutputController>>());
 

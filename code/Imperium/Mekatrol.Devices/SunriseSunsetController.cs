@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
-public class SunriseSunsetController(HttpClient client, IPointState pointState, ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
+public class SunriseSunsetController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
 {
     private DateOnly _lastReadApi = DateOnly.MinValue;
 
@@ -40,6 +40,7 @@ public class SunriseSunsetController(HttpClient client, IPointState pointState, 
                 return;
             }
 
+            var client = clientFactory.CreateClient(nameof(HttpClient));
             var response = await client.GetAsync(config.Url, stoppingToken);
 
             if (!response.IsSuccessStatusCode)
