@@ -43,7 +43,7 @@ internal class FlowExecutorBackgroundService(
 
         if ("EVT_UNSEALED" == alarmZone2Value)
         {
-            Logger.LogDebug("{Massage}", alarmZone2Value);
+            pointState.UpdatePointValue("device.kitchen.light", "Relay", 1);
         }
 
         /*****************************************************************************

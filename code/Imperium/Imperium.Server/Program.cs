@@ -167,10 +167,17 @@ public class Program
             new ControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
         carport.CreatePoint<int>("Relay4", "Fish Plant Pump");
 
+        var kitchen = new DeviceInstance<ControllerConfiguration>(
+            "device.kitchen.light",
+            nameof(ISingleOutputController),
+            new ControllerConfiguration { Url = "http://kitchen-cabinet-lights.home.wojcik.com.au" });
+        kitchen.CreatePoint<int>("Relay", "Kitchen Cabinet Light");
+
         state.AddDeviceAndPoints(sunriseSunset);
         state.AddDeviceAndPoints(alfrescoLight);
         state.AddDeviceAndPoints(kitchenView);
         state.AddDeviceAndPoints(carport);
+        state.AddDeviceAndPoints(kitchen);
 
         AddHouseAlarmPoint(1, "Lounge room", state);
         AddHouseAlarmPoint(2, "Dining room", state);
