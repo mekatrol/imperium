@@ -60,6 +60,8 @@ public class Point
         {
             lock (_threadLock)
             {
+                // We use to string because we store and object not a strong type
+                // and so the equals operator for native type does not work reliably
                 if (value?.ToString() == _value?.ToString())
                 {
                     return;
