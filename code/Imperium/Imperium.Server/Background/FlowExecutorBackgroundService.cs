@@ -48,7 +48,7 @@ internal class FlowExecutorBackgroundService(
             if (timer != null)
             {
                 // Set to expire in two minutes from now
-                pointState.UpdatePointValue("virtual", "kitchen.light.timer", DateTime.Now + new TimeSpan(0, 2, 0));
+                pointState.UpdatePointValue("virtual", "kitchen.light.timer", DateTime.Now + new TimeSpan(0, 5, 0));
             }
         }
         else if (timer != null)

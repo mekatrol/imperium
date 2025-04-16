@@ -13,6 +13,8 @@ internal class DeviceControllerBackgroundService(
         serviceProvider,
         logger)
 {
+    private DateTime _nextForceUpdate = DateTime.MinValue;
+
     protected override async Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
     {
         var state = Services.GetRequiredService<ImperiumState>();
@@ -45,6 +47,10 @@ internal class DeviceControllerBackgroundService(
 
         var isReadOnlyMode = state.IsReadOnlyMode;
 
+        // Force an update every 5 secornds or so (just to cover cases where an update message was not successful, ie lost packets)
+        var forceWrite = _nextForceUpdate < (DateTime.Now - TimeSpan.FromSeconds(5));
+        _nextForceUpdate = DateTime.Now;
+
         foreach (var deviceInstance in deviceInstances)
         {
             // Get controller used for this instance
@@ -65,7 +71,7 @@ internal class DeviceControllerBackgroundService(
                         .Where(p => p.HasChanged)
                         .ToList();
 
-                    if (changedPoints.Count > 0)
+                    if (changedPoints.Count > 0 || forceWrite)
                     {
                         Logger.LogDebug("{msg}", $"Writing the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
                         await deviceController.Write(deviceInstance, stoppingToken);

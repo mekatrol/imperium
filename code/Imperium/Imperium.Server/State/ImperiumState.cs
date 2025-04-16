@@ -384,9 +384,6 @@ internal class ImperiumState : IPointState, IImperiumState
         // Update its value
         point.Value = value;
 
-        // Set last updated
-        point.LastUpdated = DateTime.UtcNow;
-
         // Return the updated point
         return point;
     }

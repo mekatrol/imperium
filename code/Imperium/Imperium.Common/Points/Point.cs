@@ -1,4 +1,5 @@
 ﻿using Imperium.Common.Json;
+using System.Drawing;
 using System.Text.Json.Serialization;
 
 namespace Imperium.Common.Points;
@@ -70,6 +71,10 @@ public class Point
                 _hasChanged = _prevValue != _value;
                 _prevValue = _value;
                 _value = value;
+
+                // Set last updated
+                LastUpdated = DateTime.UtcNow;
+
             }
         }
     }
