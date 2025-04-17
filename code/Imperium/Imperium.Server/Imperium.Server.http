@@ -2,6 +2,8 @@
 @Imperium.AlfrescoLight = http://alfresco-light.lan
 @Imperium.OldAlfrescoPB = http://pbalfresco.home.wojcik.com.au
 @Imperium.CPPB = http://pbcarport.home.wojcik.com.au
+@Imperium.Irrigation = http://10.2.2.42
+@Imperium.GreenHousePump = http://10.2.2.88
 
 GET {{Imperium.Server_HostAddress}}/weatherforecast/
 Accept: application/json
@@ -52,6 +54,30 @@ Accept: application/json
   "relay3": 0,
   "relay4": 1,
   "usb": 0,
+  "btn": 0
+}
+### 
+
+  GET {{Imperium.Irrigation}}/outputs/1
+Accept: application/json
+
+### 
+
+POST {{Imperium.Irrigation}}/outputs/1
+Accept: application/json
+{"value": 0}
+### 
+
+  GET {{Imperium.GreenHousePump}}/outputs
+Accept: application/json
+
+### 
+
+POST {{Imperium.GreenHousePump}}/outputs
+Accept: application/json
+{
+  "relay": 0,
+  "led": 0,
   "btn": 0
 }
 ### 
