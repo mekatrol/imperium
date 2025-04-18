@@ -299,7 +299,7 @@ Accept: application/json
 POST {{Imperium.GreenHousePump}}/outputs
 Accept: application/json
 {
-  "relay": 1,
+  "relay": 0,
   "led": 0,
   "btn": 0
 }
