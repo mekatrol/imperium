@@ -1,0 +1,99 @@
+/*****************************************************************************
+ * Adapted from:
+ *  https://www.kevinpowell.co/article/css-remedy/
+ *  https://www.youtube.com/watch?v=2lyDv0wOQuQ
+ *  https://csswizardry.com/2023/09/the-ultimate-lqip-lcp-technique/
+ *****************************************************************************/
+
+* {
+  box-sizing: border-box; /* Switch to border-box for box-sizing. */
+
+  margin: 0;
+  padding: 0;
+  font: inherit;
+}
+
+html,
+body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+html {
+  color-scheme: dark light;
+}
+
+body {
+  margin: 0; /* Remove the tiny space around the edge of the page */
+  font-family: system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+main,
+header,
+footer,
+div {
+  position: relative;
+}
+
+img,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block; /* Switch display mode to block, since that's what we usually want for images. */
+
+  /* If you override, and make an image inline, it's likely you'll want middle vertical alignment. */
+  &:not([style*='display: block']) {
+    vertical-align: middle;
+  }
+
+  max-width: 100%; /* Limit image to width of container */
+  height: auto; /* Maintain aspect ratio for max-width */
+  font-style: italic; /* Will display alt text as italic for broken image links or large images taking time to load */
+
+  /*
+    For when an image is floated, see: https://www.youtube.com/watch?v=345V2MU3E_w @ 9:33
+
+    shape-outside: circle(50% at 0 0);
+  */
+  shape-margin: 0.5rem;
+
+  /*
+    For large images we can create a lazy load experience by adding a low-res image
+    eg: style='background-image: url(imag-lowres.png)'
+    In this case the low res image will load quickly as a background image and the hih res image will overlay
+    background once loaded.
+
+    *** also make sure images have the width and height attribute set!
+
+    Also worth preloading low res images, eg in HTML head (see https://www.youtube.com/watch?v=345V2MU3E_w @ 8:27)
+    <link rel=preload as=image href='imag-lowres.png' fetchpriority=high>
+
+    see: https://csswizardry.com/2023/09/the-ultimate-lqip-lcp-technique/
+  */
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+input[type='text'] {
+  border: 2px solid hsl(0, 0%, 42%);
+  border-radius: 0.25rem;
+}
+
+/* App content should force footer to bottom of page */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  & > .main-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto; /* Prevent Chrome, Opera, and Safari from letting these items shrink to smaller than their content's default minimum size. */
+    align-items: stretch;
+  }
+}

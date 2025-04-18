@@ -98,6 +98,9 @@ public class Program
 
         app.UseExceptionMiddleware();
 
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseSwagger();
         app.UseSwaggerUI(options =>
         {

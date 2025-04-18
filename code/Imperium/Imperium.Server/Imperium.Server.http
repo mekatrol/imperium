@@ -58,14 +58,237 @@ Accept: application/json
 }
 ### 
 
+// IRRIGATION - Main
+
   GET {{Imperium.Irrigation}}/outputs/1
 Accept: application/json
 
 ### 
 
+// IRRIGATION - Main
+
 POST {{Imperium.Irrigation}}/outputs/1
 Accept: application/json
 {"value": 0}
+### 
+
+// IRRIGATION - Front Lawn House Side
+
+  GET {{Imperium.Irrigation}}/outputs/2
+Accept: application/json
+
+### 
+
+// IRRIGATION - Front Lawn House Side
+
+POST {{Imperium.Irrigation}}/outputs/2
+Accept: application/json
+{"value": 0}
+
+### 
+
+// IRRIGATION - Front Lawn BBQ Side
+
+  GET {{Imperium.Irrigation}}/outputs/3
+Accept: application/json
+
+### 
+
+// IRRIGATION - Front Lawn BBQ Side
+
+POST {{Imperium.Irrigation}}/outputs/3
+Accept: application/json
+{"value": 0}
+
+### 
+
+// IRRIGATION - Front Garden Bed
+
+  GET {{Imperium.Irrigation}}/outputs/4
+Accept: application/json
+
+### 
+
+// IRRIGATION - Front Garden Bed
+
+POST {{Imperium.Irrigation}}/outputs/4
+Accept: application/json
+{"value": 0}
+### 
+
+// IRRIGATION - Kitchen View Garden
+
+  GET {{Imperium.Irrigation}}/outputs/5
+Accept: application/json
+
+### 
+
+// IRRIGATION - Kitchen View Garden
+
+POST {{Imperium.Irrigation}}/outputs/5
+Accept: application/json
+{"value": 0}
+
+### 
+// IRRIGATION - BBQ Area
+
+  GET {{Imperium.Irrigation}}/outputs/6
+Accept: application/json
+
+### 
+
+// IRRIGATION - BBQ Area
+
+POST {{Imperium.Irrigation}}/outputs/6
+Accept: application/json
+{"value": 0}
+
+### 
+// IRRIGATION - Pumpkin Patch
+
+  GET {{Imperium.Irrigation}}/outputs/7
+Accept: application/json
+
+### 
+
+// IRRIGATION - Pumpkin Patch
+
+POST {{Imperium.Irrigation}}/outputs/7
+Accept: application/json
+{"value": 0}
+
+### 
+// IRRIGATION - Back Side Garden
+
+  GET {{Imperium.Irrigation}}/outputs/8
+Accept: application/json
+
+### 
+
+// IRRIGATION - Back Side Garden
+
+POST {{Imperium.Irrigation}}/outputs/8
+Accept: application/json
+{"value": 0}
+
+### 
+// IRRIGATION - Greenhouse Mister
+
+  GET {{Imperium.Irrigation}}/outputs/9
+Accept: application/json
+
+### 
+
+// IRRIGATION - Greenhouse Mister
+
+POST {{Imperium.Irrigation}}/outputs/9
+Accept: application/json
+{"value": 0}
+
+### 
+// IRRIGATION - Greenhouse Garden
+
+  GET {{Imperium.Irrigation}}/outputs/10
+Accept: application/json
+
+### 
+
+// IRRIGATION - Greenhouse Garden
+
+POST {{Imperium.Irrigation}}/outputs/10
+Accept: application/json
+{"value": 0}
+
+### 
+
+// IRRIGATION - Greenhouse Garden
+
+  GET {{Imperium.Irrigation}}/outputs/11
+Accept: application/json
+
+### 
+
+// IRRIGATION - Greenhouse Garden
+
+POST {{Imperium.Irrigation}}/outputs/11
+Accept: application/json
+{"value": 0}
+
+### 
+
+// IRRIGATION - Spare 1
+
+  GET {{Imperium.Irrigation}}/outputs/12
+Accept: application/json
+
+### 
+
+// IRRIGATION - Spare 1
+
+POST {{Imperium.Irrigation}}/outputs/12
+Accept: application/json
+{"value": 0}
+
+### 
+
+// IRRIGATION - Spare 2
+
+  GET {{Imperium.Irrigation}}/outputs/13
+Accept: application/json
+
+### 
+
+// IRRIGATION - Spare 2
+
+POST {{Imperium.Irrigation}}/outputs/13
+Accept: application/json
+{"value": 0}
+
+### 
+
+// IRRIGATION - Spare 3
+
+  GET {{Imperium.Irrigation}}/outputs/14
+Accept: application/json
+
+### 
+
+// IRRIGATION - Spare 3
+
+POST {{Imperium.Irrigation}}/outputs/14
+Accept: application/json
+{"value": 0}
+
+###
+
+// IRRIGATION - Spare 4
+
+  GET {{Imperium.Irrigation}}/outputs/15
+Accept: application/json
+
+### 
+
+// IRRIGATION - Spare 4
+
+POST {{Imperium.Irrigation}}/outputs/15
+Accept: application/json
+{"value": 0}
+
+### 
+
+// IRRIGATION - Spare 5
+
+  GET {{Imperium.Irrigation}}/outputs/16
+Accept: application/json
+
+### 
+
+// IRRIGATION - Spare 5
+
+POST {{Imperium.Irrigation}}/outputs/16
+Accept: application/json
+{"value": 0}
+
 ### 
 
   GET {{Imperium.GreenHousePump}}/outputs
@@ -76,7 +299,7 @@ Accept: application/json
 POST {{Imperium.GreenHousePump}}/outputs
 Accept: application/json
 {
-  "relay": 0,
+  "relay": 1,
   "led": 0,
   "btn": 0
 }

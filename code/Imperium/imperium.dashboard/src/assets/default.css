@@ -1,0 +1,32 @@
+:root {
+  --clr-information: rgb(33, 150, 243);
+  --clr-success: hsl(143, 100%, 26%);
+  --clr-warning: hsl(43, 100%, 66%);
+  --clr-error: hsl(348, 55%, 49%);
+}
+
+.wrapper {
+  width: min(900px, 100% - 3rem);
+  margin-inline: auto;
+}
+
+.btn {
+  padding-inline: 0.5rem;
+  padding-block: 0.2rem;
+  cursor: pointer;
+}
+
+.btn.icon {
+  padding-inline: 0.5rem;
+  padding-block: 0.2rem;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+
+  gap: 0.3rem;
+
+  font-weight: 500;
+  font-size: 1rem;
+}
