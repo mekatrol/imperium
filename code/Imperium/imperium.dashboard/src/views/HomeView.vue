@@ -43,8 +43,7 @@ updateDateTime();
   max-width: 800px;
   min-height: 480px;
   max-height: 480px;
-  outline: 1px solid greenyellow;
-  outline-offset: -1px;
+  background-color: #000;
 }
 
 .time-card {

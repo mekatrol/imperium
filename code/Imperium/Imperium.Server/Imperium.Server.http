@@ -201,14 +201,14 @@ Accept: application/json
 
 ### 
 
-// IRRIGATION - Greenhouse Garden
+// IRRIGATION - Back Lawn
 
   GET {{Imperium.Irrigation}}/outputs/11
 Accept: application/json
 
 ### 
 
-// IRRIGATION - Greenhouse Garden
+// IRRIGATION - Back Lawn
 
 POST {{Imperium.Irrigation}}/outputs/11
 Accept: application/json
@@ -304,3 +304,18 @@ Accept: application/json
   "btn": 0
 }
 ### 
+ GET http://clothesline-lights.home.wojcik.com.au/outputs
+Accept: application/json
+
+
+###
+
+POST http://clothesline-lights.home.wojcik.com.au/outputs
+Accept: application/json
+{
+  "relay": 0,
+  "led": 0,
+  "btn": 0
+}
+
+###
