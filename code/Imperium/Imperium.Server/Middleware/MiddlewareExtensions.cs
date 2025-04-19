@@ -20,7 +20,7 @@ public static class MiddlewareExtensions
 
                 // Replace api base URL
                 var apiBaseUrl = $"{context.Request.Scheme}://{context.Request.Host.Host}:{context.Request.Host.Port}/api";
-                indexHtmlContent = indexHtmlContent.Replace("https://localhost:7138", apiBaseUrl);
+                indexHtmlContent = indexHtmlContent.Replace("https://localhost:7138/api", apiBaseUrl);
 
                 // Send the updated file
                 await context.Response.WriteAsync(indexHtmlContent);
