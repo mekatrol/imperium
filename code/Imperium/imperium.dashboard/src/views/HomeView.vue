@@ -111,6 +111,7 @@ updateDateTime();
   min-height: 480px;
   max-height: 480px;
   background-color: var(--clr-dashboard-background);
+  overflow: hidden;
 }
 
 .time-card {
