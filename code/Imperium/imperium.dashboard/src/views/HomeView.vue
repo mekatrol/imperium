@@ -28,6 +28,7 @@ import { useAppStore } from '@/stores/app-store';
 import type { CountdownPoint, Point } from '@/models/point';
 import DashboardCell from '@/components/DashboardCell.vue';
 import CountdownSwitch from '@/components/CountdownSwitch.vue';
+import { showErrorMessage } from '@/services/message';
 
 interface GridCellProps {
   id: number;
@@ -56,6 +57,7 @@ const alfrescoLightPoint = ref<Point | undefined>();
 const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
 const whiteStringLightsPoint = ref<Point | undefined>();
 const aquaponicsPumpsPoint = ref<Point | undefined>();
+const serverIsOffline = ref(false);
 
 const updateCells = (): void => {
   let id = 0;
@@ -154,11 +156,18 @@ useIntervalTimer(async () => {
 
     updatePoints();
     updateCells();
+
+    serverIsOffline.value = false;
   }
   catch {
     allPoints.value = [];
     updatePoints();
     updateCells();
+
+    if (!serverIsOffline.value) {
+      serverIsOffline.value = true;
+      showErrorMessage('The server is offline');
+    }
   }
 
   // Keep timer running
