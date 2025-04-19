@@ -24,10 +24,10 @@
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
 import { ref, shallowRef, type Component, type Ref } from 'vue';
-
-import DashboardCell from '@/components/DashboardCell.vue';
 import { useAppStore } from '@/stores/app-store';
-import type { Point } from '@/models/point';
+import type { CountdownPoint, Point } from '@/models/point';
+import DashboardCell from '@/components/DashboardCell.vue';
+import CountdownSwitch from '@/components/CountdownSwitch.vue';
 
 interface GridCellProps {
   id: number;
@@ -53,7 +53,7 @@ const sunsetPoint = ref<Point | undefined>();
 const sunrisePoint = ref<Point | undefined>();
 const clotheslinePoint = ref<Point | undefined>();
 const alfrescoLightPoint = ref<Point | undefined>();
-const kitchenCabinetLightsPoint = ref<Point | undefined>();
+const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
 const whiteStringLightsPoint = ref<Point | undefined>();
 
 const updateCells = (): void => {
@@ -64,7 +64,7 @@ const updateCells = (): void => {
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'BBQ Colour', icon: 'light' } });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
+  gridCells.value.push({ component: CountdownSwitch, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
 
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'two_row' } });
@@ -89,30 +89,75 @@ const updatePoint = (deviceKey: string, pointKey: string, point: Ref<Point | und
   }
 };
 
+const updateCountdownPoint = (
+  valueDeviceKey: string, valuePointKey: string,
+  countdownDeviceKey: string, countdownPointKey: string,
+  point: Ref<CountdownPoint | undefined>): void => {
+
+  const valuePoints = allPoints.value.filter(p => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
+  const countdownPoints = allPoints.value.filter(p => p.key === countdownPointKey);
+
+  let valuePoint: Point | undefined = undefined;
+  let countdownPoint: Point | undefined = undefined;
+
+  if (valuePoints.length === 1) {
+    valuePoint = valuePoints[0];
+  } else {
+    point.value = undefined;
+  }
+
+  if (countdownPoints.length === 1) {
+    countdownPoint = countdownPoints[0];
+  } else {
+    point.value = undefined;
+  }
+
+  if (!valuePoint || !countdownPoint) {
+    point.value = undefined;
+    return;
+  }
+
+  point.value = {
+    valuePoint: valuePoint,
+    countdownPoint: countdownPoint
+  };
+};
+
+const updatePoints = (): void => {
+  updatePoint('device.clothesline', 'Relay', clotheslinePoint);
+  updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
+  updateCountdownPoint('device.kitchen.light', 'Relay', '', 'kitchen.light.timer', kitchenCabinetLightsPoint);
+  updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
+};
+
 useIntervalTimer(async () => {
   // Update the date and time
   updateDateTime();
 
-  // Update points
-  const points = await appStore.getPoints(() => { return true; }, false);
-  allPoints.value = points;
+  try {
+    // Update points
+    const points = await appStore.getPoints(() => { return true; }, false);
 
-  const sunrise = points.filter(p => p.key === 'Sunrise');
-  if (sunrise.length === 1) {
-    sunrisePoint.value = sunrise[0];
+    allPoints.value = points;
+
+    const sunrise = points.filter(p => p.key === 'Sunrise');
+    if (sunrise.length === 1) {
+      sunrisePoint.value = sunrise[0];
+    }
+
+    const sunset = points.filter(p => p.key === 'Sunset');
+    if (sunset.length === 1) {
+      sunsetPoint.value = sunset[0];
+    }
+
+    updatePoints();
+    updateCells();
   }
-
-  const sunset = points.filter(p => p.key === 'Sunset');
-  if (sunset.length === 1) {
-    sunsetPoint.value = sunset[0];
+  catch {
+    allPoints.value = [];
+    updatePoints();
+    updateCells();
   }
-
-  updatePoint('device.clothesline', 'Relay', clotheslinePoint);
-  updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
-  updatePoint('device.kitchen.light', 'Relay', kitchenCabinetLightsPoint);
-  updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
-
-  updateCells();
 
   // Keep timer running
   return true;

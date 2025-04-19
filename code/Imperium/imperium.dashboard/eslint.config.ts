@@ -29,7 +29,7 @@ export default defineConfigWithVueTs(
     rules: {
       'prefer-promise-reject-errors': 'error',
 
-      'max-len': ['error', 150],
+      'max-len': ['error', 200],
 
       // An error not to use single quotes
       quotes: [
@@ -68,10 +68,7 @@ export default defineConfigWithVueTs(
         }
       ],
 
-      'no-console':
-        process.env.NODE_ENV === 'production'
-          ? ['error', { allow: ['info', 'warn', 'error'] }]
-          : ['warn', { allow: ['log', 'info', 'warn', 'error'] }],
+      'no-console': process.env.NODE_ENV === 'production' ? ['error', { allow: ['info', 'warn', 'error'] }] : ['warn', { allow: ['log', 'info', 'warn', 'error'] }],
 
       // The core 'no-unused-vars' rules (in the eslint:recommended rule set)
       // does not work with type definitions

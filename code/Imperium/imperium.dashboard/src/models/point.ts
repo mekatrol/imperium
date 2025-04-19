@@ -26,3 +26,8 @@ export interface Point {
   pointState: PointState | undefined;
   readonly: boolean;
 }
+
+export interface CountdownPoint {
+  valuePoint: Point;
+  countdownPoint: Point;
+}

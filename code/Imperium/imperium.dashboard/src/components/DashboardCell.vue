@@ -1,5 +1,5 @@
 <template>
-  <div :class="`dashboard-cell ${cssClass} ${getCssClass()}`">
+  <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
     <span v-if="icon" class="material-symbols-outlined">{{ icon }}</span>
     <p>{{ label }}</p>
   </div>
@@ -21,11 +21,9 @@ const model = defineModel<Ref<Point>>();
 defineProps<Props>();
 
 const getCssClass = (): string => {
-  if (!model.value?.value) {
+  if (model.value?.value === undefined) {
     return 'state-offline';
   }
-
-  console.log(model.value.value.value);
 
   return model.value.value.value === 1 ? 'state-on' : 'state-off';
 };
