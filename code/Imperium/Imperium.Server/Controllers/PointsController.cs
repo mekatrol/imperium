@@ -26,7 +26,7 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
 
         var updatedPoint = pointState.UpdatePointValue(pointUpdate.Id, pointUpdate.Value);
 
-        if(updatedPoint == null)
+        if (updatedPoint == null)
         {
             throw new NotFoundException($"A point with the ID '{pointUpdate.Id}' was not found.", nameof(PointUpdateValueModel.Id));
         }

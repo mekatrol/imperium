@@ -1,4 +1,5 @@
 using Imperium.Common.Devices;
+using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Server.Background;
 using Imperium.Server.Middleware;
@@ -7,12 +8,15 @@ using Imperium.Server.State;
 using Mekatrol.Devices;
 using Serilog;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Imperium.Server;
 
 public class Program
 {
+    private const string AppCorsPolicy = nameof(AppCorsPolicy);
+
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +26,25 @@ public class Program
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.WriteIndented = true;
+        });
+
+        // Bind origins options
+        var originsOptions = new OriginsOptions();
+        builder.Configuration.Bind(OriginsOptions.SectionName, originsOptions);
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(name: AppCorsPolicy,
+                policy =>
+                {
+                    policy.WithOrigins([.. originsOptions]);
+                    policy.AllowAnyMethod();
+                    policy.AllowAnyHeader();
+                });
         });
 
         builder.Services.AddEndpointsApiExplorer();
@@ -95,6 +118,8 @@ public class Program
         var app = builder.Build();
 
         InitialiseImperiumState(app.Services);
+
+        app.UseCors(AppCorsPolicy);
 
         app.UseExceptionMiddleware();
 
@@ -207,7 +232,7 @@ public class Program
         AddHouseAlarmPoint(7, "Front door", state);
         AddHouseAlarmPoint(8, "Back door", state);
 
-        AddVirtualPoint("kitchen.light.timer", PointType.DateTime, "Litchen light timer", state);
+        AddVirtualPoint("kitchen.light.timer", PointType.DateTime, "Kitchen light timer", state);
 
         return state;
     }

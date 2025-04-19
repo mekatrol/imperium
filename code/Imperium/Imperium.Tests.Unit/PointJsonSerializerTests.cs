@@ -14,7 +14,7 @@ public class PointJsonSerializerTests
         var json = JsonSerializer.Serialize(point);
 
         // Remove point type
-        json = json.Replace(",\"PointType\":\"Integer\"", "");
+        json = json.Replace(",\"PointType\":\"Integer\"", "", StringComparison.OrdinalIgnoreCase);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -30,7 +30,7 @@ public class PointJsonSerializerTests
         var point = new Point("k", PointType.Integer);
         var json = JsonSerializer.Serialize(point);
 
-        json = json.Replace(",\"PointType\":\"Integer\"", ",\"PointType\":\"\"");
+        json = json.Replace(",\"PointType\":\"Integer\"", ",\"PointType\":\"\"", StringComparison.OrdinalIgnoreCase);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -46,7 +46,7 @@ public class PointJsonSerializerTests
         var point = new Point("k", PointType.Integer);
         var json = JsonSerializer.Serialize(point);
 
-        json = json.Replace(",\"PointType\":\"Integer\"", ",\"PointType\":\"NotAType\"");
+        json = json.Replace(",\"PointType\":\"Integer\"", ",\"PointType\":\"NotAType\"", StringComparison.OrdinalIgnoreCase);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -63,7 +63,7 @@ public class PointJsonSerializerTests
         var json = JsonSerializer.Serialize(point);
 
         // Remove key
-        json = json.Replace("\"Key\":\"k\",", "");
+        json = json.Replace("\"Key\":\"k\",", "", StringComparison.OrdinalIgnoreCase);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -79,7 +79,7 @@ public class PointJsonSerializerTests
         var point = new Point("abc", PointType.Integer);
         var json = JsonSerializer.Serialize(point);
 
-        json = json.Replace("\"Key\":\"abc\",", "");
+        json = json.Replace("\"Key\":\"abc\",", "", StringComparison.OrdinalIgnoreCase);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -95,7 +95,7 @@ public class PointJsonSerializerTests
         var point = new Point("k", PointType.DoubleFloat);
         var json = JsonSerializer.Serialize(point);
 
-        json = json.Replace("\"Key\":\"k\",", "\"Key\":\"  da-key  \",");
+        json = json.Replace("\"Key\":\"k\",", "\"key\":\"  da-key  \",", StringComparison.OrdinalIgnoreCase);
 
         var deserialized = JsonSerializer.Deserialize<Point>(json);
 
@@ -113,7 +113,7 @@ public class PointJsonSerializerTests
         var json = JsonSerializer.Serialize(point);
 
         // Remove key
-        json = json.Replace($"\"Id\":\"{point.Id}\",", "");
+        json = json.Replace($"\"Id\":\"{point.Id}\",", "", StringComparison.OrdinalIgnoreCase);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -130,7 +130,7 @@ public class PointJsonSerializerTests
         var point = new Point("abc", PointType.Integer) { Id = guid };
         var json = JsonSerializer.Serialize(point);
 
-        json = json.Replace($"{point.Id}", "");
+        json = json.Replace($"{point.Id}", "", StringComparison.OrdinalIgnoreCase);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>
         {
@@ -143,7 +143,7 @@ public class PointJsonSerializerTests
     [TestMethod]
     public void TestEmptyGuidId()
     {
-        var point = new Point("k", PointType.TimeOnly) {  Id = Guid.Empty };
+        var point = new Point("k", PointType.TimeOnly) { Id = Guid.Empty };
         var json = JsonSerializer.Serialize(point);
 
         var ex = Assert.ThrowsExactly<JsonException>(() =>

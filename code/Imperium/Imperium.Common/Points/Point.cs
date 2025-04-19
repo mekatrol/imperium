@@ -1,5 +1,4 @@
 ﻿using Imperium.Common.Json;
-using System.Drawing;
 using System.Text.Json.Serialization;
 
 namespace Imperium.Common.Points;
@@ -15,10 +14,10 @@ public class Point
 
     public Point()
     {
-        // Empty constructor for serialization
+        Id = Guid.NewGuid();
     }
 
-    public Point(string key, PointType pointType)
+    public Point(string key, PointType pointType) : this()
     {
         if (string.IsNullOrEmpty(key))
         {
@@ -43,6 +42,11 @@ public class Point
     /// The point value type. 
     /// </summary>
     public PointType PointType { get; set; }
+
+    /// <summary>
+    /// The point current state. 
+    /// </summary>
+    public PointState? PointState { get; set; }
 
     /// <summary>
     /// The current value of the point.
@@ -75,6 +79,9 @@ public class Point
                 // Set last updated
                 LastUpdated = DateTime.UtcNow;
 
+                // Updating its value means that it is online
+                PointState = Points.PointState.Online;
+
             }
         }
     }
@@ -93,6 +100,11 @@ public class Point
             }
         }
     }
+
+    /// <summary>
+    /// If true the point cannot be changed (any calls to update via API will fail)
+    /// </summary>
+    public bool IsReadOnly { get; set; }
 
     [JsonIgnore]
     public bool HasChanged

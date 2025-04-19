@@ -1,5 +1,5 @@
 <template>
-  <div :class="`dashboard-cell ${cssClass}`">
+  <div :class="`dashboard-cell ${cssClass} ${getCssClass()}`">
     <span v-if="icon" class="material-symbols-outlined">{{ icon }}</span>
     <p>{{ label }}</p>
   </div>
@@ -11,18 +11,45 @@ interface Props {
   label: string;
   icon?: string;
   cssClass?: string;
+  state?: string | undefined;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const getCssClass = (): string => {
+  return props.state === 'on' ? 'state-on' : props.state === 'off' ? 'state-off' : 'state-offline';
+};
 </script>
 
-<style lang="css" scoped>
+<style lang="css">
+:root {
+  --clr-state-offline: #7e4001;
+  --clr-state-off: #838282;
+  --clr-state-on: #01a301;
+}
+
 .dashboard-cell {
   display: flex;
   flex-direction: row;
   align-content: center;
   justify-content: center;
   width: 100%;
+  outline-offset: -1px;
+}
+
+.dashboard-cell.state-offline {
+  color: var(--clr-state-offline);
+  outline: 1px solid var(--clr-state-offline);
+}
+
+.dashboard-cell.state-off {
+  color: var(--clr-state-off);
+  outline: 1px solid var(--clr-state-off);
+}
+
+.dashboard-cell.state-on {
+  color: var(--clr-state-on);
+  outline: 1px solid var(--clr-state-on);
 }
 
 .dashboard-cell>span {

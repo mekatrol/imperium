@@ -1,6 +1,5 @@
 ﻿using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
-using Imperium.Common.Json;
 using Imperium.Common.Points;
 
 namespace Imperium.Server.State;
@@ -61,7 +60,7 @@ internal class ImperiumState : IPointState, IImperiumState
         var pointKey = CreateDevicePointKey(deviceKey, point.Key);
 
         lock (_threadLock)
-        { 
+        {
             _points.Add(pointKey, point);
         }
     }

@@ -178,14 +178,22 @@ const displayErrorMessage = (error: ApiError, method: string): void => {
   throw error;
 };
 
-export const httpGet = async <T>(url: string, errorHandlerCallback?: HandleErrorCallback, retrying?: boolean): Promise<T> => {
+export const httpGet = async <T>(
+  url: string,
+  errorHandlerCallback?: HandleErrorCallback,
+  retrying?: boolean,
+  showBusy: boolean = true
+): Promise<T> => {
   const config = {
     ...defaultConfig
   };
 
   // Flag we are waiting
   const appStore = useAppStore();
-  appStore.incrementBusy();
+
+  if (showBusy) {
+    appStore.incrementBusy();
+  }
 
   try {
     const response = await axiosApi.get(url, config);
@@ -195,7 +203,9 @@ export const httpGet = async <T>(url: string, errorHandlerCallback?: HandleError
 
     throw apiError;
   } finally {
-    appStore.decrementBusy();
+    if (showBusy) {
+      appStore.decrementBusy();
+    }
   }
 };
 

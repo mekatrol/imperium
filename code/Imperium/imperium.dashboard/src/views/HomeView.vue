@@ -2,7 +2,12 @@
   <main class="home">
     <div class="time-card">
       <p class="time">{{ timeDisplay }}</p>
-      <p class="date">{{ dateDisplay }}</p>
+      <div style="display: flex; flex-direction: row; gap: 30px">
+        <p class="sunrise" v-if="sunrisePoint">Sunrise: {{ getTimeWithMeridiem(new Date(sunrisePoint.value!), false) }}
+        </p>
+        <p class="date">{{ dateDisplay }}</p>
+        <p class="sunset" v-if="sunsetPoint">Sunset: {{ getTimeWithMeridiem(new Date(sunsetPoint.value!), false) }}</p>
+      </div>
     </div>
     <div class="dashboard">
       <component v-for="cell in gridCells" :key="cell.props.id" :is="cell.component" v-bind="{ ...cell.props }"
@@ -14,16 +19,18 @@
 <script setup lang="ts">
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
-import { ref, type Component } from 'vue';
+import { ref, shallowRef, type Component } from 'vue';
 
 import DashboardCell from '@/components/DashboardCell.vue';
+import { useAppStore } from '@/stores/app-store';
+import type { Point } from '@/models/point';
 
 interface GridCellProps {
   id: number;
   label: string;
   icon?: string;
   cssClass?: string;
-
+  state?: string | undefined;
 }
 
 interface GridCell {
@@ -32,11 +39,16 @@ interface GridCell {
   model?: unknown;
 }
 
-const gridCells = ref<GridCell[]>([]);
+const appStore = useAppStore();
+
+const gridCells = shallowRef<GridCell[]>([]);
+const allPoints = ref<Point[]>([]);
+const sunsetPoint = ref<Point | undefined>();
+const sunrisePoint = ref<Point | undefined>();
 
 let id = 0;
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' } });
 gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' } });
 gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' } });
 gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'BBQ Colour', icon: 'light' } });
@@ -58,7 +70,22 @@ const updateDateTime = (): void => {
 };
 
 useIntervalTimer(async () => {
+  // Update the date and time
   updateDateTime();
+
+  // Update points
+  const points = await appStore.getPoints(() => { return true; }, false);
+  allPoints.value = points;
+
+  const sunrise = points.filter(p => p.key === 'Sunrise');
+  if (sunrise.length === 1) {
+    sunrisePoint.value = sunrise[0];
+  }
+
+  const sunset = points.filter(p => p.key === 'Sunset');
+  if (sunset.length === 1) {
+    sunsetPoint.value = sunset[0];
+  }
 
   // Keep timer running
   return true;
@@ -72,6 +99,8 @@ updateDateTime();
 :root {
   --clr-time: #ff0000;
   --clr-date: #55ff88;
+  --clr-sunrise: #f1e20f;
+  --clr-sunset: #f7621e;
   --clr-dashboard-background: #222;
   --clr-grid-cell-outline: #ccc;
 }
@@ -108,8 +137,18 @@ updateDateTime();
   }
 
   .date {
-    font-size: 1rem;
+    font-size: 1.3rem;
     color: var(--clr-date);
+  }
+
+  .sunrise {
+    font-size: 1.3rem;
+    color: var(--clr-sunrise);
+  }
+
+  .sunset {
+    font-size: 1.3rem;
+    color: var(--clr-sunset);
   }
 }
 
@@ -124,8 +163,6 @@ updateDateTime();
 
 .dashboard>* {
   display: flex;
-  outline: 1px solid var(--clr-grid-cell-outline);
-  outline-offset: -1px;
   line-height: 4rem;
   border-radius: 5px;
   align-content: center;

@@ -31,6 +31,6 @@ export const getApiBaseUrl = (): string => {
    * However, during development it will the value set in the local index.html
    */
 
-  const baseUrl = (document.getElementById('api-base-url') as HTMLInputElement)?.value ?? '/';
+  const baseUrl = (document.getElementById('server-base-url') as HTMLInputElement)?.value ?? '/';
   return baseUrl;
 };

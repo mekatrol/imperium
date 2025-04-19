@@ -11,7 +11,7 @@ namespace Imperium.Server.Background;
 
 public class MqttClientBackgroundService(
     IImperiumState state,
-    IPointState pointState, 
+    IPointState pointState,
     ILogger<MqttClientBackgroundService> logger) : BackgroundService()
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
