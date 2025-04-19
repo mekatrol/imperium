@@ -6,6 +6,9 @@
 </template>
 
 <script setup lang="ts">
+import type { Point } from '@/models/point';
+import type { Ref } from 'vue';
+
 interface Props {
   id: number;
   label: string;
@@ -14,16 +17,23 @@ interface Props {
   state?: string | undefined;
 }
 
-const props = defineProps<Props>();
+const model = defineModel<Ref<Point>>();
+defineProps<Props>();
 
 const getCssClass = (): string => {
-  return props.state === 'on' ? 'state-on' : props.state === 'off' ? 'state-off' : 'state-offline';
+  if (!model.value?.value) {
+    return 'state-offline';
+  }
+
+  console.log(model.value.value.value);
+
+  return model.value.value.value === 1 ? 'state-on' : 'state-off';
 };
 </script>
 
 <style lang="css">
 :root {
-  --clr-state-offline: #7e4001;
+  --clr-state-offline: #991503;
   --clr-state-off: #838282;
   --clr-state-on: #01a301;
 }

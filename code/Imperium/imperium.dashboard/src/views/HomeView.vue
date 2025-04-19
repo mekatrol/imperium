@@ -3,10 +3,14 @@
     <div class="time-card">
       <p class="time">{{ timeDisplay }}</p>
       <div style="display: flex; flex-direction: row; gap: 30px">
-        <p class="sunrise" v-if="sunrisePoint">Sunrise: {{ getTimeWithMeridiem(new Date(sunrisePoint.value!), false) }}
-        </p>
-        <p class="date">{{ dateDisplay }}</p>
-        <p class="sunset" v-if="sunsetPoint">Sunset: {{ getTimeWithMeridiem(new Date(sunsetPoint.value!), false) }}</p>
+        <div class="sunrise" v-if="sunrisePoint"><span class="material-symbols-outlined">sunny</span> {{
+          getTimeWithMeridiem(new Date(sunrisePoint.value!), false) }}
+        </div>
+        <div>
+          <p class="date"><span class="material-symbols-outlined">calendar_month</span>{{ dateDisplay }}</p>
+        </div>
+        <div class="sunset" v-if="sunsetPoint"><span class="material-symbols-outlined">routine</span>{{
+          getTimeWithMeridiem(new Date(sunsetPoint.value!), false) }}</div>
       </div>
     </div>
     <div class="dashboard">
@@ -19,7 +23,7 @@
 <script setup lang="ts">
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
-import { ref, shallowRef, type Component } from 'vue';
+import { ref, shallowRef, type Component, type Ref } from 'vue';
 
 import DashboardCell from '@/components/DashboardCell.vue';
 import { useAppStore } from '@/stores/app-store';
@@ -41,32 +45,48 @@ interface GridCell {
 
 const appStore = useAppStore();
 
+const timeDisplay = ref('');
+const dateDisplay = ref('');
 const gridCells = shallowRef<GridCell[]>([]);
 const allPoints = ref<Point[]>([]);
 const sunsetPoint = ref<Point | undefined>();
 const sunrisePoint = ref<Point | undefined>();
+const clotheslinePoint = ref<Point | undefined>();
+const alfrescoLightPoint = ref<Point | undefined>();
+const kitchenCabinetLightsPoint = ref<Point | undefined>();
+const whiteStringLightsPoint = ref<Point | undefined>();
 
-let id = 0;
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'BBQ Colour', icon: 'light' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' } });
+const updateCells = (): void => {
+  let id = 0;
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'BBQ Colour', icon: 'light' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
 
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'two_row' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'two_column two_row' } });
-gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'two_row' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'two_row' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'two_column two_row' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'two_row' } });
+};
 
-const timeDisplay = ref('');
-const dateDisplay = ref('');
+updateCells();
 
 const updateDateTime = (): void => {
   const dt = new Date();
   timeDisplay.value = getTimeWithMeridiem(dt);
   dateDisplay.value = getShortDateWithDay(dt);
+};
+
+const updatePoint = (deviceKey: string, pointKey: string, point: Ref<Point | undefined>): void => {
+  const points = allPoints.value.filter(p => p.deviceKey === deviceKey && p.key === pointKey);
+  if (points.length === 1) {
+    point.value = points[0];
+  } else {
+    point.value = undefined;
+  }
 };
 
 useIntervalTimer(async () => {
@@ -86,6 +106,13 @@ useIntervalTimer(async () => {
   if (sunset.length === 1) {
     sunsetPoint.value = sunset[0];
   }
+
+  updatePoint('device.clothesline', 'Relay', clotheslinePoint);
+  updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
+  updatePoint('device.kitchen.light', 'Relay', kitchenCabinetLightsPoint);
+  updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
+
+  updateCells();
 
   // Keep timer running
   return true;
@@ -135,6 +162,17 @@ updateDateTime();
   .time {
     font-size: 5rem;
     color: var(--clr-time);
+  }
+
+  .date,
+  .sunrise,
+  .sunset {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    align-content: center;
+    justify-content: center;
   }
 
   .date {

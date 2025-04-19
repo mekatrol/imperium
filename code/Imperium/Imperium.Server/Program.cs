@@ -202,6 +202,12 @@ public class Program
             new ControllerConfiguration { Url = "http://alfresco-light.lan" });
         alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light");
 
+        var clothesLineLight = new DeviceInstance<ControllerConfiguration>(
+            "device.clothesline",
+            nameof(ISingleOutputController),
+            new ControllerConfiguration { Url = "http://clothesline-lights.home.wojcik.com.au" });
+        clothesLineLight.CreatePoint<int>("Relay", "Clothes Line Light");
+
         var kitchenView = new DeviceInstance<ControllerConfiguration>(
             "device.kitchenview.powerboard",
             nameof(IFourOutputController),
@@ -222,6 +228,7 @@ public class Program
 
         state.AddDeviceAndPoints(sunriseSunset);
         state.AddDeviceAndPoints(alfrescoLight);
+        state.AddDeviceAndPoints(clothesLineLight);
         state.AddDeviceAndPoints(kitchenView);
         state.AddDeviceAndPoints(carport);
         state.AddDeviceAndPoints(kitchen);

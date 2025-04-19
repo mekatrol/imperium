@@ -18,9 +18,10 @@ export enum PointState {
 export interface Point {
   id: string;
   key: string;
+  deviceKey: string;
   friendlyName: string;
   pointType: PointType;
-  value?: string;
+  value?: object | string | number | boolean;
   lastUpdated: Date;
   pointState: PointState | undefined;
   readonly: boolean;
