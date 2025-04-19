@@ -55,6 +55,7 @@ const clotheslinePoint = ref<Point | undefined>();
 const alfrescoLightPoint = ref<Point | undefined>();
 const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
 const whiteStringLightsPoint = ref<Point | undefined>();
+const aquaponicsPumpsPoint = ref<Point | undefined>();
 
 const updateCells = (): void => {
   let id = 0;
@@ -62,7 +63,7 @@ const updateCells = (): void => {
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' } });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' } });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'BBQ Colour', icon: 'light' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Water Pumps', icon: 'heat_pump_balance' }, model: aquaponicsPumpsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
   gridCells.value.push({ component: CountdownSwitch, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
@@ -128,6 +129,7 @@ const updatePoints = (): void => {
   updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
   updateCountdownPoint('device.kitchen.light', 'Relay', '', 'kitchen.light.timer', kitchenCabinetLightsPoint);
   updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
+  updatePoint('device.carport.powerboard', 'Relay4', aquaponicsPumpsPoint);
 };
 
 useIntervalTimer(async () => {
