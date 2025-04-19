@@ -4,13 +4,13 @@
       <p class="time">{{ timeDisplay }}</p>
       <div style="display: flex; flex-direction: row; gap: 30px">
         <div class="sunrise" v-if="sunrisePoint"><span class="material-symbols-outlined">sunny</span> {{
-          getTimeWithMeridiem(new Date(sunrisePoint.value!), false) }}
+          getTimeWithMeridiem(new Date(sunrisePoint.value! as Date), false) }}
         </div>
         <div>
           <p class="date"><span class="material-symbols-outlined">calendar_month</span>{{ dateDisplay }}</p>
         </div>
         <div class="sunset" v-if="sunsetPoint"><span class="material-symbols-outlined">routine</span>{{
-          getTimeWithMeridiem(new Date(sunsetPoint.value!), false) }}</div>
+          getTimeWithMeridiem(new Date(sunsetPoint.value! as Date), false) }}</div>
       </div>
     </div>
     <div class="dashboard">

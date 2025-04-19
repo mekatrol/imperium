@@ -21,7 +21,7 @@ export interface Point {
   deviceKey: string;
   friendlyName: string;
   pointType: PointType;
-  value?: object | string | number | boolean;
+  value?: object | string | number | boolean | Date;
   lastUpdated: Date;
   pointState: PointState | undefined;
   readonly: boolean;
