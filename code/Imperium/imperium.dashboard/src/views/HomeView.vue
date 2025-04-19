@@ -4,13 +4,49 @@
       <p class="time">{{ timeDisplay }}</p>
       <p class="date">{{ dateDisplay }}</p>
     </div>
+    <div class="dashboard">
+      <component v-for="cell in gridCells" :key="cell.props.id" :is="cell.component" v-bind="{ ...cell.props }"
+        v-model="cell.model" />
+    </div>
   </main>
 </template>
 
 <script setup lang="ts">
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
-import { ref } from 'vue';
+import { ref, type Component } from 'vue';
+
+import DashboardCell from '@/components/DashboardCell.vue';
+
+interface GridCellProps {
+  id: number;
+  label: string;
+  icon?: string;
+  cssClass?: string;
+
+}
+
+interface GridCell {
+  component: Component;
+  props: GridCellProps;
+  model?: unknown;
+}
+
+const gridCells = ref<GridCell[]>([]);
+
+let id = 0;
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'BBQ Colour', icon: 'light' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' } });
+
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'two_row' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'two_column two_row' } });
+gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'two_row' } });
 
 const timeDisplay = ref('');
 const dateDisplay = ref('');
@@ -36,6 +72,8 @@ updateDateTime();
 :root {
   --clr-time: #ff0000;
   --clr-date: #55ff88;
+  --clr-dashboard-background: #222;
+  --clr-grid-cell-outline: #ccc;
 }
 
 .home {
@@ -43,16 +81,15 @@ updateDateTime();
   max-width: 800px;
   min-height: 480px;
   max-height: 480px;
-  background-color: #000;
+  background-color: var(--clr-dashboard-background);
 }
 
 .time-card {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0;
   align-items: center;
   font-family: 'Orbitron';
-  margin-top: 1rem;
   width: 100%;
 
   @font-face {
@@ -74,5 +111,24 @@ updateDateTime();
     font-size: 1rem;
     color: var(--clr-date);
   }
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 80px 80px 140px;
+  padding: 10px;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.dashboard>* {
+  display: flex;
+  outline: 1px solid var(--clr-grid-cell-outline);
+  outline-offset: -1px;
+  line-height: 4rem;
+  border-radius: 5px;
+  align-content: center;
+  justify-content: center;
 }
 </style>
