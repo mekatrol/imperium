@@ -123,6 +123,9 @@ public class Program
 
         app.UseExceptionMiddleware();
 
+        // Middleware for injecting API base URL into index.html
+        app.UseInjectApiBaseUrl(app.Environment);
+
         app.UseDefaultFiles();
         app.UseStaticFiles();
 

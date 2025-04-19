@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Imperium.Server.Controllers;
 
 [ApiController]
-[Route("points")]
+[Route("api/points")]
 public class PointsController(ILogger<PointsController> logger, IServiceProvider services) : ControllerBase
 {
     [HttpGet]
