@@ -38,6 +38,9 @@ internal class FlowExecutorBackgroundService(
         var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
         pointState.UpdatePointValue("device.carport.powerboard", "Relay4", fishPlantsOn ? 1 : 0);
 
+        // Pumps are on
+        pointState.UpdatePointValue("virtual", "water.pumps", fishPlantsOn);
+
         var alarmZone2Value = (string?)pointState.GetPointValue("housealarm", "zone2");
 
         var timer = pointState.GetDevicePoint("virtual", "kitchen.light.timer");

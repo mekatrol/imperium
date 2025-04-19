@@ -25,7 +25,7 @@ const getCssClass = (): string => {
     return 'state-offline';
   }
 
-  return model.value.value.value === 1 ? 'state-on' : 'state-off';
+  return (model.value.value.value === 1 || model.value.value.value === true) ? 'state-on' : 'state-off';
 };
 </script>
 

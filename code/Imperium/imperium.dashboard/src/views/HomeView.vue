@@ -81,7 +81,7 @@ const updateDateTime = (): void => {
   dateDisplay.value = getShortDateWithDay(dt);
 };
 
-const updatePoint = (deviceKey: string, pointKey: string, point: Ref<Point | undefined>): void => {
+const updatePoint = (deviceKey: string | null, pointKey: string, point: Ref<Point | undefined>): void => {
   const points = allPoints.value.filter(p => p.deviceKey === deviceKey && p.key === pointKey);
   if (points.length === 1) {
     point.value = points[0];
@@ -92,11 +92,11 @@ const updatePoint = (deviceKey: string, pointKey: string, point: Ref<Point | und
 
 const updateCountdownPoint = (
   valueDeviceKey: string, valuePointKey: string,
-  countdownDeviceKey: string, countdownPointKey: string,
+  countdownDeviceKey: string | null, countdownPointKey: string,
   point: Ref<CountdownPoint | undefined>): void => {
 
   const valuePoints = allPoints.value.filter(p => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
-  const countdownPoints = allPoints.value.filter(p => p.key === countdownPointKey);
+  const countdownPoints = allPoints.value.filter(p => p.deviceKey == countdownDeviceKey && p.key === countdownPointKey);
 
   let valuePoint: Point | undefined = undefined;
   let countdownPoint: Point | undefined = undefined;
@@ -127,9 +127,9 @@ const updateCountdownPoint = (
 const updatePoints = (): void => {
   updatePoint('device.clothesline', 'Relay', clotheslinePoint);
   updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
-  updateCountdownPoint('device.kitchen.light', 'Relay', '', 'kitchen.light.timer', kitchenCabinetLightsPoint);
+  updateCountdownPoint('device.kitchen.light', 'Relay', null, 'kitchen.light.timer', kitchenCabinetLightsPoint);
   updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
-  updatePoint('device.carport.powerboard', 'Relay4', aquaponicsPumpsPoint);
+  updatePoint(null, 'water.pumps', aquaponicsPumpsPoint);
 };
 
 useIntervalTimer(async () => {

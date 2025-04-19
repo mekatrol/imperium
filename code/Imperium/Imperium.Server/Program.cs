@@ -243,6 +243,7 @@ public class Program
         AddHouseAlarmPoint(8, "Back door", state);
 
         AddVirtualPoint("kitchen.light.timer", PointType.DateTime, "Kitchen light timer", state);
+        AddVirtualPoint("water.pumps", PointType.Boolean, "Water Pumps", state);
 
         return state;
     }
