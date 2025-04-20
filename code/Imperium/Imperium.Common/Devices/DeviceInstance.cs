@@ -24,10 +24,10 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
         }
     }
 
-    public Point CreatePoint<TPointNativeType>(string key, string friendlyName, TPointNativeType? value = null) where TPointNativeType : struct
+    public Point MapPoint(string key, string friendlyName, Type nativePointType, object? value = null)
     {
         // Get with default value
-        var point = GetPointWithDefault<TPointNativeType>(key);
+        var point = GetPointWithDefault(key, nativePointType);
 
         // Set friendly name
         point.FriendlyName = friendlyName;
@@ -39,7 +39,12 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
         return point;
     }
 
-    public Point GetPointWithDefault<TType>(string pointKey, Point? defaultValue = null) where TType : struct
+    public Point GetPointWithDefault<TType>(string key, Point? defaultValue = null) where TType : struct
+    {
+        return GetPointWithDefault(key, typeof(TType), defaultValue);
+    }
+
+    public Point GetPointWithDefault(string pointKey, Type nativePointType, Point? defaultValue = null)
     {
         // Try and get existing by key
         var point = _points.SingleOrDefault(p => p.Key == pointKey);
@@ -50,7 +55,7 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
             return point;
         }
 
-        var pointType = typeof(TType).GetPointType() ?? throw new InvalidOperationException($"The type of point '{typeof(TType).FullName}' is not valid for the type.");
+        var pointType = nativePointType.GetPointType() ?? throw new InvalidOperationException($"The type of point '{nativePointType.FullName}' is not valid for the type.");
 
         // Not found then use default or create new
         point = defaultValue ?? new Point(pointKey, pointType) { FriendlyName = pointKey, DeviceKey = Key };

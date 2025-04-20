@@ -12,4 +12,13 @@ internal class SunriseSunsetResultsModel
     public DateTime NauticalTwilightEnd { get; set; }
     public DateTime AstronomicalTwilightBegin { get; set; }
     public DateTime AstronomicalTwilightEnd { get; set; }
+
+    /// <summary>
+    /// Not returned from API, set based on sunrise and sunset time
+    /// </summary>
+    public bool IsDaytime { get; set; }
+    /// <summary>
+    /// Not returned from API, set based on sunrise and sunset time
+    /// </summary>
+    public bool IsNighttime { get; set; }
 }

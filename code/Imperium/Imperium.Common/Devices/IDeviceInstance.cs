@@ -30,7 +30,17 @@ public interface IDeviceInstance
     object? Data { get; }
 
     /// <summary>
+    /// Map the device point.
+    /// </summary>
+    Point MapPoint(string key, string friendlyName, Type nativePointType, object? value = null);
+
+    /// <summary>
     /// Helper method to get the existing point or create it new if it does not exist
     /// </summary>
     Point GetPointWithDefault<TType>(string key, Point? defaultValue = null) where TType : struct;
+
+    /// <summary>
+    /// Helper method to get the existing point or create it new if it does not exist
+    /// </summary>
+    Point GetPointWithDefault(string key, Type nativePointType, Point? defaultValue = null);
 }

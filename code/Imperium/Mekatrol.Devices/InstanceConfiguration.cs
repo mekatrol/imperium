@@ -1,6 +1,6 @@
 ﻿namespace Mekatrol.Devices;
 
-public class ControllerConfiguration
+internal class InstanceConfiguration
 {
     public string Url { get; set; } = string.Empty;
 }

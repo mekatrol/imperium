@@ -52,8 +52,6 @@ public class Program
 
         builder.Services.AddExceptionMiddleware();
 
-        builder.Services.AddSingleton<IDeviceController, SingleOutputController>();
-
         // Bind http client options
         var httpClientOptions = new HttpClientOptions();
         builder.Configuration.Bind(HttpClientOptions.SectionName, httpClientOptions);
@@ -158,101 +156,102 @@ public class Program
     private static ImperiumState InitialiseImperiumState(IServiceProvider services)
     {
         var state = services.GetRequiredService<ImperiumState>();
-        var pointState = services.GetRequiredService<IPointState>();
 
-        var sunriseSunsetController = new SunriseSunsetController(
-            services.GetRequiredService<IHttpClientFactory>(),
-            pointState,
-            services.GetRequiredService<ILogger<SunriseSunsetController>>());
+        var mekatrolDeviceContollerFactory = new MekatrolDeviceControllerFactory();
+        mekatrolDeviceContollerFactory.AddDeviceControllers(services);
 
-        var singleOutputBoardController = new SingleOutputController(
-            services.GetRequiredService<IHttpClientFactory>(),
-            pointState,
-            services.GetRequiredService<ILogger<SingleOutputController>>());
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
+            "device.sunrisesunset",
+            "mekatrol.sunrise.sunset.controller",
+            "{ \"Url\": \"https://api.sunrise-sunset.org/json?lat=-35.2809&lng=149.1300&date=today&formatted=0\" }",
+            [
+                new PointDefinition("Sunrise", "Sunrise", typeof(DateTime)),
+                new PointDefinition("Sunset", "Sunset", typeof(DateTime)),
+                new PointDefinition("SolarNoon", "Solar Noon", typeof(DateTime)),
+                new PointDefinition("DayLength", "Day Length", typeof(int)),
+                new PointDefinition("CivilTwilightBegin", "Civil Twilight Begin", typeof(DateTime)),
+                new PointDefinition("CivilTwilightEnd", "Civil TwilightEnd", typeof(DateTime)),
+                new PointDefinition("NauticalTwilightBegin", "Nautical Twilight Begin", typeof(DateTime)),
+                new PointDefinition("NauticalTwilightEnd", "Nautical Twilight End", typeof(DateTime)),
+                new PointDefinition("AstronomicalTwilightBegin", "Astronomical Twilight Begin", typeof(DateTime)),
+                new PointDefinition("AstronomicalTwilightEnd", "Astronomical Twilight End", typeof(DateTime)),
+                new PointDefinition("IsDaytime", "Is Daytime", typeof(bool)),
+                new PointDefinition("IsNighttime", "Is Nighttime", typeof(bool))
+            ],
+            state);
 
-        var fourOutputBoardController = new FourOutputController(
-            services.GetRequiredService<IHttpClientFactory>(),
-            pointState,
-            services.GetRequiredService<ILogger<FourOutputController>>());
-
-        state.AddDeviceController(nameof(SunriseSunsetController), sunriseSunsetController);
-        state.AddDeviceController(nameof(ISingleOutputController), singleOutputBoardController);
-        state.AddDeviceController(nameof(IFourOutputController), fourOutputBoardController);
-
-        var sunriseSunset = new DeviceInstance<ControllerConfiguration>(
-            "device.sunrise.sunset",
-            nameof(SunriseSunsetController),
-            new ControllerConfiguration { Url = "https://api.sunrise-sunset.org/json?lat=-35.2809&lng=149.1300&date=today&formatted=0" });
-        sunriseSunset.CreatePoint<DateTime>("Sunrise", "Sunrise");
-        sunriseSunset.CreatePoint<DateTime>("Sunset", "Sunset");
-        sunriseSunset.CreatePoint<DateTime>("SolarNoon", "Solar Noon");
-        sunriseSunset.CreatePoint<int>("DayLength", "Day Length");
-        sunriseSunset.CreatePoint<DateTime>("CivilTwilightBegin", "Civil Twilight Begin");
-        sunriseSunset.CreatePoint<DateTime>("CivilTwilightEnd", "Civil TwilightEnd");
-        sunriseSunset.CreatePoint<DateTime>("NauticalTwilightBegin", "Nautical Twilight Begin");
-        sunriseSunset.CreatePoint<DateTime>("NauticalTwilightEnd", "Nautical Twilight End");
-        sunriseSunset.CreatePoint<DateTime>("AstronomicalTwilightBegin", "Astronomical Twilight Begin");
-        sunriseSunset.CreatePoint<DateTime>("AstronomicalTwilightEnd", "Astronomical Twilight End");
-        sunriseSunset.CreatePoint<bool>("IsDaytime", "Is Daytime");
-        sunriseSunset.CreatePoint<bool>("IsNighttime", "Is Nighttime");
-
-        var alfrescoLight = new DeviceInstance<ControllerConfiguration>(
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
             "device.alfrescolight",
-            nameof(ISingleOutputController),
-            new ControllerConfiguration { Url = "http://alfresco-light.lan" });
-        alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light");
+            "mekatrol.single.output.controller",
+            "{ \"Url\": \"http://alfresco-light.lan\" }",
+            [
+                new PointDefinition("Relay", "Alfresco Light", typeof(int))
+            ],
+            state);
 
-        var kitchen = new DeviceInstance<ControllerConfiguration>(
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
             "device.kitchen.light",
-            nameof(ISingleOutputController),
-            new ControllerConfiguration { Url = "http://kitchen-cabinet-lights.home.wojcik.com.au" });
-        kitchen.CreatePoint<int>("Relay", "Kitchen Cabinet Light");
+            "mekatrol.single.output.controller",
+            "{ \"Url\": \"http://kitchen-cabinet-lights.home.wojcik.com.au\" }",
+            [
+                new PointDefinition("Relay", "Kitchen Cabinet Light", typeof(int))
+            ],
+            state);
 
-        var clothesLineLight = new DeviceInstance<ControllerConfiguration>(
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
             "device.clothesline",
-            nameof(ISingleOutputController),
-            new ControllerConfiguration { Url = "http://clothesline-lights.home.wojcik.com.au" });
-        clothesLineLight.CreatePoint<int>("Relay", "Clothes Line Light");
+            "mekatrol.single.output.controller",
+            "{ \"Url\": \"http://clothesline-lights.home.wojcik.com.au\" }",
+            [
+                new PointDefinition("Relay", "Clothes Line Light", typeof(int))
+            ],
+            state);
 
-        var greenhousePump = new DeviceInstance<ControllerConfiguration>(
-            "device.alfrescolight",
-            nameof(ISingleOutputController),
-            new ControllerConfiguration { Url = "http://10.2.2.88" });
-        greenhousePump.CreatePoint<int>("Relay", "Greenhouse Pump");
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
+            "device.greenhousepump",
+            "mekatrol.single.output.controller",
+            "{ \"Url\": \"http://10.2.2.88\" }",
+            [
+                new PointDefinition("Relay", "Greenhouse Pump", typeof(int))
+            ],
+            state);
 
-        var houseNumberLight = new DeviceInstance<ControllerConfiguration>(
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
             "device.housenumberlight",
-            nameof(ISingleOutputController),
-            new ControllerConfiguration { Url = "http://10.2.2.89" });
-        houseNumberLight.CreatePoint<int>("Relay", "House Number");
+            "mekatrol.single.output.controller",
+            "{ \"Url\": \"http://10.2.2.89\" }",
+            [
+                new PointDefinition("Relay", "House Number", typeof(int))
+            ],
+            state);
 
-        var frontDoorLight = new DeviceInstance<ControllerConfiguration>(
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
             "device.frontdoorlight",
-            nameof(ISingleOutputController),
-            new ControllerConfiguration { Url = "http://10.2.2.90" });
-        frontDoorLight.CreatePoint<int>("Relay", "Front Door Light");
+            "mekatrol.single.output.controller",
+            "{ \"Url\": \"http://10.2.2.90\" }",
+            [
+                new PointDefinition("Relay", "Front Door Light", typeof(int))
+            ],
+            state);
 
-        var kitchenView = new DeviceInstance<ControllerConfiguration>(
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
             "device.kitchenview.powerboard",
-            nameof(IFourOutputController),
-            new ControllerConfiguration { Url = "http://pbalfresco.home.wojcik.com.au" });
-        kitchenView.CreatePoint<int>("Relay1", "String Lights");
+            "mekatrol.four.output.controller",
+            "{ \"Url\": \"http://pbalfresco.home.wojcik.com.au\" }",
+            [
+                new PointDefinition("Relay1", "String Lights", typeof(int))
+            ],
+            state);
 
-        var carport = new DeviceInstance<ControllerConfiguration>(
+        mekatrolDeviceContollerFactory.AddDeviceInstance(
             "device.carport.powerboard",
-            nameof(IFourOutputController),
-            new ControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
-        carport.CreatePoint<int>("Relay4", "Fish Plant Pump");
-        carport.CreatePoint<int>("Relay1", "Carport Lights");
-
-        state.AddDeviceAndPoints(sunriseSunset);
-        state.AddDeviceAndPoints(alfrescoLight);
-        state.AddDeviceAndPoints(clothesLineLight);
-        state.AddDeviceAndPoints(kitchenView);
-        state.AddDeviceAndPoints(carport);
-        state.AddDeviceAndPoints(kitchen);
-        state.AddDeviceAndPoints(houseNumberLight);
-        state.AddDeviceAndPoints(frontDoorLight);
+            "mekatrol.four.output.controller",
+            "{ \"Url\": \"http://pbcarport.home.wojcik.com.au\" }",
+            [
+                new PointDefinition("Relay1", "Carport Lights", typeof(int)),
+                new PointDefinition("Relay4", "Fish Plant Pump", typeof(int))
+            ],
+            state);
 
         AddHouseAlarmPoint(1, "Lounge room", state);
         AddHouseAlarmPoint(2, "Dining room", state);

@@ -1,4 +1,5 @@
-﻿using Imperium.Common.Devices;
+﻿using Imperium.Common.Controllers;
+using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 
@@ -195,11 +196,11 @@ internal class ImperiumState : IPointState, IImperiumState
     /// Get the controller for the specified key, will return null if no matching controller. 
     /// The key is case insensitive.
     /// </summary>
-    public IDeviceController? GetDeviceController(string key)
+    public IDeviceController? GetDeviceController(string controllerKey)
     {
         lock (_threadLock)
         {
-            if (!_deviceControllers.TryGetValue(key, out var deviceController))
+            if (!_deviceControllers.TryGetValue(controllerKey, out var deviceController))
             {
                 return null;
             }

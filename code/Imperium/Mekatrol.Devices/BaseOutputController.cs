@@ -2,7 +2,7 @@
 
 namespace Mekatrol.Devices;
 
-public abstract class BaseOutputController
+internal abstract class BaseOutputController
 {
     protected static int GetIntValue(string pointKey, IDeviceInstance deviceInstance, int defaultValue = 0)
     {

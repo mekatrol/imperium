@@ -1,4 +1,5 @@
-﻿using Imperium.Common.Devices;
+﻿using Imperium.Common.Controllers;
+using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Common.Utils;
@@ -8,7 +9,10 @@ using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
-public class SunriseSunsetController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
+internal class SunriseSunsetController(
+    IHttpClientFactory clientFactory, 
+    IPointState pointState, 
+    ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
 {
     private DateOnly _lastReadApi = DateOnly.MinValue;
 
@@ -27,9 +31,9 @@ public class SunriseSunsetController(IHttpClientFactory clientFactory, IPointSta
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not ControllerConfiguration config)
+        if (deviceInstance.Data is not InstanceConfiguration config)
         {
-            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }
 
         try

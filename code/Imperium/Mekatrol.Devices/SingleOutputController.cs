@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
-public class SingleOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<SingleOutputController> logger) : BaseOutputController(), ISingleOutputController
+internal class SingleOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<SingleOutputController> logger) : BaseOutputController(), ISingleOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -24,9 +24,9 @@ public class SingleOutputController(IHttpClientFactory clientFactory, IPointStat
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not ControllerConfiguration config)
+        if (deviceInstance.Data is not InstanceConfiguration config)
         {
-            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }
 
         var client = clientFactory.CreateClient(nameof(HttpClient));
@@ -58,9 +58,9 @@ public class SingleOutputController(IHttpClientFactory clientFactory, IPointStat
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not ControllerConfiguration config)
+        if (deviceInstance.Data is not InstanceConfiguration config)
         {
-            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(ControllerConfiguration).FullName}'.");
+            throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }
 
         var model = new SingleOutputControllerModel

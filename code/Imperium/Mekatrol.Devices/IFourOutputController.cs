@@ -1,5 +1,5 @@
-﻿using Imperium.Common.Devices;
+﻿using Imperium.Common.Controllers;
 
 namespace Mekatrol.Devices;
 
-public interface IFourOutputController : IDeviceController { }
+internal interface IFourOutputController : IDeviceController { }

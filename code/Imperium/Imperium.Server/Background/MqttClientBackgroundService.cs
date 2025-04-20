@@ -28,36 +28,43 @@ public class MqttClientBackgroundService(
 
             mqttClient.ApplicationMessageReceivedAsync += applicationMessageEvent =>
             {
-                var topic = applicationMessageEvent.ApplicationMessage.Topic;
-
-                var regex = new Regex("ness/status/(\\d)");
-                var match = regex.Match(topic);
-
-                if (!match.Success)
+                try
                 {
-                    return Task.CompletedTask;
-                }
+                    var topic = applicationMessageEvent.ApplicationMessage.Topic;
 
-                var zone = int.Parse(match.Groups[1].Value);
+                    var regex = new Regex("ness/status/(\\d)");
+                    var match = regex.Match(topic);
 
-                var content = applicationMessageEvent.ApplicationMessage.Payload;
-
-                if (content.IsSingleSegment)
-                {
-                    var json = Encoding.UTF8.GetString(content.First.Span);
-
-                    var zoneStatus = JsonSerializer.Deserialize<ZoneMessage>(json, JsonSerializerExtensions.ApiSerializerOptions);
-
-                    if (zoneStatus != null)
+                    if (!match.Success)
                     {
-                        pointState.UpdatePointValue("housealarm", $"zone{zone}", zoneStatus.Event);
+                        return Task.CompletedTask;
+                    }
+
+                    var zone = int.Parse(match.Groups[1].Value);
+
+                    var content = applicationMessageEvent.ApplicationMessage.Payload;
+
+                    if (content.IsSingleSegment)
+                    {
+                        var json = Encoding.UTF8.GetString(content.First.Span);
+
+                        var zoneStatus = JsonSerializer.Deserialize<ZoneMessage>(json, JsonSerializerExtensions.ApiSerializerOptions);
+
+                        if (zoneStatus != null)
+                        {
+                            pointState.UpdatePointValue("housealarm", $"zone{zone}", zoneStatus.Event);
+                        }
+                    }
+                    else
+                    {
+                        // Multi-segment:
+                        var x = Encoding.UTF8.GetString(content.ToArray());
+                        logger.DebugDump(x);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Multi-segment:
-                    var x = Encoding.UTF8.GetString(content.ToArray());
-                    logger.DebugDump(x);
+                    logger.LogError(ex);
                 }
 
                 return Task.CompletedTask;
