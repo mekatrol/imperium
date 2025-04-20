@@ -53,7 +53,6 @@ const toggleValue = async (): Promise<void> => {
 
     await appStore.updatePoint(model.value.value.id, value);
   } catch {
-    showErrorMessage('Failed to update point...');
   }
 };
 
