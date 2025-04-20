@@ -202,11 +202,35 @@ public class Program
             new ControllerConfiguration { Url = "http://alfresco-light.lan" });
         alfrescoLight.CreatePoint<int>("Relay", "Alfresco Light");
 
+        var kitchen = new DeviceInstance<ControllerConfiguration>(
+            "device.kitchen.light",
+            nameof(ISingleOutputController),
+            new ControllerConfiguration { Url = "http://kitchen-cabinet-lights.home.wojcik.com.au" });
+        kitchen.CreatePoint<int>("Relay", "Kitchen Cabinet Light");
+
         var clothesLineLight = new DeviceInstance<ControllerConfiguration>(
             "device.clothesline",
             nameof(ISingleOutputController),
             new ControllerConfiguration { Url = "http://clothesline-lights.home.wojcik.com.au" });
         clothesLineLight.CreatePoint<int>("Relay", "Clothes Line Light");
+
+        var greenhousePump = new DeviceInstance<ControllerConfiguration>(
+            "device.alfrescolight",
+            nameof(ISingleOutputController),
+            new ControllerConfiguration { Url = "http://10.2.2.88" });
+        greenhousePump.CreatePoint<int>("Relay", "Greenhouse Pump");
+
+        var houseNumberLight = new DeviceInstance<ControllerConfiguration>(
+            "device.housenumberlight",
+            nameof(ISingleOutputController),
+            new ControllerConfiguration { Url = "http://10.2.2.89" });
+        houseNumberLight.CreatePoint<int>("Relay", "House Number");
+
+        var frontDoorLight = new DeviceInstance<ControllerConfiguration>(
+            "device.frontdoorlight",
+            nameof(ISingleOutputController),
+            new ControllerConfiguration { Url = "http://10.2.2.90" });
+        frontDoorLight.CreatePoint<int>("Relay", "Front Door Light");
 
         var kitchenView = new DeviceInstance<ControllerConfiguration>(
             "device.kitchenview.powerboard",
@@ -219,12 +243,7 @@ public class Program
             nameof(IFourOutputController),
             new ControllerConfiguration { Url = "http://pbcarport.home.wojcik.com.au" });
         carport.CreatePoint<int>("Relay4", "Fish Plant Pump");
-
-        var kitchen = new DeviceInstance<ControllerConfiguration>(
-            "device.kitchen.light",
-            nameof(ISingleOutputController),
-            new ControllerConfiguration { Url = "http://kitchen-cabinet-lights.home.wojcik.com.au" });
-        kitchen.CreatePoint<int>("Relay", "Kitchen Cabinet Light");
+        carport.CreatePoint<int>("Relay1", "Carport Lights");
 
         state.AddDeviceAndPoints(sunriseSunset);
         state.AddDeviceAndPoints(alfrescoLight);
@@ -232,6 +251,8 @@ public class Program
         state.AddDeviceAndPoints(kitchenView);
         state.AddDeviceAndPoints(carport);
         state.AddDeviceAndPoints(kitchen);
+        state.AddDeviceAndPoints(houseNumberLight);
+        state.AddDeviceAndPoints(frontDoorLight);
 
         AddHouseAlarmPoint(1, "Lounge room", state);
         AddHouseAlarmPoint(2, "Dining room", state);
@@ -244,6 +265,7 @@ public class Program
 
         AddVirtualPoint("kitchen.light.timer", PointType.DateTime, "Kitchen light timer", state);
         AddVirtualPoint("water.pumps", PointType.Boolean, "Water Pumps", state);
+        AddVirtualPoint("panic", PointType.Boolean, "Panic", state);
 
         return state;
     }

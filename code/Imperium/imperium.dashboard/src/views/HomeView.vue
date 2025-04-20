@@ -64,6 +64,10 @@ const alfrescoLightPoint = ref<Point | undefined>();
 const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
 const whiteStringLightsPoint = ref<Point | undefined>();
 const aquaponicsPumpsPoint = ref<Point | undefined>();
+const panicPoint = ref<Point | undefined>();
+const carportLightsPoint = ref<Point | undefined>();
+const frontDoorLightPoint = ref<Point | undefined>();
+const houseNumberLightPoint = ref<Point | undefined>();
 
 const serverStatusIcon = computed((): string => {
   return appStore.serverOnline ? 'devices' : 'devices_off';
@@ -75,18 +79,18 @@ const serverStatusClass = computed((): string => {
 
 const createCells = (): void => {
   let id = 0;
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' }, model: carportLightsPoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' }, model: frontDoorLightPoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' }, model: houseNumberLightPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Water Pumps', icon: 'heat_pump_balance' }, model: aquaponicsPumpsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
   gridCells.value.push({ component: CountdownSwitch, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
 
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'grid-two-row' } });
+  // gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row' }, model: panicPoint });
+  // gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'grid-two-row' } });
 };
 
 createCells();
@@ -145,7 +149,11 @@ const updatePoints = (): void => {
   updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
   updateCountdown('device.kitchen.light', 'Relay', null, 'kitchen.light.timer', kitchenCabinetLightsPoint);
   updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
+  updatePoint('device.carport.powerboard', 'Relay1', carportLightsPoint);
+  updatePoint('device.frontdoorlight', 'Relay', frontDoorLightPoint);
+  updatePoint('device.housenumberlight', 'Relay', houseNumberLightPoint);
   updatePoint(null, 'water.pumps', aquaponicsPumpsPoint);
+  updatePoint(null, 'panic', panicPoint);
 };
 
 useIntervalTimer(async () => {
