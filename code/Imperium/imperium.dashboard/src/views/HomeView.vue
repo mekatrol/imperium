@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="dashboard">
-      <div class="cell-container" v-for="cell in gridCells" :key="cell.props.id">
+      <div class="cell-container" v-for="cell in gridCells" :key="cell.props.id" :class="cell.props.cssClass">
         <component :is="cell.component" v-bind="{ ...cell.props }" v-model="cell.model" />
       </div>
     </div>
@@ -71,9 +71,9 @@ const updateCells = (): void => {
   gridCells.value.push({ component: CountdownSwitch, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
 
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'two_row' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'two_column two_row' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'two_row' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row' } });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'grid-two-row' } });
 };
 
 updateCells();

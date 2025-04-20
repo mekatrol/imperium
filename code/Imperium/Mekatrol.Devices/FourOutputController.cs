@@ -41,9 +41,21 @@ public class FourOutputController(IHttpClientFactory clientFactory, IPointState 
         // Get the body JSON as a ApiResponse object
         var model = await response.Content.ReadFromJsonAsync<FourOutputControllerModel>(_jsonOptions, stoppingToken);
 
-        // Only the button is an input
+        // Update values
         var point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Btn));
         pointState.UpdatePointValue(deviceInstance, point, model!.Btn);
+
+        var relay1 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay1));
+        pointState.UpdatePointValue(deviceInstance, relay1, model!.Relay1);
+
+        var relay2 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay2));
+        pointState.UpdatePointValue(deviceInstance, relay2, model!.Relay2);
+
+        var relay3 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay3));
+        pointState.UpdatePointValue(deviceInstance, relay3, model!.Relay3);
+
+        var relay4 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay4));
+        pointState.UpdatePointValue(deviceInstance, relay4, model!.Relay4);
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)

@@ -41,9 +41,12 @@ public class SingleOutputController(IHttpClientFactory clientFactory, IPointStat
         // Get the body JSON as a ApiResponse object
         var model = await response.Content.ReadFromJsonAsync<SingleOutputControllerModel>(_jsonOptions, stoppingToken);
 
-        // Only the button is an input
+        // Update values
         var point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Btn));
         pointState.UpdatePointValue(deviceInstance, point, model!.Btn);
+
+        var relay = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Relay));
+        pointState.UpdatePointValue(deviceInstance, relay, model!.Relay);
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
