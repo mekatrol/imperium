@@ -1,10 +1,10 @@
 <template>
   <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
-    <button>
+    <button @click="clearCountdown">
       <div><span v-if="icon" class="material-symbols-outlined">{{ icon }}</span></div>
-      <div :class="`label ${getCountdown() ? 'counting' : ''}`">
+      <div :class="`label ${countdown ? 'counting' : ''}`">
         <p>{{ label }}</p>
-        <p v-if="getCountdown()">{{ getCountdown() }}</p>
+        <p v-if="countdown">{{ countdown }}</p>
       </div>
     </button>
   </div>
@@ -12,7 +12,8 @@
 
 <script setup lang="ts">
 import type { CountdownPoint } from '@/models/point';
-import type { Ref } from 'vue';
+import { useAppStore } from '@/stores/app-store';
+import { computed, type Ref } from 'vue';
 
 interface Props {
   id: number;
@@ -25,6 +26,7 @@ interface Props {
 const model = defineModel<Ref<CountdownPoint>>();
 defineProps<Props>();
 
+const appStore = useAppStore();
 
 const timeLeft = (countdownExpiry: Date): string => {
   const now = new Date().getTime();
@@ -38,7 +40,7 @@ const timeLeft = (countdownExpiry: Date): string => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-const getCountdown = (): string | undefined => {
+const countdown = computed((): string | undefined => {
   if (!model.value?.value?.countdownPoint.value) {
     return undefined;
   }
@@ -46,7 +48,7 @@ const getCountdown = (): string | undefined => {
   const countdownExpiry = new Date(model.value.value.countdownPoint.value as Date);
 
   return `[${timeLeft(countdownExpiry)}]`;
-};
+});
 
 const getCssClass = (): string => {
   if (model.value?.value?.valuePoint?.value === undefined) {
@@ -54,6 +56,19 @@ const getCssClass = (): string => {
   }
 
   return (model.value.value.valuePoint.value === 1 || model.value.value.valuePoint.value === true) ? 'state-on' : 'state-off';
+};
+
+const clearCountdown = async (): Promise<void> => {
+  if (!model.value?.value?.countdownPoint.value) {
+    return;
+  }
+
+  try {
+    await appStore.updatePoint(model.value.value.countdownPoint.id, undefined);
+    appStore.setServerOnlineStatus(true);
+  } catch {
+    appStore.setServerOnlineStatus(false);
+  }
 };
 </script>
 

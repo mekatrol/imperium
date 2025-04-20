@@ -106,7 +106,7 @@ const updatePoint = (deviceKey: string | null, pointKey: string, point: Ref<Poin
   }
 };
 
-const updateCountdownPoint = (
+const updateCountdown = (
   valueDeviceKey: string, valuePointKey: string,
   countdownDeviceKey: string | null, countdownPointKey: string,
   point: Ref<CountdownPoint | undefined>): void => {
@@ -143,7 +143,7 @@ const updateCountdownPoint = (
 const updatePoints = (): void => {
   updatePoint('device.clothesline', 'Relay', clotheslinePoint);
   updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
-  updateCountdownPoint('device.kitchen.light', 'Relay', null, 'kitchen.light.timer', kitchenCabinetLightsPoint);
+  updateCountdown('device.kitchen.light', 'Relay', null, 'kitchen.light.timer', kitchenCabinetLightsPoint);
   updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
   updatePoint(null, 'water.pumps', aquaponicsPumpsPoint);
 };
@@ -169,14 +169,12 @@ useIntervalTimer(async () => {
     }
 
     updatePoints();
-    // createCells();
 
     appStore.setServerOnlineStatus(true);
   }
   catch {
     allPoints.value = [];
     updatePoints();
-    // createCells();
 
     appStore.setServerOnlineStatus(false);
   }

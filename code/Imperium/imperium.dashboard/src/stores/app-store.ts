@@ -33,15 +33,14 @@ export const useAppStore = defineStore('app', () => {
   };
 
   const updatePoint = async (id: string, value: PointTypes, errorHandlerCallback?: HandleErrorCallback): Promise<Point> => {
-    return await httpPost<PointValueUpdate, Point>(
-      {
-        id: id,
-        value: `${value}`
-      },
-      '/points',
-      errorHandlerCallback,
-      false
-    );
+    const model: PointValueUpdate = {
+      id: id,
+      value: value === undefined || value === null ? null : `${value}`
+    };
+
+    console.log(model);
+
+    return await httpPost<PointValueUpdate, Point>(model, '/points', errorHandlerCallback, false);
   };
 
   const setServerOnlineStatus = (status: boolean): void => {

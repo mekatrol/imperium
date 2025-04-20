@@ -15,7 +15,7 @@ export enum PointState {
   Online = 'online'
 }
 
-export type PointTypes = object | string | number | boolean | Date | undefined;
+export type PointTypes = object | string | number | boolean | Date | undefined | null;
 
 export interface Point {
   id: string;
