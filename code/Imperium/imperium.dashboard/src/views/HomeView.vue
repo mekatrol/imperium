@@ -73,7 +73,7 @@ const serverStatusClass = computed((): string => {
   return appStore.serverOnline ? 'online' : 'offline';
 });
 
-const updateCells = (): void => {
+const createCells = (): void => {
   let id = 0;
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' } });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' } });
@@ -89,7 +89,7 @@ const updateCells = (): void => {
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'grid-two-row' } });
 };
 
-updateCells();
+createCells();
 
 const updateDateTime = (): void => {
   const dt = new Date();
@@ -169,14 +169,14 @@ useIntervalTimer(async () => {
     }
 
     updatePoints();
-    updateCells();
+    // createCells();
 
     appStore.setServerOnlineStatus(true);
   }
   catch {
     allPoints.value = [];
     updatePoints();
-    updateCells();
+    // createCells();
 
     appStore.setServerOnlineStatus(false);
   }
