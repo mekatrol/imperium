@@ -14,8 +14,9 @@
       </div>
     </div>
     <div class="dashboard">
-      <component v-for="cell in gridCells" :key="cell.props.id" :is="cell.component" v-bind="{ ...cell.props }"
-        v-model="cell.model" />
+      <div class="cell-container" v-for="cell in gridCells" :key="cell.props.id">
+        <component :is="cell.component" v-bind="{ ...cell.props }" v-model="cell.model" />
+      </div>
     </div>
   </main>
 </template>

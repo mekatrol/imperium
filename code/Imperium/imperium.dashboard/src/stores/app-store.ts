@@ -2,8 +2,8 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { clearMessage, type MessageData } from '@/services/message';
 import { type HandleErrorCallback } from '@/services/api';
-import type { Point } from '@/models/point';
-import { httpGet } from '@/services/http';
+import type { Point, PointTypes, PointValueUpdate } from '@/models/point';
+import { httpGet, httpPost } from '@/services/http';
 
 export const useAppStore = defineStore('app', () => {
   const isBusyCount = ref(0);
@@ -31,6 +31,18 @@ export const useAppStore = defineStore('app', () => {
     return await httpGet<Point[]>('/points', errorHandlerCallback, false, showBusy);
   };
 
+  const updatePoint = async (id: string, value: PointTypes, errorHandlerCallback?: HandleErrorCallback): Promise<Point> => {
+    return await httpPost<PointValueUpdate, Point>(
+      {
+        id: id,
+        value: `${value}`
+      },
+      '/points',
+      errorHandlerCallback,
+      false
+    );
+  };
+
   return {
     messageData,
     closeMessageOverlay,
@@ -38,6 +50,7 @@ export const useAppStore = defineStore('app', () => {
     incrementBusy,
     decrementBusy,
 
-    getPoints
+    getPoints,
+    updatePoint
   };
 });

@@ -5,6 +5,36 @@
 @Imperium.Irrigation = http://10.2.2.42
 @Imperium.GreenHousePump = http://10.2.2.88
 @Imperium.KitchenCabinetLights = http://kitchen-cabinet-lights.home.wojcik.com.au
+@Imperium.Relay1 = http://10.2.2.89
+@Imperium.Relay6 = http://10.2.2.90
+
+GET {{Imperium.Relay1}}/outputs
+Accept: application/json
+
+### 
+
+POST {{Imperium.Relay1}}/outputs
+Accept: application/json
+{
+  "relay": 0,
+  "led": 0,
+  "btn": 0
+}
+### 
+
+GET {{Imperium.Relay6}}/outputs
+Accept: application/json
+
+### 
+
+POST {{Imperium.Relay6}}/outputs
+Accept: application/json
+{
+  "relay": 0,
+  "led": 0,
+  "btn": 0
+}
+### 
 
 GET {{Imperium.KitchenCabinetLights}}/outputs
 Accept: application/json

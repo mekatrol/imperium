@@ -1,10 +1,12 @@
 <template>
   <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
-    <div><span v-if="icon" class="material-symbols-outlined">{{ icon }}</span></div>
-    <div :class="`label ${getCountdown() ? 'counting' : ''}`">
-      <p>{{ label }}</p>
-      <p v-if="getCountdown()">{{ getCountdown() }}</p>
-    </div>
+    <button>
+      <div><span v-if="icon" class="material-symbols-outlined">{{ icon }}</span></div>
+      <div :class="`label ${getCountdown() ? 'counting' : ''}`">
+        <p>{{ label }}</p>
+        <p v-if="getCountdown()">{{ getCountdown() }}</p>
+      </div>
+    </button>
   </div>
 </template>
 
@@ -56,60 +58,21 @@ const getCssClass = (): string => {
 </script>
 
 <style lang="css">
-:root {
-  --clr-state-offline: #991503;
-  --clr-state-off: #838282;
-  --clr-state-on: #01a301;
-}
-
-.dashboard-cell {
-  display: flex;
-  flex-direction: row;
-  align-content: center;
-  justify-content: center;
-  width: 100%;
-  outline-offset: -1px;
-}
-
-.dashboard-cell.state-offline {
-  color: var(--clr-state-offline);
-  outline: 1px solid var(--clr-state-offline);
-}
-
-.dashboard-cell.state-off {
-  color: var(--clr-state-off);
-  outline: 1px solid var(--clr-state-off);
-}
-
-.dashboard-cell.state-on {
-  color: var(--clr-state-on);
-  outline: 1px solid var(--clr-state-on);
-}
-
-.dashboard-cell>div {
+.dashboard-cell>button>div {
   height: 100%;
   display: flex;
   justify-content: center;
 }
 
-.dashboard-cell>div>span {
+.dashboard-cell>button>div>span {
   margin: auto;
   font-size: 3rem;
   align-self: flex-start;
 }
 
-.dashboard-cell>p {
+.dashboard-cell>button>div>p {
   margin: auto;
   font-size: 1rem;
-}
-
-.two_row .grid-cell>span {
-  font-size: 5rem;
-}
-
-.two_column {
-  grid-column-start: 2;
-  grid-column-end: 4;
 }
 
 .label {

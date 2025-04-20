@@ -15,13 +15,15 @@ export enum PointState {
   Online = 'online'
 }
 
+export type PointTypes = object | string | number | boolean | Date | undefined;
+
 export interface Point {
   id: string;
   key: string;
   deviceKey: string;
   friendlyName: string;
   pointType: PointType;
-  value?: object | string | number | boolean | Date;
+  value?: PointTypes;
   lastUpdated: Date;
   pointState: PointState | undefined;
   readonly: boolean;
@@ -30,4 +32,9 @@ export interface Point {
 export interface CountdownPoint {
   valuePoint: Point;
   countdownPoint: Point;
+}
+
+export interface PointValueUpdate {
+  id: string;
+  value: PointTypes;
 }

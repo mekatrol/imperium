@@ -3,6 +3,9 @@
   --clr-success: hsl(143, 100%, 26%);
   --clr-warning: hsl(43, 100%, 66%);
   --clr-error: hsl(348, 55%, 49%);
+  --clr-state-offline: #991503;
+  --clr-state-off: #838282;
+  --clr-state-on: #01a301;
 }
 
 .wrapper {

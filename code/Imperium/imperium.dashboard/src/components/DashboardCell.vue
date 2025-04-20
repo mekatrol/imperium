@@ -1,12 +1,16 @@
 <template>
   <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
-    <span v-if="icon" class="material-symbols-outlined">{{ icon }}</span>
-    <p>{{ label }}</p>
+    <button @click="toggleValue" :disabled="isOffline()">
+      <span v-if="icon" class="material-symbols-outlined">{{ icon }}</span>
+      <p>{{ label }}</p>
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Point } from '@/models/point';
+import { PointType, type Point } from '@/models/point';
+import { showErrorMessage } from '@/services/message';
+import { useAppStore } from '@/stores/app-store';
 import type { Ref } from 'vue';
 
 interface Props {
@@ -16,6 +20,8 @@ interface Props {
   cssClass?: string;
   state?: string | undefined;
 }
+
+const appStore = useAppStore();
 
 const model = defineModel<Ref<Point>>();
 defineProps<Props>();
@@ -27,56 +33,28 @@ const getCssClass = (): string => {
 
   return (model.value.value.value === 1 || model.value.value.value === true) ? 'state-on' : 'state-off';
 };
+
+const isOffline = (): boolean => {
+  return model.value?.value === undefined;
+};
+
+const toggleValue = async (): Promise<void> => {
+  if (!model.value?.value?.id) {
+    return;
+  }
+
+  try {
+    let value: number | boolean = 0;
+    if (model.value.value.pointType === PointType.Boolean) {
+      value = model.value.value.value === true ? false : true;
+    } else {
+      value = model.value.value.value === 1 ? 0 : 1;
+    }
+
+    await appStore.updatePoint(model.value.value.id, value);
+  } catch {
+    showErrorMessage('Failed to update point...');
+  }
+};
+
 </script>
-
-<style lang="css">
-:root {
-  --clr-state-offline: #991503;
-  --clr-state-off: #838282;
-  --clr-state-on: #01a301;
-}
-
-.dashboard-cell {
-  display: flex;
-  flex-direction: row;
-  align-content: center;
-  justify-content: center;
-  width: 100%;
-  outline-offset: -1px;
-}
-
-.dashboard-cell.state-offline {
-  color: var(--clr-state-offline);
-  outline: 1px solid var(--clr-state-offline);
-}
-
-.dashboard-cell.state-off {
-  color: var(--clr-state-off);
-  outline: 1px solid var(--clr-state-off);
-}
-
-.dashboard-cell.state-on {
-  color: var(--clr-state-on);
-  outline: 1px solid var(--clr-state-on);
-}
-
-.dashboard-cell>span {
-  margin: auto;
-  font-size: 3rem;
-  align-self: flex-start;
-}
-
-.dashboard-cell>p {
-  margin: auto;
-  font-size: 1rem;
-}
-
-.two_row .grid-cell>span {
-  font-size: 5rem;
-}
-
-.two_column {
-  grid-column-start: 2;
-  grid-column-end: 4;
-}
-</style>

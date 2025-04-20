@@ -1,0 +1,65 @@
+.dashboard-cell {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+  outline-offset: -1px;
+  overflow: hidden;
+}
+
+.dashboard-cell.state-offline {
+  color: var(--clr-state-offline);
+  outline: 1px solid var(--clr-state-offline);
+}
+
+.dashboard-cell.state-off {
+  color: var(--clr-state-off);
+  outline: 1px solid var(--clr-state-off);
+}
+
+.dashboard-cell.state-on {
+  color: var(--clr-state-on);
+  outline: 1px solid var(--clr-state-on);
+}
+
+.dashboard-cell > button {
+  background-color: inherit;
+  width: 100%;
+  border: none;
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+}
+
+.dashboard-cell.state-offline > button {
+  cursor: not-allowed;
+}
+
+.dashboard-cell.dashboard-cell.state-off > button:active {
+  background-color: var(--clr-state-off);
+}
+
+.dashboard-cell.dashboard-cell.state-on > button:active {
+  background-color: var(--clr-state-on);
+}
+
+.dashboard-cell > button > span {
+  margin: auto;
+  font-size: 3rem;
+  align-self: flex-start;
+}
+
+.dashboard-cell > button > p {
+  margin: auto;
+  font-size: 1rem;
+}
+
+.two_row .grid-cell > button > span {
+  font-size: 5rem;
+}
+
+.two_column {
+  grid-column-start: 2;
+  grid-column-end: 4;
+}
