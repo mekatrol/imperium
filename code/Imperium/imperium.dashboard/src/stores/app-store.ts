@@ -8,6 +8,7 @@ import { httpGet, httpPost } from '@/services/http';
 export const useAppStore = defineStore('app', () => {
   const isBusyCount = ref(0);
   const messageData = ref<MessageData | undefined>(undefined);
+  const serverOnline = ref(false);
 
   const isBusy = computed(() => isBusyCount.value > 0);
 
@@ -43,12 +44,19 @@ export const useAppStore = defineStore('app', () => {
     );
   };
 
+  const setServerOnlineStatus = (status: boolean): void => {
+    serverOnline.value = status;
+  };
+
   return {
     messageData,
     closeMessageOverlay,
     isBusy,
     incrementBusy,
     decrementBusy,
+
+    serverOnline,
+    setServerOnlineStatus,
 
     getPoints,
     updatePoint

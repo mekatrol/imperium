@@ -6,6 +6,12 @@
   --clr-state-offline: #991503;
   --clr-state-off: #838282;
   --clr-state-on: #01a301;
+  --clr-time: #ff0000;
+  --clr-date: #55ff88;
+  --clr-sunrise: #f1e20f;
+  --clr-sunset: #f7621e;
+  --clr-dashboard-background: #222;
+  --clr-grid-cell-outline: #ccc;
 }
 
 .wrapper {

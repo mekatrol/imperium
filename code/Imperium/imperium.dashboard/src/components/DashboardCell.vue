@@ -9,7 +9,6 @@
 
 <script setup lang="ts">
 import { PointType, type Point } from '@/models/point';
-import { showErrorMessage } from '@/services/message';
 import { useAppStore } from '@/stores/app-store';
 import type { Ref } from 'vue';
 
@@ -52,7 +51,9 @@ const toggleValue = async (): Promise<void> => {
     }
 
     await appStore.updatePoint(model.value.value.id, value);
+    appStore.setServerOnlineStatus(true);
   } catch {
+    appStore.setServerOnlineStatus(false);
   }
 };
 

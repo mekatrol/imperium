@@ -1,17 +1,24 @@
 <template>
   <main class="home">
-    <div class="time-card">
-      <p class="time">{{ timeDisplay }}</p>
-      <div style="display: flex; flex-direction: row; gap: 30px">
-        <div class="sunrise" v-if="sunrisePoint"><span class="material-symbols-outlined">sunny</span> {{
-          getTimeWithMeridiem(new Date(sunrisePoint.value! as Date), false) }}
-        </div>
-        <div>
-          <p class="date"><span class="material-symbols-outlined">calendar_month</span>{{ dateDisplay }}</p>
-        </div>
-        <div class="sunset" v-if="sunsetPoint"><span class="material-symbols-outlined">routine</span>{{
-          getTimeWithMeridiem(new Date(sunsetPoint.value! as Date), false) }}</div>
+    <div class="top-row">
+      <div class="spacer spacer-left">
+        <span v-if="serverStatusIcon" :class="`material-symbols-outlined ${serverStatusClass}`">{{ serverStatusIcon
+        }}</span>
       </div>
+      <div class="time-card">
+        <p class="time">{{ timeDisplay }}</p>
+        <div style="display: flex; flex-direction: row; gap: 30px">
+          <div class="sunrise" v-if="sunrisePoint"><span class="material-symbols-outlined">sunny</span> {{
+            getTimeWithMeridiem(new Date(sunrisePoint.value! as Date), false) }}
+          </div>
+          <div>
+            <p class="date"><span class="material-symbols-outlined">calendar_month</span>{{ dateDisplay }}</p>
+          </div>
+          <div class="sunset" v-if="sunsetPoint"><span class="material-symbols-outlined">routine</span>{{
+            getTimeWithMeridiem(new Date(sunsetPoint.value! as Date), false) }}</div>
+        </div>
+      </div>
+      <div class="spacer spacer-right"></div>
     </div>
     <div class="dashboard">
       <div class="cell-container" v-for="cell in gridCells" :key="cell.props.id" :class="cell.props.cssClass">
@@ -24,12 +31,11 @@
 <script setup lang="ts">
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
-import { ref, shallowRef, type Component, type Ref } from 'vue';
+import { computed, ref, shallowRef, type Component, type Ref } from 'vue';
 import { useAppStore } from '@/stores/app-store';
 import type { CountdownPoint, Point } from '@/models/point';
 import DashboardCell from '@/components/DashboardCell.vue';
 import CountdownSwitch from '@/components/CountdownSwitch.vue';
-import { showErrorMessage } from '@/services/message';
 
 interface GridCellProps {
   id: number;
@@ -58,7 +64,14 @@ const alfrescoLightPoint = ref<Point | undefined>();
 const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
 const whiteStringLightsPoint = ref<Point | undefined>();
 const aquaponicsPumpsPoint = ref<Point | undefined>();
-const serverIsOffline = ref(false);
+
+const serverStatusIcon = computed((): string => {
+  return appStore.serverOnline ? 'devices' : 'devices_off';
+});
+
+const serverStatusClass = computed((): string => {
+  return appStore.serverOnline ? 'online' : 'offline';
+});
 
 const updateCells = (): void => {
   let id = 0;
@@ -158,17 +171,14 @@ useIntervalTimer(async () => {
     updatePoints();
     updateCells();
 
-    serverIsOffline.value = false;
+    appStore.setServerOnlineStatus(true);
   }
   catch {
     allPoints.value = [];
     updatePoints();
     updateCells();
 
-    if (!serverIsOffline.value) {
-      serverIsOffline.value = true;
-      showErrorMessage('The server is offline');
-    }
+    appStore.setServerOnlineStatus(false);
   }
 
   // Keep timer running
@@ -180,15 +190,6 @@ updateDateTime();
 </script>
 
 <style lang="css">
-:root {
-  --clr-time: #ff0000;
-  --clr-date: #55ff88;
-  --clr-sunrise: #f1e20f;
-  --clr-sunset: #f7621e;
-  --clr-dashboard-background: #222;
-  --clr-grid-cell-outline: #ccc;
-}
-
 .home {
   min-width: 800px;
   max-width: 800px;
@@ -196,6 +197,13 @@ updateDateTime();
   max-height: 480px;
   background-color: var(--clr-dashboard-background);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-row {
+  display: flex;
+  flex-direction: row;
 }
 
 .time-card {
@@ -263,5 +271,33 @@ updateDateTime();
   border-radius: 5px;
   align-content: center;
   justify-content: center;
+}
+
+.spacer {
+  min-width: 80px;
+}
+
+.spacer-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+}
+
+.spacer-left span {
+  text-align: center;
+  font-size: 4rem;
+}
+
+.spacer-left span.offline {
+  text-align: center;
+  font-size: 4rem;
+  color: var(--clr-state-offline);
+}
+
+.spacer-left span.online {
+  text-align: center;
+  font-size: 4rem;
+  color: var(--clr-state-on);
 }
 </style>
