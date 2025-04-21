@@ -22,7 +22,7 @@ internal class FlowExecutorBackgroundService(
          * START FLOW LOGIC
          *****************************************************************************/
 
-        var isNighttime = (bool?)pointState.GetPointValue("device.sunrise.sunset", "IsNighttime");
+        var isNighttime = (bool?)pointState.GetPointValue("device.sunrisesunset", "IsNighttime");
 
         if (isNighttime.HasValue)
         {
