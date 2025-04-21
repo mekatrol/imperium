@@ -5,13 +5,12 @@ using Imperium.Common.Points;
 
 namespace Imperium.Server.State;
 
+/// <summary>
+/// NOTE: This class is considered immutable for thread safety. If the configuration changes then
+///       a new instance of this class is used (with any included configuration changes)
+/// </summary>
 internal class ImperiumState : IPointState, IImperiumState
 {
-    // An object to use as sync lock for multithreaded access
-    private readonly Lock _threadLock = new();
-
-    private bool _serverReadOnlyMode = false;
-
     // The list of devices currently being managed
     private readonly Dictionary<string, IDeviceController> _deviceControllers = new(StringComparer.OrdinalIgnoreCase);
 
@@ -22,28 +21,10 @@ internal class ImperiumState : IPointState, IImperiumState
     private readonly Dictionary<string, Point> _points = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// When the server read only mode is true then the server will read IO, but not update IO. Useful when testing a server that you
-    /// don't want to update the IO
+    /// When the server read only mode is true then the server will read IO, but not update IO. Useful when testing a running server 
+    /// where you don't want to actually change the physical IO
     /// </summary>
-    public bool IsReadOnlyMode
-    {
-        get
-        {
-            lock (_threadLock)
-            {
-                return _serverReadOnlyMode;
-            }
-        }
-
-        set
-        {
-            lock (_threadLock)
-            {
-                _serverReadOnlyMode = value;
-            }
-
-        }
-    }
+    public bool IsReadOnlyMode { get; set; } = false;
 
     public string MqttServer { get; set; } = string.Empty;
 
@@ -60,10 +41,7 @@ internal class ImperiumState : IPointState, IImperiumState
 
         var pointKey = CreateDevicePointKey(deviceKey, point.Key);
 
-        lock (_threadLock)
-        {
-            _points.Add(pointKey, point);
-        }
+        _points.Add(pointKey, point);
     }
 
     /// <summary>
@@ -82,33 +60,30 @@ internal class ImperiumState : IPointState, IImperiumState
             throw new InvalidOperationException($"The device controller key must be set");
         }
 
-        lock (_threadLock)
+        // Make sure the key does not already exist
+        if (_deviceInstances.ContainsKey(deviceInstance.Key))
         {
-            // Make sure the key does not already exist
-            if (_deviceInstances.ContainsKey(deviceInstance.Key))
+            throw new InvalidOperationException($"A device instance with the key '{deviceInstance.Key}' already exists.");
+        }
+
+        // Add the device
+        _deviceInstances.Add(deviceInstance.Key, deviceInstance);
+
+        // Add the device points (if any are defined)
+        foreach (var point in deviceInstance.Points)
+        {
+            // The unique point key is a combination of the device instance key and the point key
+            // This ensures all points are unique within this imperium state object
+            var pointKey = CreateDevicePointKey(deviceInstance.Key, point.Key);
+
+            // Make sure it does not already exist (e.g. the deviceInstance has multiple points with the same key)
+            if (_points.ContainsKey(pointKey))
             {
-                throw new InvalidOperationException($"A device instance with the key '{deviceInstance.Key}' already exists.");
+                throw new InvalidOperationException($"The device with key '{deviceInstance.Key}' has more than one point with the key '{pointKey}'");
             }
 
-            // Add the device
-            _deviceInstances.Add(deviceInstance.Key, deviceInstance);
-
-            // Add the device points (if any are defined)
-            foreach (var point in deviceInstance.Points)
-            {
-                // The unique point key is a combination of the device instance key and the point key
-                // This ensures all points are unique within this imperium state object
-                var pointKey = CreateDevicePointKey(deviceInstance.Key, point.Key);
-
-                // Make sure it does not already exist (e.g. the deviceInstance has multiple points with the same key)
-                if (_points.ContainsKey(pointKey))
-                {
-                    throw new InvalidOperationException($"The device with key '{deviceInstance.Key}' has more than one point with the key '{pointKey}'");
-                }
-
-                // Add the point
-                _points.Add(pointKey, point);
-            }
+            // Add the point
+            _points.Add(pointKey, point);
         }
     }
 
@@ -123,17 +98,14 @@ internal class ImperiumState : IPointState, IImperiumState
             throw new InvalidOperationException($"The device controller key must be set");
         }
 
-        lock (_threadLock)
+        // Make sure the key does not already exist
+        if (_deviceInstances.ContainsKey(key))
         {
-            // Make sure the key does not already exist
-            if (_deviceInstances.ContainsKey(key))
-            {
-                throw new InvalidOperationException($"A device controller with the key '{key}' already exists.");
-            }
-
-            // Add the device
-            _deviceControllers.Add(key, deviceController);
+            throw new InvalidOperationException($"A device controller with the key '{key}' already exists.");
         }
+
+        // Add the device
+        _deviceControllers.Add(key, deviceController);
     }
 
     /// <summary>
@@ -141,10 +113,7 @@ internal class ImperiumState : IPointState, IImperiumState
     /// </summary>
     public IList<Point> GetAllPoints()
     {
-        lock (_threadLock)
-        {
-            return [.. _points.Values];
-        }
+        return [.. _points.Values];
     }
 
     /// <summary>
@@ -159,11 +128,8 @@ internal class ImperiumState : IPointState, IImperiumState
 
         var keyPrefix = $"{deviceKey}.";
 
-        lock (_threadLock)
-        {
-            IList<Point> devicePoints = [.. _points.Values.Where(p => p.Key.StartsWith(keyPrefix, StringComparison.OrdinalIgnoreCase)).ToList()];
-            return devicePoints;
-        }
+        IList<Point> devicePoints = [.. _points.Values.Where(p => p.Key.StartsWith(keyPrefix, StringComparison.OrdinalIgnoreCase)).ToList()];
+        return devicePoints;
     }
 
     /// <inheritdoc/>
@@ -181,15 +147,12 @@ internal class ImperiumState : IPointState, IImperiumState
 
         var devicePointKey = $"{deviceKey}.{pointKey}";
 
-        lock (_threadLock)
+        if (!_points.TryGetValue(devicePointKey, out var point))
         {
-            if (!_points.TryGetValue(devicePointKey, out var point))
-            {
-                return null;
-            }
-
-            return point;
+            return null;
         }
+
+        return point;
     }
 
     /// <summary>
@@ -198,15 +161,12 @@ internal class ImperiumState : IPointState, IImperiumState
     /// </summary>
     public IDeviceController? GetDeviceController(string controllerKey)
     {
-        lock (_threadLock)
+        if (!_deviceControllers.TryGetValue(controllerKey, out var deviceController))
         {
-            if (!_deviceControllers.TryGetValue(controllerKey, out var deviceController))
-            {
-                return null;
-            }
-
-            return deviceController;
+            return null;
         }
+
+        return deviceController;
     }
 
     /// <summary>
@@ -215,24 +175,21 @@ internal class ImperiumState : IPointState, IImperiumState
     /// </summary>
     public IDeviceInstance? GetDeviceInstance(string key, bool includePoints)
     {
-        lock (_threadLock)
+        if (!_deviceInstances.TryGetValue(key, out var deviceInstance))
         {
-            if (!_deviceInstances.TryGetValue(key, out var deviceInstance))
-            {
-                return null;
-            }
-
-            if (includePoints)
-            {
-                SetDeviceInstancePoints(deviceInstance);
-            }
-            else
-            {
-                deviceInstance.Points.Clear();
-            }
-
-            return deviceInstance;
+            return null;
         }
+
+        if (includePoints)
+        {
+            SetDeviceInstancePoints(deviceInstance);
+        }
+        else
+        {
+            deviceInstance.Points.Clear();
+        }
+
+        return deviceInstance;
     }
 
     /// <summary>
@@ -240,20 +197,17 @@ internal class ImperiumState : IPointState, IImperiumState
     /// </summary>
     public IList<IDeviceInstance> GetEnabledDeviceInstances(bool includePoints)
     {
-        lock (_threadLock)
+        var enabledDeviceInstances = _deviceInstances.Values.Where(di => di.Enabled).ToList();
+
+        if (includePoints)
         {
-            var enabledDeviceInstances = _deviceInstances.Values.Where(di => di.Enabled).ToList();
-
-            if (includePoints)
+            foreach (var deviceInstance in enabledDeviceInstances)
             {
-                foreach (var deviceInstance in enabledDeviceInstances)
-                {
-                    SetDeviceInstancePoints(deviceInstance);
-                }
+                SetDeviceInstancePoints(deviceInstance);
             }
-
-            return enabledDeviceInstances;
         }
+
+        return enabledDeviceInstances;
     }
 
     /// <inheritdoc/>
@@ -351,16 +305,13 @@ internal class ImperiumState : IPointState, IImperiumState
 
     private void SetDeviceInstancePoints(IDeviceInstance deviceInstance)
     {
-        lock (_threadLock)
-        {
-            deviceInstance.Points.Clear();
-            var points = GetDevicePoints(deviceInstance.Key);
+        deviceInstance.Points.Clear();
+        var points = GetDevicePoints(deviceInstance.Key);
 
-            foreach (var point in points)
-            {
-                // We serialize and deserialize to ensure we add a copy
-                deviceInstance.Points.Add(point);
-            }
+        foreach (var point in points)
+        {
+            // We serialize and deserialize to ensure we add a copy
+            deviceInstance.Points.Add(point);
         }
     }
 
