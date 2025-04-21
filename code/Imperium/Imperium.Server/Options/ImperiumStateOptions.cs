@@ -13,4 +13,6 @@ public class ImperiumStateOptions
     public string MqttUser { get; set; } = string.Empty;
 
     public string MqttPassword { get; set; } = string.Empty;
+
+    public string ConfigurationPath {  get; set; } = string.Empty;
 }

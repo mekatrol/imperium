@@ -1,10 +1,22 @@
 ﻿namespace Imperium.Common.Points;
 
-public class PointDefinition(string key, string friendlyName, Type nativeType) : IPointDefinition
+public class PointDefinition
 {
-    public string Key => key;
+    public PointDefinition()
+    {
+        // Empty constructor for serialization
+    }
 
-    public string FriendlyName => friendlyName;
+    public PointDefinition(string key, string friendlyName, PointType pointType)
+    {
+        Key = key;
+        FriendlyName = friendlyName;
+        PointType = pointType;
+    }
 
-    public Type NativeType => nativeType;
+    public string Key { get; set; } = string.Empty;
+
+    public string FriendlyName { get; set; } = string.Empty;
+
+    public PointType PointType { get; set; }
 }

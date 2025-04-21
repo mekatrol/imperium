@@ -42,7 +42,7 @@ public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
         string deviceKey,
         string controllerKey,
         string configurationJson,
-        IList<IPointDefinition> points,
+        IList<PointDefinition> points,
         IImperiumState state)
     {
         switch (controllerKey.ToLower())
@@ -64,7 +64,7 @@ public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
     private static IDeviceInstance AddDevice<TModel>(string deviceKey,
         string controllerKey,
         string configurationJson,
-        IList<IPointDefinition> points,
+        IList<PointDefinition> points,
         IImperiumState state)
     {
         // Get the controller

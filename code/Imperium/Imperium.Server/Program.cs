@@ -1,4 +1,4 @@
-using Imperium.Common.Devices;
+using Imperium.Common.Configuration;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Server.Background;
@@ -17,7 +17,7 @@ public class Program
 {
     private const string AppCorsPolicy = nameof(AppCorsPolicy);
 
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -115,7 +115,7 @@ public class Program
 
         var app = builder.Build();
 
-        InitialiseImperiumState(app.Services);
+        await InitialiseImperiumState(app.Services);
 
         app.UseCors(AppCorsPolicy);
 
@@ -153,105 +153,50 @@ public class Program
         app.Run();
     }
 
-    private static ImperiumState InitialiseImperiumState(IServiceProvider services)
+    private static async Task<ImperiumState> InitialiseImperiumState(IServiceProvider services)
     {
         var state = services.GetRequiredService<ImperiumState>();
+        var options = services.GetRequiredService<ImperiumStateOptions>();
+
+        // Make sure configuration path exists
+        var configurationPath = options.ConfigurationPath;
+
+        var devicesDirectory = Path.Combine(configurationPath, "devices");
+        var pointsDirectory = Path.Combine(configurationPath, "points");
+
+        Directory.CreateDirectory(devicesDirectory);
+        Directory.CreateDirectory(pointsDirectory);
 
         var mekatrolDeviceContollerFactory = new MekatrolDeviceControllerFactory();
         mekatrolDeviceContollerFactory.AddDeviceControllers(services);
 
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.sunrisesunset",
-            "mekatrol.sunrise.sunset.controller",
-            "{ \"Url\": \"https://api.sunrise-sunset.org/json?lat=-35.2809&lng=149.1300&date=today&formatted=0\" }",
-            [
-                new PointDefinition("Sunrise", "Sunrise", typeof(DateTime)),
-                new PointDefinition("Sunset", "Sunset", typeof(DateTime)),
-                new PointDefinition("SolarNoon", "Solar Noon", typeof(DateTime)),
-                new PointDefinition("DayLength", "Day Length", typeof(int)),
-                new PointDefinition("CivilTwilightBegin", "Civil Twilight Begin", typeof(DateTime)),
-                new PointDefinition("CivilTwilightEnd", "Civil TwilightEnd", typeof(DateTime)),
-                new PointDefinition("NauticalTwilightBegin", "Nautical Twilight Begin", typeof(DateTime)),
-                new PointDefinition("NauticalTwilightEnd", "Nautical Twilight End", typeof(DateTime)),
-                new PointDefinition("AstronomicalTwilightBegin", "Astronomical Twilight Begin", typeof(DateTime)),
-                new PointDefinition("AstronomicalTwilightEnd", "Astronomical Twilight End", typeof(DateTime)),
-                new PointDefinition("IsDaytime", "Is Daytime", typeof(bool)),
-                new PointDefinition("IsNighttime", "Is Nighttime", typeof(bool))
-            ],
-            state);
+        //var deviceConfiguration = new DeviceConfiguration
+        //{
+        //    ControllerKey = "mekatrol.four.output.controller",
+        //    DeviceKey = "device.carport.powerboard",
+        //    Points = new List<PointDefinition>([
+        //        new PointDefinition("Relay1", "Carport Lights", PointType.Integer),
+        //        new PointDefinition("Relay4", "Fish Plant Pump", PointType.Integer)
+        //    ]),
+        //    Data = "{ \"Url\": \"http://pbcarport.home.wojcik.com.au\" }"
+        //};
 
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.alfrescolight",
-            "mekatrol.single.output.controller",
-            "{ \"Url\": \"http://alfresco-light.lan\" }",
-            [
-                new PointDefinition("Relay", "Alfresco Light", typeof(int))
-            ],
-            state);
+        //await File.WriteAllTextAsync($"{Path.Combine(devicesDirectory, deviceConfiguration.DeviceKey)}.json", JsonSerializer.Serialize(deviceConfiguration, JsonSerializerExtensions.ApiSerializerOptions));
 
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.kitchen.light",
-            "mekatrol.single.output.controller",
-            "{ \"Url\": \"http://kitchen-cabinet-lights.home.wojcik.com.au\" }",
-            [
-                new PointDefinition("Relay", "Kitchen Cabinet Light", typeof(int))
-            ],
-            state);
+        // Get all device files
+        var deviceFiles = Directory.GetFiles(devicesDirectory, "*.json");
 
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.clothesline",
-            "mekatrol.single.output.controller",
-            "{ \"Url\": \"http://clothesline-lights.home.wojcik.com.au\" }",
-            [
-                new PointDefinition("Relay", "Clothes Line Light", typeof(int))
-            ],
-            state);
-
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.greenhousepump",
-            "mekatrol.single.output.controller",
-            "{ \"Url\": \"http://10.2.2.88\" }",
-            [
-                new PointDefinition("Relay", "Greenhouse Pump", typeof(int))
-            ],
-            state);
-
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.housenumberlight",
-            "mekatrol.single.output.controller",
-            "{ \"Url\": \"http://10.2.2.89\" }",
-            [
-                new PointDefinition("Relay", "House Number", typeof(int))
-            ],
-            state);
-
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.frontdoorlight",
-            "mekatrol.single.output.controller",
-            "{ \"Url\": \"http://10.2.2.90\" }",
-            [
-                new PointDefinition("Relay", "Front Door Light", typeof(int))
-            ],
-            state);
-
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.kitchenview.powerboard",
-            "mekatrol.four.output.controller",
-            "{ \"Url\": \"http://pbalfresco.home.wojcik.com.au\" }",
-            [
-                new PointDefinition("Relay1", "String Lights", typeof(int))
-            ],
-            state);
-
-        mekatrolDeviceContollerFactory.AddDeviceInstance(
-            "device.carport.powerboard",
-            "mekatrol.four.output.controller",
-            "{ \"Url\": \"http://pbcarport.home.wojcik.com.au\" }",
-            [
-                new PointDefinition("Relay1", "Carport Lights", typeof(int)),
-                new PointDefinition("Relay4", "Fish Plant Pump", typeof(int))
-            ],
-            state);
+        foreach (var deviceFile in deviceFiles)
+        {
+            var json = await File.ReadAllTextAsync(deviceFile);
+            var config = JsonSerializer.Deserialize<DeviceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions)!;
+            mekatrolDeviceContollerFactory.AddDeviceInstance(
+                config.DeviceKey,
+                config.ControllerKey,
+                config.Data,
+                config.Points,
+                state);
+        }
 
         AddHouseAlarmPoint(1, "Lounge room", state);
         AddHouseAlarmPoint(2, "Dining room", state);
