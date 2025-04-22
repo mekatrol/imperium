@@ -96,11 +96,11 @@ public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
 
             var nativePointType = point.PointType.GetPointNativeType();
 
-            if(nativePointType != pointProperty.PropertyType)
+            if (nativePointType != pointProperty.PropertyType)
             {
                 // Points of type 'Boolean' can be mapped to types of 'int' in Mekatrol controllers because
                 // Mekatrol controlers treat '0 == false' and '!0 == true'
-                if(nativePointType != typeof(bool) || pointProperty.PropertyType != typeof(int))
+                if (nativePointType != typeof(bool) || pointProperty.PropertyType != typeof(int))
                 {
                     throw new Exception($"The point with key '{point.Key}' has type '{point.PointType}' defined which is not compatible for the controller '{controllerKey}' with point type '{pointProperty.PropertyType}'.");
                 }

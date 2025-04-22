@@ -3,7 +3,6 @@ using Imperium.Common.Utils;
 using Imperium.Server.Options;
 
 namespace Imperium.Server.Background;
-
 internal class FlowExecutorBackgroundService(
     FlowExecutorBackgroundServiceOptions backgroundServiceOptions,
     IServiceProvider serviceProvider,

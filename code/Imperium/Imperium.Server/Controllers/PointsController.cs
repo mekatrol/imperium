@@ -1,4 +1,3 @@
-using Imperium.Common.Exceptions;
 using Imperium.Common.Points;
 using Imperium.Common.Services;
 using Imperium.Server.State;
@@ -19,7 +18,7 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
     }
 
     [HttpPost]
-    public async Task <Point?> Post(PointUpdateValueModel pointUpdate)
+    public async Task<Point?> Post(PointUpdateValueModel pointUpdate)
     {
         logger.LogDebug("{msg}", $"Updating point '{pointUpdate}'");
         var pointService = services.GetRequiredService<IPointService>();

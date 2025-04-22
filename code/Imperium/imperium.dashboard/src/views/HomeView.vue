@@ -28,7 +28,9 @@
           </div>
         </div>
       </div>
-      <div class="spacer spacer-right"></div>
+      <div class="spacer spacer-right">
+        <span :class="`material-symbols-outlined ${isDaytimeClass}`">{{ isDaytimePoint?.value ? 'wb_sunny' : 'dark_mode' }}</span>
+      </div>
     </div>
     <div class="dashboard">
       <div
@@ -87,6 +89,7 @@ const panicPoint = ref<Point | undefined>();
 const carportLightsPoint = ref<Point | undefined>();
 const frontDoorLightPoint = ref<Point | undefined>();
 const houseNumberLightPoint = ref<Point | undefined>();
+const isDaytimePoint = ref<Point | undefined>();
 
 const serverStatusIcon = computed((): string => {
   return appStore.serverOnline ? 'devices' : 'devices_off';
@@ -94,6 +97,16 @@ const serverStatusIcon = computed((): string => {
 
 const serverStatusClass = computed((): string => {
   return appStore.serverOnline ? 'online' : 'offline';
+});
+
+const isDaytimeClass = computed((): string => {
+  console.log(isDaytimePoint.value?.value);
+
+  if (!isDaytimePoint.value) {
+    return 'daytime-hide';
+  }
+
+  return isDaytimePoint.value.value ? 'daytime-day' : 'daytime-night';
 });
 
 const createCells = (): void => {
@@ -169,6 +182,7 @@ const updatePoints = (): void => {
   updatePoint('device.housenumberlight', 'Relay', houseNumberLightPoint);
   updatePoint(null, 'water.pumps', aquaponicsPumpsPoint);
   updatePoint(null, 'panic', panicPoint);
+  updatePoint('device.sunrisesunset', 'IsDaytime', isDaytimePoint);
 };
 
 useIntervalTimer(async () => {
@@ -297,14 +311,16 @@ updateDateTime();
   min-width: 80px;
 }
 
-.spacer-left {
+.spacer-left,
+.spacer-right {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-content: center;
 }
 
-.spacer-left span {
+.spacer-left span,
+.spacer-right span {
   text-align: center;
   font-size: 4rem;
 }
@@ -319,5 +335,17 @@ updateDateTime();
   text-align: center;
   font-size: 4rem;
   color: var(--clr-state-on);
+}
+
+.daytime-hide {
+  color: transparent;
+}
+
+.daytime-day {
+  color: #ffff00;
+}
+
+.daytime-night {
+  color: #aaa;
 }
 </style>
