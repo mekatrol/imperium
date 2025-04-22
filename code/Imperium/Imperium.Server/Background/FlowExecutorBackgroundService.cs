@@ -27,7 +27,7 @@ internal class FlowExecutorBackgroundService(
         if (isNighttime.HasValue)
         {
             // Alfresco on when night time
-            pointState.UpdatePointValue("device.alfrescolight", "Relay", isNighttime.Value ? 1 : 0, PointValueType.Control);
+            pointState.UpdatePointValue("device.alfrescolight", "Relay", isNighttime.Value, PointValueType.Control);
         }
 
         // Set panic off for now
@@ -35,21 +35,23 @@ internal class FlowExecutorBackgroundService(
 
         // String lights on between 19:30 and 22:30
         var stringOn = now.WithinTimeRange(new TimeOnly(18, 00), new TimeOnly(22, 30));
-        pointState.UpdatePointValue("device.kitchenview.powerboard", "Relay1", stringOn ? 1 : 0, PointValueType.Control);
+        pointState.UpdatePointValue("device.kitchenview.powerboard", "Relay1", stringOn, PointValueType.Control);
 
         // Fish plant pump on between 07:30 and 19:30
-        var fishPlantsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
-        pointState.UpdatePointValue("device.carport.powerboard", "Relay4", fishPlantsOn ? 1 : 0, PointValueType.Control);
+        var waterPumpsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
 
         // Pumps are on (this is a virtual point, Imperium is the device so set point valur type to device).
-        pointState.UpdatePointValue("virtual", "water.pumps", fishPlantsOn, PointValueType.Device);
+        pointState.UpdatePointValue("virtual", "water.pumps", waterPumpsOn, PointValueType.Device);
+
+        pointState.UpdatePointValue("device.greenhousepump", "Relay", waterPumpsOn, PointValueType.Control);
+        pointState.UpdatePointValue("device.carport.powerboard", "Relay4", waterPumpsOn, PointValueType.Control);
 
         var alarmZone2Value = (string?)pointState.GetPointValue("housealarm", "zone2");
 
         var timer = pointState.GetDevicePoint("virtual", "kitchen.light.timer");
         if ("EVT_UNSEALED" == alarmZone2Value && isNighttime.HasValue && isNighttime.Value)
         {
-            pointState.UpdatePointValue("device.kitchen.light", "Relay", 1, PointValueType.Control);
+            pointState.UpdatePointValue("device.kitchen.light", "Relay", true, PointValueType.Control);
 
             if (timer != null)
             {
@@ -67,12 +69,12 @@ internal class FlowExecutorBackgroundService(
                 pointState.UpdatePointValue("virtual", "kitchen.light.timer", null, PointValueType.Control);
 
                 // Turn off kitchen light
-                pointState.UpdatePointValue("device.kitchen.light", "Relay", 0, PointValueType.Control);
+                pointState.UpdatePointValue("device.kitchen.light", "Relay", false, PointValueType.Control);
             }
             else if (expiry == null)
             {
                 // Turn off kitchen light
-                pointState.UpdatePointValue("device.kitchen.light", "Relay", 0, PointValueType.Control);
+                pointState.UpdatePointValue("device.kitchen.light", "Relay", false, PointValueType.Control);
             }
         }
 
