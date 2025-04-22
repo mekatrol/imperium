@@ -1,15 +1,8 @@
 <template>
   <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
-    <button
-      @click="toggleValue"
-      :disabled="isOffline()"
-    >
+    <button @click="toggleValue" :disabled="isOffline()">
       <div>
-        <span
-          v-if="icon"
-          class="material-symbols-outlined"
-          >{{ icon }}</span
-        >
+        <span v-if="icon" class="material-symbols-outlined">{{ icon }}</span>
       </div>
       <div>
         <div class="spacer">
@@ -19,21 +12,12 @@
           <p>{{ label }}</p>
         </div>
         <div class="status">
-          <span
-            :class="`material-symbols-outlined ${getOverrideVisible() ? 'on' : ''}`"
-            :aria-hidden="!getOverrideVisible()"
-            >lock</span
-          >
-          <span
-            :class="`material-symbols-outlined ${getControlVisible() ? 'on' : ''}`"
-            :aria-hidden="!getControlVisible()"
-            >account_tree</span
-          >
-          <span
-            :class="`material-symbols-outlined ${getDeviceVisible() ? 'on' : ''}`"
-            :aria-hidden="!getDeviceVisible()"
-            >link_off</span
-          >
+          <span :class="`material-symbols-outlined ${getOverrideVisible() ? 'on' : ''}`"
+            :aria-hidden="!getOverrideVisible()">lock</span>
+          <span :class="`material-symbols-outlined ${getControlVisible() ? 'on' : ''}`"
+            :aria-hidden="!getControlVisible()">account_tree</span>
+          <span :class="`material-symbols-outlined ${getDeviceVisible() ? 'on' : ''}`"
+            :aria-hidden="!getDeviceVisible()">link_off</span>
         </div>
       </div>
     </button>
@@ -41,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { PointType, type Point } from '@/models/point';
+import { type Point } from '@/models/point';
 import { useAppStore } from '@/stores/app-store';
 import type { Ref } from 'vue';
 
@@ -59,11 +43,11 @@ const model = defineModel<Ref<Point>>();
 defineProps<Props>();
 
 const getOverrideVisible = (): boolean => {
-  return !!(model.value?.value && model.value.value.overrideValue);
+  return !!(model.value?.value && model.value.value.overrideValue != undefined);
 };
 
 const getControlVisible = (): boolean => {
-  return !!(model.value?.value && model.value.value.controlValue);
+  return !!(model.value?.value && model.value.value.controlValue != undefined);
 };
 
 const getDeviceVisible = (): boolean => {
@@ -105,7 +89,7 @@ const toggleValue = async (): Promise<void> => {
 }
 
 /* Button sections (icon + text) */
-.dashboard-cell button > div {
+.dashboard-cell button>div {
   display: flex;
   flex-direction: column;
   align-content: center;
@@ -113,13 +97,13 @@ const toggleValue = async (): Promise<void> => {
 }
 
 /* Icon section */
-.dashboard-cell button > :first-child {
+.dashboard-cell button> :first-child {
   width: 40%;
   display: flex;
 }
 
 /* Text section */
-.dashboard-cell button > :not(:first-child) {
+.dashboard-cell button> :not(:first-child) {
   width: 60%;
   display: flex;
   flex-direction: column;
@@ -128,7 +112,7 @@ const toggleValue = async (): Promise<void> => {
 }
 
 /* Text section children */
-.dashboard-cell button > :not(:first-child) > * {
+.dashboard-cell button> :not(:first-child)>* {
   padding: 0;
   margin: 0;
   line-height: 1rem;
@@ -140,7 +124,7 @@ const toggleValue = async (): Promise<void> => {
   align-items: flex-start;
 }
 
-.dashboard-cell button .label > p {
+.dashboard-cell button .label>p {
   line-height: 2rem;
   font-size: 1rem;
   text-align: center;
@@ -152,7 +136,7 @@ const toggleValue = async (): Promise<void> => {
   flex-direction: row;
 }
 
-.dashboard-cell button .status > span {
+.dashboard-cell button .status>span {
   display: flex;
   line-height: 1.1rem;
   font-size: 1.1rem;
@@ -163,19 +147,19 @@ const toggleValue = async (): Promise<void> => {
   color: transparent;
 }
 
-.dashboard-cell.state-off > button:active .status > span {
+.dashboard-cell.state-off>button:active .status>span {
   color: var(--clr-state-off);
 }
 
-.dashboard-cell.state-on > button:active .status > span {
+.dashboard-cell.state-on>button:active .status>span {
   color: var(--clr-state-on);
 }
 
-.dashboard-cell.state-off button .status > span.on {
+.dashboard-cell.state-off button .status>span.on {
   color: var(--clr-state-off);
 }
 
-.dashboard-cell.state-on button .status > span.on {
+.dashboard-cell.state-on button .status>span.on {
   color: var(--clr-state-on);
 }
 </style>
