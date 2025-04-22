@@ -2,48 +2,33 @@
   <main class="home">
     <div class="top-row">
       <div class="spacer spacer-left">
-        <span
-          v-if="serverStatusIcon"
-          :class="`material-symbols-outlined ${serverStatusClass}`"
-          >{{ serverStatusIcon }}</span
-        >
+        <span v-if="serverStatusIcon" :class="`material-symbols-outlined ${serverStatusClass}`">{{ serverStatusIcon
+          }}</span>
       </div>
       <div class="time-card">
         <p class="time">{{ timeDisplay }}</p>
         <div style="display: flex; flex-direction: row; gap: 30px">
-          <div
-            class="sunrise"
-            v-if="sunrisePoint"
-          >
-            <span class="material-symbols-outlined">sunny</span> {{ getTimeWithMeridiem(new Date(sunrisePoint.value! as Date), false) }}
+          <div class="sunrise" v-if="sunrisePoint">
+            <span class="material-symbols-outlined">sunny</span> {{ getTimeWithMeridiem(new Date(sunrisePoint.value! as
+              Date), false) }}
           </div>
           <div>
             <p class="date"><span class="material-symbols-outlined">calendar_month</span>{{ dateDisplay }}</p>
           </div>
-          <div
-            class="sunset"
-            v-if="sunsetPoint"
-          >
-            <span class="material-symbols-outlined">routine</span>{{ getTimeWithMeridiem(new Date(sunsetPoint.value! as Date), false) }}
+          <div class="sunset" v-if="sunsetPoint">
+            <span class="material-symbols-outlined">routine</span>{{ getTimeWithMeridiem(new Date(sunsetPoint.value! as
+              Date), false) }}
           </div>
         </div>
       </div>
       <div class="spacer spacer-right">
-        <span :class="`material-symbols-outlined ${isDaytimeClass}`">{{ isDaytimePoint?.value ? 'wb_sunny' : 'dark_mode' }}</span>
+        <span :class="`material-symbols-outlined ${isDaytimeClass}`">{{ isDaytimePoint?.value ? 'wb_sunny' : 'dark_mode'
+          }}</span>
       </div>
     </div>
     <div class="dashboard">
-      <div
-        class="cell-container"
-        v-for="cell in gridCells"
-        :key="cell.props.id"
-        :class="cell.props.cssClass"
-      >
-        <component
-          :is="cell.component"
-          v-bind="{ ...cell.props }"
-          v-model="cell.model"
-        />
+      <div class="cell-container" v-for="cell in gridCells" :key="cell.props.id" :class="cell.props.cssClass">
+        <component :is="cell.component" v-bind="{ ...cell.props }" v-model="cell.model" />
       </div>
     </div>
   </main>
@@ -100,8 +85,6 @@ const serverStatusClass = computed((): string => {
 });
 
 const isDaytimeClass = computed((): string => {
-  console.log(isDaytimePoint.value?.value);
-
   if (!isDaytimePoint.value) {
     return 'daytime-hide';
   }
@@ -299,7 +282,7 @@ updateDateTime();
   margin-top: 1rem;
 }
 
-.dashboard > * {
+.dashboard>* {
   display: flex;
   line-height: 4rem;
   border-radius: 5px;
