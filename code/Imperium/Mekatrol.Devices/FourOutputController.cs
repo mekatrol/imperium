@@ -46,16 +46,16 @@ internal class FourOutputController(IHttpClientFactory clientFactory, IPointStat
         pointState.UpdatePointValue(deviceInstance, point, model!.Btn, PointValueType.Device);
 
         var relay1 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay1));
-        pointState.UpdatePointValue(deviceInstance, relay1, model!.Relay1, PointValueType.Device);
+        pointState.UpdatePointValue(deviceInstance, relay1, ConvertIntToBool(model!.Relay1), PointValueType.Device);
 
         var relay2 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay2));
-        pointState.UpdatePointValue(deviceInstance, relay2, model!.Relay2, PointValueType.Device);
+        pointState.UpdatePointValue(deviceInstance, relay2, ConvertIntToBool(model!.Relay2), PointValueType.Device);
 
         var relay3 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay3));
-        pointState.UpdatePointValue(deviceInstance, relay3, model!.Relay3, PointValueType.Device);
+        pointState.UpdatePointValue(deviceInstance, relay3, ConvertIntToBool(model!.Relay3), PointValueType.Device);
 
         var relay4 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay4));
-        pointState.UpdatePointValue(deviceInstance, relay4, model!.Relay4, PointValueType.Device);
+        pointState.UpdatePointValue(deviceInstance, relay4, ConvertIntToBool(model!.Relay4), PointValueType.Device);
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
@@ -74,11 +74,11 @@ internal class FourOutputController(IHttpClientFactory clientFactory, IPointStat
 
         var model = new FourOutputControllerModel
         {
-            Relay1 = GetIntValue(nameof(FourOutputControllerModel.Relay1), deviceInstance, 0),
-            Relay2 = GetIntValue(nameof(FourOutputControllerModel.Relay2), deviceInstance, 0),
-            Relay3 = GetIntValue(nameof(FourOutputControllerModel.Relay3), deviceInstance, 0),
-            Relay4 = GetIntValue(nameof(FourOutputControllerModel.Relay4), deviceInstance, 0),
-            Led = GetIntValue(nameof(FourOutputControllerModel.Led), deviceInstance, 0)
+            Relay1 = ConvertPointIntToBool(nameof(FourOutputControllerModel.Relay1), deviceInstance, false),
+            Relay2 = ConvertPointIntToBool(nameof(FourOutputControllerModel.Relay2), deviceInstance, false),
+            Relay3 = ConvertPointIntToBool(nameof(FourOutputControllerModel.Relay3), deviceInstance, false),
+            Relay4 = ConvertPointIntToBool(nameof(FourOutputControllerModel.Relay4), deviceInstance, false),
+            Led = ConvertPointIntToBool(nameof(FourOutputControllerModel.Led), deviceInstance, false)
         };
 
         var client = clientFactory.CreateClient(nameof(HttpClient));

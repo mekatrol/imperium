@@ -1,5 +1,6 @@
 ﻿using Imperium.Common.Controllers;
 using Imperium.Common.Devices;
+using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -93,7 +94,19 @@ public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
                 throw new Exception($"The point key '{point.Key}' is not valid for the controller '{controllerKey}'.");
             }
 
-            deviceInstance.MapPoint(point.Key, point.FriendlyName, pointProperty.PropertyType, null);
+            var nativePointType = point.PointType.GetPointNativeType();
+
+            if(nativePointType != pointProperty.PropertyType)
+            {
+                // Points of type 'Boolean' can be mapped to types of 'int' in Mekatrol controllers because
+                // Mekatrol controlers treat '0 == false' and '!0 == true'
+                if(nativePointType != typeof(bool) || pointProperty.PropertyType != typeof(int))
+                {
+                    throw new Exception($"The point with key '{point.Key}' has type '{point.PointType}' defined which is not compatible for the controller '{controllerKey}' with point type '{pointProperty.PropertyType}'.");
+                }
+            }
+
+            deviceInstance.MapPoint(point.Key, point.FriendlyName, nativePointType, null);
         }
 
         state.AddDeviceAndPoints(deviceInstance);

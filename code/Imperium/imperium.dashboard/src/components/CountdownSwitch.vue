@@ -2,11 +2,7 @@
   <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
     <button @click="clearCountdown">
       <div>
-        <span
-          v-if="icon"
-          class="material-symbols-outlined"
-          >{{ icon }}</span
-        >
+        <span v-if="icon" class="material-symbols-outlined">{{ icon }}</span>
       </div>
       <div :class="`label ${countdown ? 'counting' : ''}`">
         <p>{{ label }}</p>
@@ -70,7 +66,7 @@ const clearCountdown = async (): Promise<void> => {
   }
 
   try {
-    await appStore.updatePoint(model.value.value.countdownPoint.id, undefined);
+    await appStore.togglePoint(model.value.value.countdownPoint.deviceKey, model.value.value.countdownPoint.key, undefined);
     appStore.setServerOnlineStatus(true);
   } catch {
     appStore.setServerOnlineStatus(false);
@@ -79,19 +75,19 @@ const clearCountdown = async (): Promise<void> => {
 </script>
 
 <style lang="css">
-.dashboard-cell > button > div {
+.dashboard-cell>button>div {
   height: 100%;
   display: flex;
   justify-content: center;
 }
 
-.dashboard-cell > button > div > span {
+.dashboard-cell>button>div>span {
   margin: auto;
   font-size: 3rem;
   align-self: flex-start;
 }
 
-.dashboard-cell > button > div > p {
+.dashboard-cell>button>div>p {
   margin: auto;
   font-size: 1rem;
 }
@@ -102,12 +98,12 @@ const clearCountdown = async (): Promise<void> => {
   gap: 0;
 }
 
-.label.counting > p:first-child {
+.label.counting>p:first-child {
   margin: auto;
   line-height: 0.5rem;
 }
 
-.label.counting > p:not(:first-child) {
+.label.counting>p:not(:first-child) {
   margin: auto;
   line-height: 0.3rem;
   font-size: 0.8rem;

@@ -2,7 +2,7 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { clearMessage, type MessageData } from '@/services/message';
 import { type HandleErrorCallback } from '@/services/api';
-import type { Point, PointTypes, PointValueUpdate } from '@/models/point';
+import { PointUpdateAction, type Point, type PointTypes, type PointValueUpdate } from '@/models/point';
 import { httpGet, httpPost } from '@/services/http';
 
 export const useAppStore = defineStore('app', () => {
@@ -32,9 +32,22 @@ export const useAppStore = defineStore('app', () => {
     return await httpGet<Point[]>('/points', errorHandlerCallback, false, showBusy);
   };
 
-  const updatePoint = async (id: string, value: PointTypes, errorHandlerCallback?: HandleErrorCallback): Promise<Point> => {
+  const togglePoint = async (deviceKey: string, pointKey: string, value: PointTypes, errorHandlerCallback?: HandleErrorCallback): Promise<Point> => {
     const model: PointValueUpdate = {
-      id: id,
+      deviceKey: deviceKey,
+      pointKey: pointKey,
+      pointUpdateAction: PointUpdateAction.Toggle,
+      value: null
+    };
+
+    return await httpPost<PointValueUpdate, Point>(model, '/points', errorHandlerCallback, false);
+  };
+
+  const updatePoint = async (deviceKey: string, pointKey: string, value: PointTypes, updateAction: PointUpdateAction, errorHandlerCallback?: HandleErrorCallback): Promise<Point> => {
+    const model: PointValueUpdate = {
+      deviceKey: deviceKey,
+      pointKey: pointKey,
+      pointUpdateAction: updateAction,
       value: value === undefined || value === null ? null : `${value}`
     };
 
@@ -56,6 +69,7 @@ export const useAppStore = defineStore('app', () => {
     setServerOnlineStatus,
 
     getPoints,
+    togglePoint,
     updatePoint
   };
 });

@@ -46,7 +46,7 @@ internal class SingleOutputController(IHttpClientFactory clientFactory, IPointSt
         pointState.UpdatePointValue(deviceInstance, point, model!.Btn, PointValueType.Device);
 
         var relay = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Relay));
-        pointState.UpdatePointValue(deviceInstance, relay, model!.Relay, PointValueType.Device);
+        pointState.UpdatePointValue(deviceInstance, relay, ConvertIntToBool(model!.Relay), PointValueType.Device);
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
@@ -65,8 +65,8 @@ internal class SingleOutputController(IHttpClientFactory clientFactory, IPointSt
 
         var model = new SingleOutputControllerModel
         {
-            Relay = GetIntValue(nameof(SingleOutputControllerModel.Relay), deviceInstance, 0),
-            Led = GetIntValue(nameof(SingleOutputControllerModel.Led), deviceInstance, 0)
+            Relay = ConvertPointIntToBool(nameof(SingleOutputControllerModel.Relay), deviceInstance, false),
+            Led = ConvertPointIntToBool(nameof(SingleOutputControllerModel.Led), deviceInstance, false)
         };
 
         var client = clientFactory.CreateClient(nameof(HttpClient));

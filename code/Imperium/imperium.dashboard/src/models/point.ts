@@ -15,6 +15,13 @@ export enum PointState {
   Online = 'online'
 }
 
+export enum PointUpdateAction {
+  Control = 'control',
+  Override = 'override',
+  OverrideRelease = 'overrideRelease',
+  Toggle = 'toggle'
+}
+
 export type PointTypes = object | string | number | boolean | Date | undefined | null;
 
 export interface Point {
@@ -38,6 +45,8 @@ export interface CountdownPoint {
 }
 
 export interface PointValueUpdate {
-  id: string;
+  deviceKey: string;
+  pointKey: string;
+  pointUpdateAction: PointUpdateAction;
   value: PointTypes;
 }

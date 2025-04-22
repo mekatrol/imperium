@@ -106,6 +106,8 @@ public class Program
         builder.Services.AddHostedService<FlowExecutorBackgroundService>();
         builder.Services.AddHostedService<MqttClientBackgroundService>();
 
+        builder.Services.AddImperiumServices();
+
         builder.Services.AddSerilog(config =>
         {
             config
