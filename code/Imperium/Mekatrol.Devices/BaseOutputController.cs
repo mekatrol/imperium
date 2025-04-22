@@ -23,6 +23,16 @@ internal abstract class BaseOutputController
             return defaultValue;
         }
 
+        if (point.OverrideValue != null)
+        {
+            return (int)point.OverrideValue;
+        }
+
+        if (point.ControlValue != null)
+        {
+            return (int)point.ControlValue;
+        }
+
         return (int)point.Value;
     }
 }

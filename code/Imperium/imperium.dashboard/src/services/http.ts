@@ -125,13 +125,7 @@ const handleApiResponseError = (err: unknown, url: string): ApiError => {
   return apiError;
 };
 
-export const handleApiError = (
-  error: unknown,
-  url: string,
-  method: string,
-  errorHandlerCallback?: HandleErrorCallback,
-  suppressUnauthorizedError?: boolean
-): ApiError => {
+export const handleApiError = (error: unknown, url: string, method: string, errorHandlerCallback?: HandleErrorCallback, suppressUnauthorizedError?: boolean): ApiError => {
   const apiError = handleApiResponseError(error, url);
 
   // If validation errors have been returned, give them to the validation form
@@ -178,12 +172,7 @@ const displayErrorMessage = (error: ApiError, method: string): void => {
   throw error;
 };
 
-export const httpGet = async <T>(
-  url: string,
-  errorHandlerCallback?: HandleErrorCallback,
-  retrying?: boolean,
-  showBusy: boolean = true
-): Promise<T> => {
+export const httpGet = async <T>(url: string, errorHandlerCallback?: HandleErrorCallback, retrying?: boolean, showBusy: boolean = true): Promise<T> => {
   const config = {
     ...defaultConfig
   };
@@ -209,12 +198,7 @@ export const httpGet = async <T>(
   }
 };
 
-export const httpPost = async <TRequest, TResponse>(
-  requestData: TRequest,
-  url: string,
-  errorHandlerCallback?: HandleErrorCallback,
-  retrying?: boolean
-): Promise<TResponse> => {
+export const httpPost = async <TRequest, TResponse>(requestData: TRequest, url: string, errorHandlerCallback?: HandleErrorCallback, retrying?: boolean): Promise<TResponse> => {
   const config = {
     ...defaultConfig
   };
@@ -235,12 +219,7 @@ export const httpPost = async <TRequest, TResponse>(
   }
 };
 
-export const httpPut = async <TRequest, TResponse>(
-  requestData: TRequest,
-  url: string,
-  errorHandlerCallback?: HandleErrorCallback,
-  retrying?: boolean
-): Promise<TResponse> => {
+export const httpPut = async <TRequest, TResponse>(requestData: TRequest, url: string, errorHandlerCallback?: HandleErrorCallback, retrying?: boolean): Promise<TResponse> => {
   const config = {
     ...defaultConfig
   };
@@ -261,12 +240,7 @@ export const httpPut = async <TRequest, TResponse>(
   }
 };
 
-export const httpPatch = async <TRequest, TResponse>(
-  requestData: TRequest,
-  url: string,
-  errorHandlerCallback?: HandleErrorCallback,
-  retrying?: boolean
-): Promise<TResponse> => {
+export const httpPatch = async <TRequest, TResponse>(requestData: TRequest, url: string, errorHandlerCallback?: HandleErrorCallback, retrying?: boolean): Promise<TResponse> => {
   const config = {
     ...defaultConfig
   };

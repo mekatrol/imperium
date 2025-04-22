@@ -34,11 +34,11 @@
   cursor: not-allowed;
 }
 
-.dashboard-cell.dashboard-cell.state-off > button:active {
+.dashboard-cell.state-off > button:active {
   background-color: var(--clr-state-off);
 }
 
-.dashboard-cell.dashboard-cell.state-on > button:active {
+.dashboard-cell.state-on > button:active {
   background-color: var(--clr-state-on);
 }
 

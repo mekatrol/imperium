@@ -2,27 +2,46 @@
   <main class="home">
     <div class="top-row">
       <div class="spacer spacer-left">
-        <span v-if="serverStatusIcon" :class="`material-symbols-outlined ${serverStatusClass}`">{{ serverStatusIcon
-          }}</span>
+        <span
+          v-if="serverStatusIcon"
+          :class="`material-symbols-outlined ${serverStatusClass}`"
+          >{{ serverStatusIcon }}</span
+        >
       </div>
       <div class="time-card">
         <p class="time">{{ timeDisplay }}</p>
         <div style="display: flex; flex-direction: row; gap: 30px">
-          <div class="sunrise" v-if="sunrisePoint"><span class="material-symbols-outlined">sunny</span> {{
-            getTimeWithMeridiem(new Date(sunrisePoint.value! as Date), false) }}
+          <div
+            class="sunrise"
+            v-if="sunrisePoint"
+          >
+            <span class="material-symbols-outlined">sunny</span> {{ getTimeWithMeridiem(new Date(sunrisePoint.value! as Date), false) }}
           </div>
           <div>
             <p class="date"><span class="material-symbols-outlined">calendar_month</span>{{ dateDisplay }}</p>
           </div>
-          <div class="sunset" v-if="sunsetPoint"><span class="material-symbols-outlined">routine</span>{{
-            getTimeWithMeridiem(new Date(sunsetPoint.value! as Date), false) }}</div>
+          <div
+            class="sunset"
+            v-if="sunsetPoint"
+          >
+            <span class="material-symbols-outlined">routine</span>{{ getTimeWithMeridiem(new Date(sunsetPoint.value! as Date), false) }}
+          </div>
         </div>
       </div>
       <div class="spacer spacer-right"></div>
     </div>
     <div class="dashboard">
-      <div class="cell-container" v-for="cell in gridCells" :key="cell.props.id" :class="cell.props.cssClass">
-        <component :is="cell.component" v-bind="{ ...cell.props }" v-model="cell.model" />
+      <div
+        class="cell-container"
+        v-for="cell in gridCells"
+        :key="cell.props.id"
+        :class="cell.props.cssClass"
+      >
+        <component
+          :is="cell.component"
+          v-bind="{ ...cell.props }"
+          v-model="cell.model"
+        />
       </div>
     </div>
   </main>
@@ -102,7 +121,7 @@ const updateDateTime = (): void => {
 };
 
 const updatePoint = (deviceKey: string | null, pointKey: string, point: Ref<Point | undefined>): void => {
-  const points = allPoints.value.filter(p => p.deviceKey === deviceKey && p.key === pointKey);
+  const points = allPoints.value.filter((p) => p.deviceKey === deviceKey && p.key === pointKey);
   if (points.length === 1) {
     point.value = points[0];
   } else {
@@ -110,13 +129,9 @@ const updatePoint = (deviceKey: string | null, pointKey: string, point: Ref<Poin
   }
 };
 
-const updateCountdown = (
-  valueDeviceKey: string, valuePointKey: string,
-  countdownDeviceKey: string | null, countdownPointKey: string,
-  point: Ref<CountdownPoint | undefined>): void => {
-
-  const valuePoints = allPoints.value.filter(p => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
-  const countdownPoints = allPoints.value.filter(p => p.deviceKey == countdownDeviceKey && p.key === countdownPointKey);
+const updateCountdown = (valueDeviceKey: string, valuePointKey: string, countdownDeviceKey: string | null, countdownPointKey: string, point: Ref<CountdownPoint | undefined>): void => {
+  const valuePoints = allPoints.value.filter((p) => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
+  const countdownPoints = allPoints.value.filter((p) => p.deviceKey == countdownDeviceKey && p.key === countdownPointKey);
 
   let valuePoint: Point | undefined = undefined;
   let countdownPoint: Point | undefined = undefined;
@@ -162,16 +177,18 @@ useIntervalTimer(async () => {
 
   try {
     // Update points
-    const points = await appStore.getPoints(() => { return true; }, false);
+    const points = await appStore.getPoints(() => {
+      return true;
+    }, false);
 
     allPoints.value = points;
 
-    const sunrise = points.filter(p => p.key === 'Sunrise');
+    const sunrise = points.filter((p) => p.key === 'Sunrise');
     if (sunrise.length === 1) {
       sunrisePoint.value = sunrise[0];
     }
 
-    const sunset = points.filter(p => p.key === 'Sunset');
+    const sunset = points.filter((p) => p.key === 'Sunset');
     if (sunset.length === 1) {
       sunsetPoint.value = sunset[0];
     }
@@ -179,8 +196,7 @@ useIntervalTimer(async () => {
     updatePoints();
 
     appStore.setServerOnlineStatus(true);
-  }
-  catch {
+  } catch {
     allPoints.value = [];
     updatePoints();
 
@@ -192,7 +208,6 @@ useIntervalTimer(async () => {
 }, 1000);
 
 updateDateTime();
-
 </script>
 
 <style lang="css">
@@ -226,8 +241,7 @@ updateDateTime();
     font-weight: 400 900;
     font-display: swap;
     src: url(https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC,
-      U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
   }
 
   .time {
@@ -271,7 +285,7 @@ updateDateTime();
   margin-top: 1rem;
 }
 
-.dashboard>* {
+.dashboard > * {
   display: flex;
   line-height: 4rem;
   border-radius: 5px;

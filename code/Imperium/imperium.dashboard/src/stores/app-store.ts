@@ -38,8 +38,6 @@ export const useAppStore = defineStore('app', () => {
       value: value === undefined || value === null ? null : `${value}`
     };
 
-    console.log(model);
-
     return await httpPost<PointValueUpdate, Point>(model, '/points', errorHandlerCallback, false);
   };
 

@@ -1,7 +1,13 @@
 <template>
   <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
     <button @click="clearCountdown">
-      <div><span v-if="icon" class="material-symbols-outlined">{{ icon }}</span></div>
+      <div>
+        <span
+          v-if="icon"
+          class="material-symbols-outlined"
+          >{{ icon }}</span
+        >
+      </div>
       <div :class="`label ${countdown ? 'counting' : ''}`">
         <p>{{ label }}</p>
         <p v-if="countdown">{{ countdown }}</p>
@@ -55,7 +61,7 @@ const getCssClass = (): string => {
     return 'state-offline';
   }
 
-  return (model.value.value.valuePoint.value === 1 || model.value.value.valuePoint.value === true) ? 'state-on' : 'state-off';
+  return model.value.value.valuePoint.value === 1 || model.value.value.valuePoint.value === true ? 'state-on' : 'state-off';
 };
 
 const clearCountdown = async (): Promise<void> => {
@@ -73,19 +79,19 @@ const clearCountdown = async (): Promise<void> => {
 </script>
 
 <style lang="css">
-.dashboard-cell>button>div {
+.dashboard-cell > button > div {
   height: 100%;
   display: flex;
   justify-content: center;
 }
 
-.dashboard-cell>button>div>span {
+.dashboard-cell > button > div > span {
   margin: auto;
   font-size: 3rem;
   align-self: flex-start;
 }
 
-.dashboard-cell>button>div>p {
+.dashboard-cell > button > div > p {
   margin: auto;
   font-size: 1rem;
 }
@@ -96,12 +102,12 @@ const clearCountdown = async (): Promise<void> => {
   gap: 0;
 }
 
-.label.counting>p:first-child {
+.label.counting > p:first-child {
   margin: auto;
   line-height: 0.5rem;
 }
 
-.label.counting>p:not(:first-child) {
+.label.counting > p:not(:first-child) {
   margin: auto;
   line-height: 0.3rem;
   font-size: 0.8rem;

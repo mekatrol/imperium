@@ -183,12 +183,7 @@ export const handleApiResponseError = (err: unknown): ApiError => {
   return apiError;
 };
 
-export const handleApiError = (
-  error: unknown,
-  action: string,
-  errorHandlerCallback?: HandleErrorCallback,
-  suppressUnauthorizedError?: boolean
-): ApiError => {
+export const handleApiError = (error: unknown, action: string, errorHandlerCallback?: HandleErrorCallback, suppressUnauthorizedError?: boolean): ApiError => {
   const apiError = handleApiResponseError(error);
 
   // If validation errors have been returned, give them to the validation form

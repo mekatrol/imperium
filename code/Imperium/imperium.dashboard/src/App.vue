@@ -1,6 +1,13 @@
 <template>
-  <BusyOverlay :show="isBusy" full-screen />
-  <MessageOverlay :show="!!messageData" :data="messageData" full-screen />
+  <BusyOverlay
+    :show="isBusy"
+    full-screen
+  />
+  <MessageOverlay
+    :show="!!messageData"
+    :data="messageData"
+    full-screen
+  />
   <RouterView />
 </template>
 
@@ -12,5 +19,4 @@ import BusyOverlay from '@/components/BusyOverlay.vue';
 import MessageOverlay from '@/components/MessageOverlay.vue';
 
 const { messageData, isBusy } = storeToRefs(useAppStore());
-
 </script>

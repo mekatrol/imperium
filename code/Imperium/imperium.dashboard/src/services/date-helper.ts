@@ -16,9 +16,7 @@ export const getZeroPadded = (v: number): string => {
 
 export const getTimeWithMeridiem = (dateTime: Date | undefined = undefined, withSeconds?: boolean): string => {
   const dt = dateTime ?? new Date();
-  return (
-    getHours12Hour(dt) + ':' + getZeroPadded(dt.getMinutes()) + (withSeconds ? `:${getZeroPadded(dt.getSeconds())}` : '') + ' ' + getMeridiem(dt)
-  );
+  return getHours12Hour(dt) + ':' + getZeroPadded(dt.getMinutes()) + (withSeconds ? `:${getZeroPadded(dt.getSeconds())}` : '') + ' ' + getMeridiem(dt);
 };
 
 export const getShortDateWithDay = (dateTime: Date | undefined = undefined): string => {

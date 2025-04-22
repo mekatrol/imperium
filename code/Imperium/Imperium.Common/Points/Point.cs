@@ -57,10 +57,10 @@ public class Point
         get
         {
             // The current value in order of:
+            // device value,
             // override value,
-            // control value,
-            // device value.
-            return OverrideValue ?? ControlValue ?? DeviceValue;
+            // control value.
+            return DeviceValue ?? OverrideValue ?? ControlValue;
         }
     }
 

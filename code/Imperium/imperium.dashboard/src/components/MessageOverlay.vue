@@ -2,11 +2,21 @@
   <div :class="`overlay ${fullScreen ? 'overlay-full-screen' : ''} ${show ? 'overlay-show' : ''}`">
     <div class="overlay-dialog">
       <div :class="`overlay-title ${data?.type.toLocaleLowerCase()}`">
-        <FontAwesomeIcon :icon="iconType" class="fa-2x" />
+        <FontAwesomeIcon
+          :icon="iconType"
+          class="fa-2x"
+        />
         <p v-if="data?.title">{{ data?.title }}</p>
         <div class="title-spacer"></div>
-        <button class="title-close" title="Close" @click="closeMessage">
-          <FontAwesomeIcon :icon="faClose" class="fa-2x" />
+        <button
+          class="title-close"
+          title="Close"
+          @click="closeMessage"
+        >
+          <FontAwesomeIcon
+            :icon="faClose"
+            class="fa-2x"
+          />
         </button>
       </div>
       <div class="overlay-message">
@@ -18,15 +28,7 @@
 
 <script setup lang="ts">
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import {
-  faClose,
-  faCircleInfo,
-  faCircleQuestion,
-  faCircleCheck,
-  faTriangleExclamation,
-  faCircleExclamation,
-  type IconDefinition
-} from '@fortawesome/free-solid-svg-icons';
+import { faClose, faCircleInfo, faCircleQuestion, faCircleCheck, faTriangleExclamation, faCircleExclamation, type IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { useAppStore } from '@/stores/app-store';
 import { MessageType } from '@/services/message';
 import { computed } from 'vue';
@@ -112,7 +114,7 @@ const iconType = computed((): IconDefinition => {
     display: flex;
     flex-direction: column;
 
-    >div {
+    > div {
       display: flex;
     }
 
