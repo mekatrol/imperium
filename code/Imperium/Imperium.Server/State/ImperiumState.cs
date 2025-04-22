@@ -22,7 +22,7 @@ internal class ImperiumState : IPointState, IImperiumState
 
     /// <summary>
     /// When the server read only mode is true then the server will read IO, but not update IO. Useful when testing a running server 
-    /// where you don't want to actually change the physical IO
+    /// where you don't want to actually change the device IO
     /// </summary>
     public bool IsReadOnlyMode { get; set; } = false;
 
@@ -242,7 +242,7 @@ internal class ImperiumState : IPointState, IImperiumState
     }
 
     /// <inheritdoc/>
-    public Point? UpdatePointValue(Guid pointId, object? value)
+    public Point? UpdatePointValue(Guid pointId, object? value, PointValueType valueType)
     {
         var point = _points.Values.SingleOrDefault(p => p.Id == pointId);
 
@@ -251,11 +251,13 @@ internal class ImperiumState : IPointState, IImperiumState
             return null;
         }
 
-        return UpdatePointValue(point, value);
+        point.SetValue(value, valueType);
+
+        return point;
     }
 
     /// <inheritdoc/>
-    public Point? UpdatePointValue(string deviceKey, string pointKey, object? value)
+    public Point? UpdatePointValue(string deviceKey, string pointKey, object? value, PointValueType valueType)
     {
         // Create the key used for points list
         var key = CreateDevicePointKey(deviceKey, pointKey);
@@ -263,7 +265,9 @@ internal class ImperiumState : IPointState, IImperiumState
         // Try and get the point
         if (_points.TryGetValue(key, out var point))
         {
-            return UpdatePointValue(point, value);
+            point.SetValue(value, valueType);
+
+            return point;
         }
 
         // Return null to indicate that the point was not updated because it does not exist
@@ -273,9 +277,9 @@ internal class ImperiumState : IPointState, IImperiumState
     /// <summary>
     /// Update a single point value, this is done in a thread safe way.
     /// </summary>
-    public Point? UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value)
+    public Point? UpdatePointValue(IDeviceInstance deviceInstance, Point point, object? value, PointValueType valueType)
     {
-        return UpdatePointValue(deviceInstance.Key, point.Key, value);
+        return UpdatePointValue(deviceInstance.Key, point.Key, value, valueType);
     }
 
     private Point? GetPointCopy(string deviceKey, string pointKey)
@@ -313,29 +317,5 @@ internal class ImperiumState : IPointState, IImperiumState
             // We serialize and deserialize to ensure we add a copy
             deviceInstance.Points.Add(point);
         }
-    }
-
-    private static Point UpdatePointValue(Point point, object? value)
-    {
-        // Make sure types match
-        if (value != null)
-        {
-            var pointType = value.GetType().GetPointType();
-
-            if (pointType == null || pointType != point.PointType)
-            {
-                // Calls from API clients may serialize as a string, so try to cast.
-                if (!point.PointType.TryCastValueFromString(ref value))
-                {
-                    throw new InvalidOperationException($"The point value '{value} cannot be converted to the point type '{point.PointType}'.");
-                }
-            }
-        }
-
-        // Update its value
-        point.Value = value;
-
-        // Return the updated point
-        return point;
     }
 }

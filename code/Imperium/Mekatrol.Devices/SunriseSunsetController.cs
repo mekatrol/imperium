@@ -10,8 +10,8 @@ using System.Text.Json;
 namespace Mekatrol.Devices;
 
 internal class SunriseSunsetController(
-    IHttpClientFactory clientFactory, 
-    IPointState pointState, 
+    IHttpClientFactory clientFactory,
+    IPointState pointState,
     ILogger<SunriseSunsetController> logger) : BaseOutputController(), IDeviceController
 {
     private DateOnly _lastReadApi = DateOnly.MinValue;
@@ -57,34 +57,34 @@ internal class SunriseSunsetController(
             var model = await response.Content.ReadFromJsonAsync<SunriseSunsetModel>(_jsonOptions, stoppingToken);
 
             var point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.Sunrise);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.Sunrise, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunset));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.Sunset);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.Sunset, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.SolarNoon));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.SolarNoon);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.SolarNoon, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<int>(nameof(SunriseSunsetResultsModel.DayLength));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.DayLength);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.DayLength, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.CivilTwilightBegin));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.CivilTwilightBegin);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.CivilTwilightBegin, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.CivilTwilightEnd));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.CivilTwilightEnd);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.CivilTwilightEnd, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.NauticalTwilightBegin));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.NauticalTwilightBegin);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.NauticalTwilightBegin, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.NauticalTwilightEnd));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.NauticalTwilightEnd);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.NauticalTwilightEnd, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.AstronomicalTwilightBegin));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.AstronomicalTwilightBegin);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.AstronomicalTwilightBegin, PointValueType.Device);
 
             point = deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.AstronomicalTwilightEnd));
-            pointState.UpdatePointValue(deviceInstance, point, model!.Results.AstronomicalTwilightEnd);
+            pointState.UpdatePointValue(deviceInstance, point, model!.Results.AstronomicalTwilightEnd, PointValueType.Device);
 
             // Update last read date
             _lastReadApi = DateOnly.FromDateTime(DateTime.Now);
@@ -115,10 +115,10 @@ internal class SunriseSunsetController(
         var isDaytime = now.WithinTimeRange(TimeOnly.FromDateTime(sunrise.Value), TimeOnly.FromDateTime(sunset.Value));
 
         var point = deviceInstance.GetPointWithDefault<bool>("IsDaytime");
-        pointState.UpdatePointValue(deviceInstance, point, isDaytime);
+        pointState.UpdatePointValue(deviceInstance, point, isDaytime, PointValueType.Device);
 
         point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");
-        pointState.UpdatePointValue(deviceInstance, point, !isDaytime);
+        pointState.UpdatePointValue(deviceInstance, point, !isDaytime, PointValueType.Device);
 
         logger.LogDebug("{msg}", $"Sunrise: '{sunrise:HH:mm:ss}', Sunset: '{sunset:HH:mm:ss}', is daytime: '{isDaytime}', now: '{DateTime.Now}', kind: '{DateTime.Now.Kind}'");
     }

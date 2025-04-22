@@ -24,6 +24,9 @@ export interface Point {
   friendlyName: string;
   pointType: PointType;
   value?: PointTypes;
+  controlValue?: PointTypes;
+  deviceValue?: PointTypes;
+  overrideValue?: PointTypes;
   lastUpdated: Date;
   pointState: PointState | undefined;
   readonly: boolean;

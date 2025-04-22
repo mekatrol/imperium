@@ -10,7 +10,7 @@ public interface IDeviceInstance
     string Key { get; }
 
     /// <summary>
-    /// This is the unique key of the device controller used to interact with the physical device.
+    /// This is the unique key of the device controller used to interact with the device.
     /// </summary>
     string ControllerKey { get; }
 

@@ -3,7 +3,7 @@
     <div class="top-row">
       <div class="spacer spacer-left">
         <span v-if="serverStatusIcon" :class="`material-symbols-outlined ${serverStatusClass}`">{{ serverStatusIcon
-        }}</span>
+          }}</span>
       </div>
       <div class="time-card">
         <p class="time">{{ timeDisplay }}</p>
@@ -81,7 +81,7 @@ const createCells = (): void => {
   let id = 0;
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' }, model: carportLightsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' }, model: frontDoorLightPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House Number', icon: 'looks_6' }, model: houseNumberLightPoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House No.', icon: 'looks_6' }, model: houseNumberLightPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Water Pumps', icon: 'heat_pump_balance' }, model: aquaponicsPumpsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });

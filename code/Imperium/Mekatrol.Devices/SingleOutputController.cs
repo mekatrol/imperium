@@ -43,10 +43,10 @@ internal class SingleOutputController(IHttpClientFactory clientFactory, IPointSt
 
         // Update values
         var point = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Btn));
-        pointState.UpdatePointValue(deviceInstance, point, model!.Btn);
+        pointState.UpdatePointValue(deviceInstance, point, model!.Btn, PointValueType.Device);
 
         var relay = deviceInstance.GetPointWithDefault<int>(nameof(SingleOutputControllerModel.Relay));
-        pointState.UpdatePointValue(deviceInstance, relay, model!.Relay);
+        pointState.UpdatePointValue(deviceInstance, relay, model!.Relay, PointValueType.Device);
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)

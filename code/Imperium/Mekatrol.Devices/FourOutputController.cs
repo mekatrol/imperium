@@ -43,19 +43,19 @@ internal class FourOutputController(IHttpClientFactory clientFactory, IPointStat
 
         // Update values
         var point = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Btn));
-        pointState.UpdatePointValue(deviceInstance, point, model!.Btn);
+        pointState.UpdatePointValue(deviceInstance, point, model!.Btn, PointValueType.Device);
 
         var relay1 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay1));
-        pointState.UpdatePointValue(deviceInstance, relay1, model!.Relay1);
+        pointState.UpdatePointValue(deviceInstance, relay1, model!.Relay1, PointValueType.Device);
 
         var relay2 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay2));
-        pointState.UpdatePointValue(deviceInstance, relay2, model!.Relay2);
+        pointState.UpdatePointValue(deviceInstance, relay2, model!.Relay2, PointValueType.Device);
 
         var relay3 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay3));
-        pointState.UpdatePointValue(deviceInstance, relay3, model!.Relay3);
+        pointState.UpdatePointValue(deviceInstance, relay3, model!.Relay3, PointValueType.Device);
 
         var relay4 = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay4));
-        pointState.UpdatePointValue(deviceInstance, relay4, model!.Relay4);
+        pointState.UpdatePointValue(deviceInstance, relay4, model!.Relay4, PointValueType.Device);
     }
 
     public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)

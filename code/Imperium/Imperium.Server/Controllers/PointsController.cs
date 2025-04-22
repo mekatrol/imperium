@@ -24,7 +24,7 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
 
         var pointState = services.GetRequiredService<IPointState>();
 
-        var updatedPoint = pointState.UpdatePointValue(pointUpdate.Id, pointUpdate.Value);
+        var updatedPoint = pointState.UpdatePointValue(pointUpdate.Id, pointUpdate.Value, PointValueType.Override);
 
         if (updatedPoint == null)
         {

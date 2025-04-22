@@ -24,7 +24,7 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
         }
     }
 
-    public Point MapPoint(string key, string friendlyName, Type nativePointType, object? value = null)
+    public Point MapPoint(string key, string friendlyName, Type nativePointType, object? initialValue = null)
     {
         // Get with default value
         var point = GetPointWithDefault(key, nativePointType);
@@ -33,7 +33,7 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
         point.FriendlyName = friendlyName;
 
         // Set initial value
-        point.Value = value;
+        point.SetValue(initialValue, PointValueType.Control);
 
         // Return created point
         return point;

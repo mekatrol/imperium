@@ -52,7 +52,7 @@ public class MqttClientBackgroundService(
 
                         if (zoneStatus != null)
                         {
-                            pointState.UpdatePointValue("housealarm", $"zone{zone}", zoneStatus.Event);
+                            pointState.UpdatePointValue("housealarm", $"zone{zone}", zoneStatus.Event, PointValueType.Device);
                         }
                     }
                     else

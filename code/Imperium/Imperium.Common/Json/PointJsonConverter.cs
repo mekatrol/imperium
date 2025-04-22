@@ -96,71 +96,9 @@ public class PointJsonConverter : JsonConverter<Point>
             PointState = pointState
         };
 
-        if (root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.Value)), out var valueProp))
-        {
-            object? value = null;
-
-            if (valueProp.GetString() != null)
-            {
-
-                switch (point.PointType)
-                {
-                    case PointType.Integer:
-                        value = valueProp.GetInt32();
-                        break;
-
-                    case PointType.SingleFloat:
-                        value = valueProp.GetSingle();
-                        break;
-
-                    case PointType.DoubleFloat:
-                        value = valueProp.GetDouble();
-                        break;
-
-                    case PointType.Boolean:
-                        value = valueProp.GetBoolean();
-                        break;
-
-                    case PointType.String:
-                        value = valueProp.GetString();
-                        break;
-
-                    case PointType.DateTime:
-                        switch (valueProp.ValueKind)
-                        {
-                            case JsonValueKind.String:
-                                value = DateTime.Parse(valueProp.GetString()!);
-                                break;
-                            case JsonValueKind.Number:
-                                value = DateTimeOffset.FromUnixTimeMilliseconds(valueProp.GetInt64()).DateTime;
-                                break;
-                            default:
-                                value = null;
-                                break;
-                        }
-                        break;
-
-                    case PointType.DateOnly:
-                        value = DateOnly.Parse(valueProp.GetString()!);
-                        break;
-
-                    case PointType.TimeOnly:
-                        value = TimeOnly.Parse(valueProp.GetString()!);
-                        break;
-
-                    case PointType.TimeSpan:
-                        value = TimeSpan.Parse(valueProp.GetString()!);
-                        break;
-
-                    default:
-                        value = JsonSerializer.Deserialize<object>(valueProp.GetRawText(), options);
-                        break;
-                }
-            }
-
-            point.Value = value;
-
-        }
+        ReadValueProperty(point, nameof(Point.ControlValue), PointValueType.Control, root, propertyNamingPolicy, options);
+        ReadValueProperty(point, nameof(Point.DeviceValue), PointValueType.Device, root, propertyNamingPolicy, options);
+        ReadValueProperty(point, nameof(Point.OverrideValue), PointValueType.Override, root, propertyNamingPolicy, options);
 
         return point;
     }
@@ -229,41 +167,131 @@ public class PointJsonConverter : JsonConverter<Point>
             }
         }
 
-        if (point.Value != null || !ignoreNull)
-        {
-            // Custom serialization of Value
-            writer.WritePropertyName(propertyNamingPolicy.ConvertName(nameof(Point.Value)));
+        WriteValueProperty(point.PointType, point.Value, nameof(Point.Value), ignoreNull, writer, propertyNamingPolicy, options);
+        WriteValueProperty(point.PointType, point.ControlValue, nameof(Point.ControlValue), ignoreNull, writer, propertyNamingPolicy, options);
+        WriteValueProperty(point.PointType, point.DeviceValue, nameof(Point.DeviceValue), ignoreNull, writer, propertyNamingPolicy, options);
+        WriteValueProperty(point.PointType, point.OverrideValue, nameof(Point.OverrideValue), ignoreNull, writer, propertyNamingPolicy, options);
 
-            if (point.Value != null)
+        writer.WriteEndObject();
+    }
+
+    private static void ReadValueProperty(
+        Point point,
+        string propertyName,
+        PointValueType pointValueType,
+        JsonElement root,
+        JsonNamingPolicy propertyNamingPolicy,
+        JsonSerializerOptions options)
+    {
+        if (root.TryGetProperty(propertyNamingPolicy.ConvertName(propertyName), out var valueProp))
+        {
+            object? value = null;
+
+            if (valueProp.GetString() != null)
             {
+
                 switch (point.PointType)
                 {
                     case PointType.Integer:
-                        writer.WriteNumberValue(Convert.ToInt32(point.Value));
+                        value = valueProp.GetInt32();
                         break;
 
                     case PointType.SingleFloat:
-                        writer.WriteNumberValue(Convert.ToSingle(point.Value));
+                        value = valueProp.GetSingle();
                         break;
 
                     case PointType.DoubleFloat:
-                        writer.WriteNumberValue(Convert.ToDouble(point.Value));
+                        value = valueProp.GetDouble();
                         break;
 
                     case PointType.Boolean:
-                        writer.WriteBooleanValue(Convert.ToBoolean(point.Value));
+                        value = valueProp.GetBoolean();
                         break;
 
                     case PointType.String:
-                        writer.WriteStringValue(point.Value?.ToString());
+                        value = valueProp.GetString();
                         break;
 
                     case PointType.DateTime:
-                        if (point.Value is DateTime dateTime)
+                        switch (valueProp.ValueKind)
+                        {
+                            case JsonValueKind.String:
+                                value = DateTime.Parse(valueProp.GetString()!);
+                                break;
+                            case JsonValueKind.Number:
+                                value = DateTimeOffset.FromUnixTimeMilliseconds(valueProp.GetInt64()).DateTime;
+                                break;
+                            default:
+                                value = null;
+                                break;
+                        }
+                        break;
+
+                    case PointType.DateOnly:
+                        value = DateOnly.Parse(valueProp.GetString()!);
+                        break;
+
+                    case PointType.TimeOnly:
+                        value = TimeOnly.Parse(valueProp.GetString()!);
+                        break;
+
+                    case PointType.TimeSpan:
+                        value = TimeSpan.Parse(valueProp.GetString()!);
+                        break;
+
+                    default:
+                        value = JsonSerializer.Deserialize<object>(valueProp.GetRawText(), options);
+                        break;
+                }
+            }
+
+            point.SetValue(value, pointValueType);
+        }
+    }
+
+    private static void WriteValueProperty(
+        PointType pointType,
+        object? value, string propertyName,
+        bool ignoreNull,
+        Utf8JsonWriter writer,
+        JsonNamingPolicy propertyNamingPolicy,
+        JsonSerializerOptions options)
+    {
+        if (value != null || !ignoreNull)
+        {
+            // Custom serialization of Value
+            writer.WritePropertyName(propertyNamingPolicy.ConvertName(propertyName));
+
+            if (value != null)
+            {
+                switch (pointType)
+                {
+                    case PointType.Integer:
+                        writer.WriteNumberValue(Convert.ToInt32(value));
+                        break;
+
+                    case PointType.SingleFloat:
+                        writer.WriteNumberValue(Convert.ToSingle(value));
+                        break;
+
+                    case PointType.DoubleFloat:
+                        writer.WriteNumberValue(Convert.ToDouble(value));
+                        break;
+
+                    case PointType.Boolean:
+                        writer.WriteBooleanValue(Convert.ToBoolean(value));
+                        break;
+
+                    case PointType.String:
+                        writer.WriteStringValue(value?.ToString());
+                        break;
+
+                    case PointType.DateTime:
+                        if (value is DateTime dateTime)
                         {
                             writer.WriteStringValue(dateTime);
                         }
-                        else if (point.Value is DateTimeOffset dateTimeOffset)
+                        else if (value is DateTimeOffset dateTimeOffset)
                         {
                             writer.WriteStringValue(dateTimeOffset);
                         }
@@ -274,7 +302,7 @@ public class PointJsonConverter : JsonConverter<Point>
                         break;
 
                     case PointType.DateOnly:
-                        if (point.Value is DateOnly dateOnly)
+                        if (value is DateOnly dateOnly)
                         {
                             writer.WriteStringValue(dateOnly.ToString("yyyy-MM-dd"));
                         }
@@ -286,7 +314,7 @@ public class PointJsonConverter : JsonConverter<Point>
                         break;
 
                     case PointType.TimeOnly:
-                        if (point.Value is TimeOnly timeOnly)
+                        if (value is TimeOnly timeOnly)
                         {
                             writer.WriteStringValue(timeOnly.ToString("HH:mm:ss"));
                         }
@@ -297,7 +325,7 @@ public class PointJsonConverter : JsonConverter<Point>
                         break;
 
                     case PointType.TimeSpan:
-                        if (point.Value is TimeSpan timeSpan)
+                        if (value is TimeSpan timeSpan)
                         {
                             writer.WriteStringValue(timeSpan.ToString("HH:mm:ss"));
                         }
@@ -309,7 +337,7 @@ public class PointJsonConverter : JsonConverter<Point>
                         break;
 
                     default:
-                        JsonSerializer.Serialize(writer, point.Value, options);
+                        JsonSerializer.Serialize(writer, value, options);
                         break;
                 }
             }
@@ -318,7 +346,5 @@ public class PointJsonConverter : JsonConverter<Point>
                 writer.WriteNullValue();
             }
         }
-
-        writer.WriteEndObject();
     }
 }

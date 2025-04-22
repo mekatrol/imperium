@@ -8,7 +8,7 @@ public class DeviceConfiguration
     /// The key identifying which controller is used to communication with this device.
     /// </summary>
     public string ControllerKey { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// The unique key identifying this device instance.
     /// </summary>
@@ -23,5 +23,5 @@ public class DeviceConfiguration
     /// A set of JSON data specific to this instance. The actuall JSON structure is
     /// specific to the type of device.
     /// </summary>
-    public string Data {  get; set; } = string.Empty;
+    public string Data { get; set; } = string.Empty;
 }

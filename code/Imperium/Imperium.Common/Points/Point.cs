@@ -1,4 +1,5 @@
-﻿using Imperium.Common.Json;
+﻿using Imperium.Common.Extensions;
+using Imperium.Common.Json;
 using System.Text.Json.Serialization;
 
 namespace Imperium.Common.Points;
@@ -8,7 +9,6 @@ public class Point
 {
     // An object to use as sync lock for multithreaded access
     private readonly Lock _threadLock = new();
-    private object? _value = null;
     private object? _prevValue = null;
     private bool _hasChanged = false;
 
@@ -49,42 +49,37 @@ public class Point
     public PointState? PointState { get; set; }
 
     /// <summary>
-    /// The current value of the point.
+    /// The current value of the point. This is not thread safe, use 'GetValue' and 'SetValue' for thread safe operations.
+    /// (This is property used for JSON serialization)
     /// </summary>
     public object? Value
     {
         get
         {
-            lock (_threadLock)
-            {
-                return _value;
-            }
-        }
-
-        set
-        {
-            lock (_threadLock)
-            {
-                // We use to string because we store and object not a strong type
-                // and so the equals operator for native type does not work reliably
-                if (value?.ToString() == _value?.ToString())
-                {
-                    return;
-                }
-
-                _hasChanged = _prevValue != _value;
-                _prevValue = _value;
-                _value = value;
-
-                // Set last updated
-                LastUpdated = DateTime.UtcNow;
-
-                // Updating its value means that it is online
-                PointState = Points.PointState.Online;
-
-            }
+            // The current value in order of:
+            // override value,
+            // control value,
+            // device value.
+            return OverrideValue ?? ControlValue ?? DeviceValue;
         }
     }
+
+    public object? ControlValue { get; set; } = null;
+
+    /// <summary>
+    /// The current device value of the point where point value is different to the imperium control value.
+    /// Examples of where the device value can be different to the imperium control value:
+    ///   * A device controlled by HTTP requests where something other that Imperium changed the point value.
+    ///   * A device where it has local control logic overriding whatever value imperium is sending the device.
+    /// This value is only set if the device supports reading abck the current actual value for a point.
+    /// </summary>
+    public object? DeviceValue { get; set; } = null;
+
+    /// <summary>
+    /// If non null then will override the value set by any flow logic and triggers. Useful for overriding a point
+    /// to a known state not alterable by control logic.
+    /// </summary>
+    public object? OverrideValue { get; set; } = null;
 
     /// <summary>
     /// The previous value when the point was last updated
@@ -132,9 +127,91 @@ public class Point
 
     /// <summary>
     /// This is the unique key of the device that owns this point.
-    /// It can be null where the point is a virtual in memory point (no physical device)
+    /// It can be null where the point is a virtual in memory point (no actual device)
     /// </summary>
     public string? DeviceKey { get; set; }
+
+    public object? SetValue(object? value, PointValueType valueType)
+    {
+        // Make sure types match
+        if (value != null)
+        {
+            var pointType = value.GetType().GetPointType();
+
+            if (pointType == null || pointType != PointType)
+            {
+                // Calls from API clients may serialize as a string, so try to cast.
+                if (!PointType.TryCastValueFromString(ref value))
+                {
+                    throw new InvalidOperationException($"The point value '{value} cannot be converted to the point type '{PointType}' for point '{DeviceKey}.{Key}'.");
+                }
+            }
+        }
+
+        // Update its value
+        switch (valueType)
+        {
+            case PointValueType.Control:
+                SetControlValue(value);
+                break;
+
+            case PointValueType.Device:
+                SetDeviceValue(value);
+                break;
+
+            case PointValueType.Override:
+                SetOverrideValue(value);
+                break;
+
+            default:
+                throw new InvalidOperationException($"Unknown point type: '{valueType}'");
+        }
+
+        return Value;
+    }
+
+    private object? SetControlValue(object? value)
+    {
+        lock (_threadLock)
+        {
+            // We use to string because we store and object not a strong type
+            // and so the equals operator for native type does not work reliably
+            if (value?.ToString() == Value?.ToString())
+            {
+                return Value;
+            }
+
+            _hasChanged = _prevValue != Value;
+            _prevValue = Value;
+            ControlValue = value;
+
+            // Set last updated
+            LastUpdated = DateTime.UtcNow;
+
+            // Updating its value means that it is online
+            PointState = Points.PointState.Online;
+
+            return Value;
+        }
+    }
+
+    private object? SetDeviceValue(object? deviceValue)
+    {
+        lock (_threadLock)
+        {
+            DeviceValue = deviceValue;
+            return Value;
+        }
+    }
+
+    private object? SetOverrideValue(object? overrideValue)
+    {
+        lock (_threadLock)
+        {
+            OverrideValue = overrideValue;
+            return Value;
+        }
+    }
 
     public override string ToString()
     {

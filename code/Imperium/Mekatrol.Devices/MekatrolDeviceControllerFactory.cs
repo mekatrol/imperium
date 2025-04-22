@@ -88,7 +88,7 @@ public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
 
         foreach (var point in points)
         {
-            if(!pointProperties.TryGetValue(point.Key, out var pointProperty))
+            if (!pointProperties.TryGetValue(point.Key, out var pointProperty))
             {
                 throw new Exception($"The point key '{point.Key}' is not valid for the controller '{controllerKey}'.");
             }
