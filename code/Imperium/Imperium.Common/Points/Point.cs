@@ -176,7 +176,7 @@ public class Point
         {
             // We use to string because we store and object not a strong type
             // and so the equals operator for native type does not work reliably
-            if (value?.ToString() == Value?.ToString())
+            if (value?.ToString() == ControlValue?.ToString())
             {
                 return Value;
             }
