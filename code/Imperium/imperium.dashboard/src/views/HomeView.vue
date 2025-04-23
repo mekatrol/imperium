@@ -118,7 +118,7 @@ const createCells = (): void => {
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
 
   // gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row' }, model: panicPoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row panic' }, model: panicPoint });
   // gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'grid-two-row' } });
 };
 

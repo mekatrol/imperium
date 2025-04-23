@@ -21,6 +21,14 @@
   outline: 1px solid var(--clr-state-on);
 }
 
+.dashboard-cell.state-off.panic {
+  outline: 1px solid var(--clr-panic-ok);
+}
+
+.dashboard-cell.state-on.panic {
+  outline: 1px solid var(--clr-panic-active);
+}
+
 .dashboard-cell > button {
   background-color: inherit;
   width: 100%;
@@ -61,6 +69,16 @@
 .dashboard-cell.state-on > button span,
 .dashboard-cell.state-on > button p {
   color: var(--clr-state-on);
+}
+
+.dashboard-cell.state-off.panic > button span,
+.dashboard-cell.state-off.panic > button p {
+  color: var(--clr-panic-ok);
+}
+
+.dashboard-cell.state-on.panic > button span,
+.dashboard-cell.state-on.panic > button p {
+  color: var(--clr-panic-active);
 }
 
 .dashboard-cell.state-off > button:active {

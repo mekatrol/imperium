@@ -12,6 +12,9 @@
   --clr-sunset: #f7621e;
   --clr-dashboard-background: #222;
   --clr-grid-cell-outline: #ccc;
+
+  --clr-panic-ok: var(--clr-state-on);
+  --clr-panic-active: #0478d8;
 }
 
 .wrapper {
