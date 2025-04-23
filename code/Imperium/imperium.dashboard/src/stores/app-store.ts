@@ -4,6 +4,7 @@ import { clearMessage, type MessageData } from '@/services/message';
 import { type HandleErrorCallback } from '@/services/api';
 import { PointUpdateAction, type Point, type PointTypes, type PointValueUpdate } from '@/models/point';
 import { httpGet, httpPost } from '@/services/http';
+import type { ApplicationVersion } from '@/models/application-version';
 
 export const useAppStore = defineStore('app', () => {
   const isBusyCount = ref(0);
@@ -26,6 +27,10 @@ export const useAppStore = defineStore('app', () => {
     if (isBusyCount.value < 0) {
       isBusyCount.value = 0;
     }
+  };
+
+  const getApplicationVersion = async (errorHandlerCallback?: HandleErrorCallback, showBusy: boolean = true): Promise<ApplicationVersion> => {
+    return await httpGet<ApplicationVersion>('/app/version', errorHandlerCallback, false, showBusy);
   };
 
   const getPoints = async (errorHandlerCallback?: HandleErrorCallback, showBusy: boolean = true): Promise<Point[]> => {
@@ -67,6 +72,8 @@ export const useAppStore = defineStore('app', () => {
 
     serverOnline,
     setServerOnlineStatus,
+
+    getApplicationVersion,
 
     getPoints,
     togglePoint,

@@ -2,33 +2,48 @@
   <main class="home">
     <div class="top-row">
       <div class="spacer spacer-left">
-        <span v-if="serverStatusIcon" :class="`material-symbols-outlined ${serverStatusClass}`">{{ serverStatusIcon
-        }}</span>
+        <span
+          v-if="serverStatusIcon"
+          :class="`material-symbols-outlined ${serverStatusClass}`"
+          >{{ serverStatusIcon }}</span
+        >
       </div>
       <div class="time-card">
         <p class="time">{{ timeDisplay }}</p>
         <div style="display: flex; flex-direction: row; gap: 30px">
-          <div class="sunrise" v-if="sunrisePoint">
-            <span class="material-symbols-outlined">sunny</span> {{ getTimeWithMeridiem(new Date(sunrisePoint.value! as
-              Date), false) }}
+          <div
+            class="sunrise"
+            v-if="sunrisePoint"
+          >
+            <span class="material-symbols-outlined">sunny</span> {{ getTimeWithMeridiem(new Date(sunrisePoint.value! as Date), false) }}
           </div>
           <div>
             <p class="date"><span class="material-symbols-outlined">calendar_month</span>{{ dateDisplay }}</p>
           </div>
-          <div class="sunset" v-if="sunsetPoint">
-            <span class="material-symbols-outlined">routine</span>{{ getTimeWithMeridiem(new Date(sunsetPoint.value! as
-              Date), false) }}
+          <div
+            class="sunset"
+            v-if="sunsetPoint"
+          >
+            <span class="material-symbols-outlined">routine</span>{{ getTimeWithMeridiem(new Date(sunsetPoint.value! as Date), false) }}
           </div>
         </div>
       </div>
       <div class="spacer spacer-right">
-        <span :class="`material-symbols-outlined ${isDaytimeClass}`">{{ isDaytimePoint?.value ? 'wb_sunny' : 'dark_mode'
-        }}</span>
+        <span :class="`material-symbols-outlined ${isDaytimeClass}`">{{ isDaytimePoint?.value ? 'wb_sunny' : 'dark_mode' }}</span>
       </div>
     </div>
     <div class="dashboard">
-      <div class="cell-container" v-for="cell in gridCells" :key="cell.props.id" :class="cell.props.cssClass">
-        <component :is="cell.component" v-bind="{ ...cell.props }" v-model="cell.model" />
+      <div
+        class="cell-container"
+        v-for="cell in gridCells"
+        :key="cell.props.id"
+        :class="cell.props.cssClass"
+      >
+        <component
+          :is="cell.component"
+          v-bind="{ ...cell.props }"
+          v-model="cell.model"
+        />
       </div>
     </div>
   </main>
@@ -37,7 +52,7 @@
 <script setup lang="ts">
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
-import { computed, ref, shallowRef, type Component, type Ref } from 'vue';
+import { computed, onMounted, ref, shallowRef, type Component, type Ref } from 'vue';
 import { useAppStore } from '@/stores/app-store';
 import type { CountdownPoint, Point } from '@/models/point';
 import DashboardCell from '@/components/DashboardCell.vue';
@@ -209,6 +224,33 @@ useIntervalTimer(async () => {
   return true;
 }, 1000);
 
+const getApplicationExecutionVersion = async (): Promise<string> => {
+  const appVersion = await appStore.getApplicationVersion(() => {
+    return true;
+  }, false);
+
+  return appVersion.executionVersion;
+};
+
+let applicationExecutionVersion: string = '';
+
+onMounted(async () => {
+  applicationExecutionVersion = await getApplicationExecutionVersion();
+});
+
+useIntervalTimer(async () => {
+  // Get any updated application exectuion version
+  const serverApplicationExecutionVersion = await getApplicationExecutionVersion();
+
+  if (serverApplicationExecutionVersion != applicationExecutionVersion) {
+    // Reload the page using the new version
+    window.location.replace(location.protocol + '//' + location.host + location.pathname + `?v=${applicationExecutionVersion}`);
+  }
+
+  // Keep timer running
+  return true;
+}, 5000);
+
 updateDateTime();
 </script>
 
@@ -287,7 +329,7 @@ updateDateTime();
   margin-top: 1rem;
 }
 
-.dashboard>* {
+.dashboard > * {
   display: flex;
   line-height: 4rem;
   border-radius: 5px;
