@@ -34,6 +34,22 @@ internal class FourOutputController(IHttpClientFactory clientFactory, IPointStat
 
         if (!response.IsSuccessStatusCode)
         {
+            // Clear values
+            var offlinePoint = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Btn));
+            pointState.UpdatePointValue(deviceInstance, offlinePoint, null, PointValueType.Device);
+
+            offlinePoint = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay1));
+            pointState.UpdatePointValue(deviceInstance, offlinePoint, null, PointValueType.Device);
+
+            offlinePoint = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay2));
+            pointState.UpdatePointValue(deviceInstance, offlinePoint, null, PointValueType.Device);
+
+            offlinePoint = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay3));
+            pointState.UpdatePointValue(deviceInstance, offlinePoint, null, PointValueType.Device);
+
+            offlinePoint = deviceInstance.GetPointWithDefault<int>(nameof(FourOutputControllerModel.Relay4));
+            pointState.UpdatePointValue(deviceInstance, offlinePoint, null, PointValueType.Device);
+
             // TODO: throw a proper error
             throw new Exception($"Failed to read from URL: '{deviceInstance.Key}'");
         }

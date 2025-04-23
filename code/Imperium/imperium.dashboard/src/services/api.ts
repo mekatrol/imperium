@@ -1,7 +1,6 @@
 import { AxiosError, type AxiosRequestConfig } from 'axios';
 import { ref } from 'vue';
 import { showErrorMessage } from './message';
-import { useAppStore } from '@/stores/app-store';
 
 const serverValidationErrors = ref<ErrorModel[]>([]);
 

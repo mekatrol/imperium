@@ -41,7 +41,7 @@ export interface Point {
 
 export interface CountdownPoint {
   valuePoint: Point;
-  countdownPoint: Point;
+  countdownPoint: Point | undefined;
 }
 
 export interface PointValueUpdate {

@@ -3,7 +3,7 @@
     <div class="top-row">
       <div class="spacer spacer-left">
         <span v-if="serverStatusIcon" :class="`material-symbols-outlined ${serverStatusClass}`">{{ serverStatusIcon
-          }}</span>
+        }}</span>
       </div>
       <div class="time-card">
         <p class="time">{{ timeDisplay }}</p>
@@ -23,7 +23,7 @@
       </div>
       <div class="spacer spacer-right">
         <span :class="`material-symbols-outlined ${isDaytimeClass}`">{{ isDaytimePoint?.value ? 'wb_sunny' : 'dark_mode'
-          }}</span>
+        }}</span>
       </div>
     </div>
     <div class="dashboard">
@@ -41,7 +41,6 @@ import { computed, ref, shallowRef, type Component, type Ref } from 'vue';
 import { useAppStore } from '@/stores/app-store';
 import type { CountdownPoint, Point } from '@/models/point';
 import DashboardCell from '@/components/DashboardCell.vue';
-import CountdownSwitch from '@/components/CountdownSwitch.vue';
 
 interface GridCellProps {
   id: number;
@@ -65,15 +64,15 @@ const gridCells = shallowRef<GridCell[]>([]);
 const allPoints = ref<Point[]>([]);
 const sunsetPoint = ref<Point | undefined>();
 const sunrisePoint = ref<Point | undefined>();
-const clotheslinePoint = ref<Point | undefined>();
-const alfrescoLightPoint = ref<Point | undefined>();
+const clotheslinePoint = ref<CountdownPoint | undefined>();
+const alfrescoLightPoint = ref<CountdownPoint | undefined>();
 const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
-const whiteStringLightsPoint = ref<Point | undefined>();
-const aquaponicsPumpsPoint = ref<Point | undefined>();
-const panicPoint = ref<Point | undefined>();
-const carportLightsPoint = ref<Point | undefined>();
-const frontDoorLightPoint = ref<Point | undefined>();
-const houseNumberLightPoint = ref<Point | undefined>();
+const whiteStringLightsPoint = ref<CountdownPoint | undefined>();
+const aquaponicsPumpsPoint = ref<CountdownPoint | undefined>();
+const panicPoint = ref<CountdownPoint | undefined>();
+const carportLightsPoint = ref<CountdownPoint | undefined>();
+const frontDoorLightPoint = ref<CountdownPoint | undefined>();
+const houseNumberLightPoint = ref<CountdownPoint | undefined>();
 const isDaytimePoint = ref<Point | undefined>();
 
 const serverStatusIcon = computed((): string => {
@@ -100,7 +99,7 @@ const createCells = (): void => {
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Water Pumps', icon: 'heat_pump_balance' }, model: aquaponicsPumpsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
-  gridCells.value.push({ component: CountdownSwitch, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
+  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
   gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
 
   // gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
@@ -125,9 +124,15 @@ const updatePoint = (deviceKey: string | null, pointKey: string, point: Ref<Poin
   }
 };
 
-const updateCountdown = (valueDeviceKey: string, valuePointKey: string, countdownDeviceKey: string | null, countdownPointKey: string, point: Ref<CountdownPoint | undefined>): void => {
+const updateCountdownPoint = (
+  valueDeviceKey: string | null,
+  valuePointKey: string,
+  countdownDeviceKey: string | null,
+  countdownPointKey: string | undefined,
+  point: Ref<CountdownPoint | undefined>
+): void => {
   const valuePoints = allPoints.value.filter((p) => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
-  const countdownPoints = allPoints.value.filter((p) => p.deviceKey == countdownDeviceKey && p.key === countdownPointKey);
+  const countdownPoints = countdownPointKey ? allPoints.value.filter((p) => p.deviceKey == countdownDeviceKey && p.key === countdownPointKey) : [];
 
   let valuePoint: Point | undefined = undefined;
   let countdownPoint: Point | undefined = undefined;
@@ -144,7 +149,7 @@ const updateCountdown = (valueDeviceKey: string, valuePointKey: string, countdow
     point.value = undefined;
   }
 
-  if (!valuePoint || !countdownPoint) {
+  if (!valuePoint) {
     point.value = undefined;
     return;
   }
@@ -156,15 +161,15 @@ const updateCountdown = (valueDeviceKey: string, valuePointKey: string, countdow
 };
 
 const updatePoints = (): void => {
-  updatePoint('device.clothesline', 'Relay', clotheslinePoint);
-  updatePoint('device.alfrescolight', 'Relay', alfrescoLightPoint);
-  updateCountdown('device.kitchen.light', 'Relay', null, 'kitchen.light.timer', kitchenCabinetLightsPoint);
-  updatePoint('device.kitchenview.powerboard', 'Relay1', whiteStringLightsPoint);
-  updatePoint('device.carport.powerboard', 'Relay1', carportLightsPoint);
-  updatePoint('device.frontdoorlight', 'Relay', frontDoorLightPoint);
-  updatePoint('device.housenumberlight', 'Relay', houseNumberLightPoint);
-  updatePoint(null, 'water.pumps', aquaponicsPumpsPoint);
-  updatePoint(null, 'panic', panicPoint);
+  updateCountdownPoint('device.clothesline', 'Relay', null, undefined, clotheslinePoint);
+  updateCountdownPoint('device.alfrescolight', 'Relay', null, undefined, alfrescoLightPoint);
+  updateCountdownPoint('device.kitchen.light', 'Relay', null, 'kitchen.light.timer', kitchenCabinetLightsPoint);
+  updateCountdownPoint('device.kitchenview.powerboard', 'Relay1', null, undefined, whiteStringLightsPoint);
+  updateCountdownPoint('device.carport.powerboard', 'Relay1', null, undefined, carportLightsPoint);
+  updateCountdownPoint('device.frontdoorlight', 'Relay', null, undefined, frontDoorLightPoint);
+  updateCountdownPoint('device.housenumberlight', 'Relay', null, undefined, houseNumberLightPoint);
+  updateCountdownPoint(null, 'water.pumps', null, undefined, aquaponicsPumpsPoint);
+  updateCountdownPoint(null, 'panic', null, undefined, panicPoint);
   updatePoint('device.sunrisesunset', 'IsDaytime', isDaytimePoint);
 };
 

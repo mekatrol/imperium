@@ -11,13 +11,16 @@
         <div class="label">
           <p>{{ label }}</p>
         </div>
-        <div class="status">
-          <span :class="`material-symbols-outlined ${getOverrideVisible() ? 'on' : ''}`"
-            :aria-hidden="!getOverrideVisible()">lock</span>
-          <span :class="`material-symbols-outlined ${getControlVisible() ? 'on' : ''}`"
-            :aria-hidden="!getControlVisible()">account_tree</span>
-          <span :class="`material-symbols-outlined ${getDeviceVisible() ? 'on' : ''}`"
-            :aria-hidden="!getDeviceVisible()">link_off</span>
+        <div class="status" v-if="!!countdown">
+          <span class="countdown">{{ countdown }}</span>
+        </div>
+        <div class="status" v-else>
+          <span :class="`material-symbols-outlined ${getOverrideIconVisible() ? 'on' : ''}`"
+            :aria-hidden="!getOverrideIconVisible()">lock</span>
+          <span :class="`material-symbols-outlined ${getControlIconVisible() ? 'on' : ''}`"
+            :aria-hidden="!getControlIconVisible()">account_tree</span>
+          <span :class="`material-symbols-outlined ${getDeviceIconVisible() ? 'on' : ''}`"
+            :aria-hidden="!getDeviceIconVisible()">link_off</span>
         </div>
       </div>
     </button>
@@ -25,9 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import { type Point } from '@/models/point';
+import { type CountdownPoint } from '@/models/point';
 import { useAppStore } from '@/stores/app-store';
-import type { Ref } from 'vue';
+import { computed, type Ref } from 'vue';
 
 interface Props {
   id: number;
@@ -39,40 +42,77 @@ interface Props {
 
 const appStore = useAppStore();
 
-const model = defineModel<Ref<Point>>();
+const model = defineModel<Ref<CountdownPoint>>();
 defineProps<Props>();
 
-const getOverrideVisible = (): boolean => {
-  return !!(model.value?.value && model.value.value.overrideValue != undefined);
+const getOverrideIconVisible = (): boolean => {
+  return !!(model.value?.value && model.value.value.valuePoint.overrideValue != null);
 };
 
-const getControlVisible = (): boolean => {
-  return !!(model.value?.value && model.value.value.controlValue != undefined);
+const getControlIconVisible = (): boolean => {
+  return !!(model.value?.value && model.value.value.valuePoint.controlValue != null);
 };
 
-const getDeviceVisible = (): boolean => {
-  return !!(model.value?.value && model.value.value.value != model.value.value.deviceValue);
+const getDeviceIconVisible = (): boolean => {
+  if (isOffline()) {
+    // If the device is offline then should device icon
+    return true;
+  }
+
+  if (!model.value?.value?.valuePoint) {
+    return false;
+  }
+
+  // If neither values are defined then the device value must be correct!
+  if (model.value.value.valuePoint.controlValue == undefined && !model.value.value.valuePoint.overrideValue == undefined) {
+    return false;
+  }
+
+  // The current value should match the device value
+  return !!(model.value?.value && model.value.value.valuePoint.value != model.value.value.valuePoint.deviceValue);
 };
+
+const timeLeft = (countdownExpiry: Date): string => {
+  const now = new Date().getTime();
+  const endDate = countdownExpiry.getTime();
+  const diff = endDate - now;
+
+  const hours = `${Math.floor(diff / 3.6e6)}`.padStart(2, '0');
+  const minutes = `${Math.floor((diff % 3.6e6) / 6e4)}`.padStart(2, '0');
+  const seconds = `${Math.floor((diff % 6e4) / 1000)}`.padStart(2, '0');
+
+  return `${hours}:${minutes}:${seconds}`;
+};
+
+const countdown = computed((): string | undefined => {
+  if (!model.value?.value?.countdownPoint?.value) {
+    return undefined;
+  }
+
+  const countdownExpiry = new Date(model.value.value.countdownPoint.value as Date);
+
+  return `${timeLeft(countdownExpiry)}`;
+});
 
 const getCssClass = (): string => {
   if (model.value?.value === undefined) {
     return 'state-offline';
   }
 
-  return model.value.value.value === 1 || model.value.value.value === true ? 'state-on' : 'state-off';
+  return model.value.value.valuePoint.value === 1 || model.value.value.valuePoint.value === true ? 'state-on' : 'state-off';
 };
 
 const isOffline = (): boolean => {
-  return model.value?.value === undefined;
+  return model.value?.value?.valuePoint.value === null;
 };
 
 const toggleValue = async (): Promise<void> => {
-  if (!model.value?.value?.id) {
+  if (!model.value?.value?.valuePoint.id) {
     return;
   }
 
   try {
-    await appStore.togglePoint(model.value.value.deviceKey, model.value.value.key, undefined);
+    await appStore.togglePoint(model.value.value.valuePoint.deviceKey, model.value.value.valuePoint.key, undefined);
 
     appStore.setServerOnlineStatus(true);
   } catch {
@@ -98,13 +138,13 @@ const toggleValue = async (): Promise<void> => {
 
 /* Icon section */
 .dashboard-cell button> :first-child {
-  width: 40%;
+  width: 35%;
   display: flex;
 }
 
 /* Text section */
 .dashboard-cell button> :not(:first-child) {
-  width: 60%;
+  width: 65%;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -136,7 +176,7 @@ const toggleValue = async (): Promise<void> => {
   flex-direction: row;
 }
 
-.dashboard-cell button .status>span {
+.dashboard-cell button .status>span:not(.countdown) {
   display: flex;
   line-height: 1.1rem;
   font-size: 1.1rem;
@@ -145,6 +185,13 @@ const toggleValue = async (): Promise<void> => {
 
   /* Effectively hide the icon */
   color: transparent;
+}
+
+.dashboard-cell button .status>span.countdown {
+  display: flex;
+  line-height: 0.8rem;
+  font-size: 0.8rem;
+  color: var(--clr-state-off);
 }
 
 .dashboard-cell.state-off>button:active .status>span {
