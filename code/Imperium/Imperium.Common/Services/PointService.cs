@@ -78,8 +78,9 @@ internal class PointService(IServiceProvider services, ILogger<PointService> log
         {
             logger.LogDebug("{msg}", $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
 
-            // Read all points for this device instance
+            // Write then read all points for this device instance
             await deviceController.Write(deviceInstance, CancellationToken.None);
+            await deviceController.Read(deviceInstance, CancellationToken.None);
         }
         catch (Exception ex)
         {
