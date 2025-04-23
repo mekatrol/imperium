@@ -4,6 +4,7 @@ using Imperium.Common.Points;
 using Imperium.Server.Background;
 using Imperium.Server.Middleware;
 using Imperium.Server.Options;
+using Imperium.Server.Services;
 using Imperium.Server.State;
 using Mekatrol.Devices;
 using Serilog;
@@ -46,6 +47,9 @@ public class Program
                     policy.AllowAnyHeader();
                 });
         });
+
+        var appVersionService = new AppVersionService();
+        builder.Services.AddSingleton<IAppVersionService>(appVersionService);
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
