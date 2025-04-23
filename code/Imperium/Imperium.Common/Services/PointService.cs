@@ -1,12 +1,14 @@
 ﻿using Imperium.Common.Exceptions;
+using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Imperium.Common.Services;
 
-internal class PointService(IServiceProvider services) : IPointService
+internal class PointService(IServiceProvider services, ILogger<PointService> logger) : IPointService
 {
-    public Task<Point> UpdatePoint(PointUpdateValueModel pointUpdate)
+    public async Task<Point> UpdatePoint(PointUpdateValueModel pointUpdate)
     {
         var pointState = services.GetRequiredService<IPointState>();
 
@@ -21,25 +23,73 @@ internal class PointService(IServiceProvider services) : IPointService
         {
             case PointUpdateAction.Control:
                 point.SetValue(pointUpdate.Value, PointValueType.Control);
-                return Task.FromResult(point);
+                break;
 
             case PointUpdateAction.Override:
                 point.SetValue(pointUpdate.Value, PointValueType.Override);
-                return Task.FromResult(point);
+                break;
 
             case PointUpdateAction.OverrideRelease:
                 point.SetValue(null, PointValueType.Override);
-                return Task.FromResult(point);
+                break;
 
             case PointUpdateAction.Toggle:
-                return ToggleValue(pointUpdate, point);
+                point = ToggleValue(pointUpdate, point);
+                break;
 
             default:
                 throw new BadRequestException($"The update action '{pointUpdate.PointUpdateAction}' is not handled by '{nameof(PointService)}.{nameof(UpdatePoint)}'.");
         }
+
+        var state = services.GetRequiredService<IImperiumState>();
+
+        // In read only mode we don't update the actual point
+        if (state.IsReadOnlyMode)
+        {
+            return point;
+        }
+
+        if (point.DeviceKey == "virtual" || string.IsNullOrWhiteSpace(point.DeviceKey))
+        {
+            return point;
+        }
+
+        // Force an update on the device
+        var deviceInstance = state.GetDeviceInstance(point.DeviceKey, true);
+
+        if (deviceInstance == null)
+        {
+            // No device instance found, log warning and continue
+            logger.LogWarning("{msg}", $"The point with key '{point.Key}' specified the device instance with key '{point.DeviceKey}'. A device instance with that key was not found.");
+            return point;
+        }
+
+        // Get controller used for this instance
+        var deviceController = state.GetDeviceController(deviceInstance.ControllerKey);
+
+        if (deviceController == null)
+        {
+            // No controller found, log warning and continue
+            logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
+            return point;
+        }
+
+        try
+        {
+            logger.LogDebug("{msg}", $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
+
+            // Read all points for this device instance
+            await deviceController.Write(deviceInstance, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex);
+        }
+
+        return point;
     }
 
-    private static Task<Point> ToggleValue(PointUpdateValueModel pointUpdate, Point point)
+    private static Point ToggleValue(PointUpdateValueModel pointUpdate, Point point)
     {
         if (point.PointType != PointType.Boolean)
         {
@@ -57,12 +107,12 @@ internal class PointService(IServiceProvider services) : IPointService
             // New value is inverted override value
             var newOverrideValue = !((bool)point.OverrideValue);
             point.SetValue(newOverrideValue, PointValueType.Override);
-            return Task.FromResult(point);
+            return point;
         }
 
         // Perform toggle control value
         var newControlValue = !((bool?)point.ControlValue ?? (bool?)point.DeviceValue ?? false);
         point.SetValue(newControlValue, PointValueType.Control);
-        return Task.FromResult(point);
+        return point;
     }
 }
