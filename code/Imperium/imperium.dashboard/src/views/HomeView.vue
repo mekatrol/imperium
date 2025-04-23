@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
-import { computed, onMounted, ref, shallowRef, type Component, type Ref } from 'vue';
+import { computed, ref, shallowRef, type Component, type Ref } from 'vue';
 import { useAppStore } from '@/stores/app-store';
 import type { CountdownPoint, Point } from '@/models/point';
 import DashboardCell from '@/components/DashboardCell.vue';
@@ -232,19 +232,16 @@ const getApplicationExecutionVersion = async (): Promise<string> => {
   return appVersion.executionVersion;
 };
 
-let applicationExecutionVersion: string = '';
-
-onMounted(async () => {
-  applicationExecutionVersion = await getApplicationExecutionVersion();
-});
-
 useIntervalTimer(async () => {
   // Get any updated application exectuion version
   const serverApplicationExecutionVersion = await getApplicationExecutionVersion();
 
+  const params = new URLSearchParams(window.location.search);
+  const applicationExecutionVersion = params.get('v');
+
   if (serverApplicationExecutionVersion != applicationExecutionVersion) {
     // Reload the page using the new version
-    window.location.replace(location.protocol + '//' + location.host + location.pathname + `?v=${applicationExecutionVersion}`);
+    window.location.replace(location.protocol + '//' + location.host + location.pathname + `?v=${serverApplicationExecutionVersion}`);
   }
 
   // Keep timer running
