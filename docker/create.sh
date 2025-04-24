@@ -90,7 +90,7 @@ if ! docker image ls --format '{{.Tag}}' | grep -q "^$IMAGE_NAME$"; then
         --build-arg SSH_USER_PASSWORD="$SSH_USER_PASSWORD" \
         --build-arg MQTT_HOST_NAME="$MQTT_HOST_NAME" \
         --build-arg MQTT_USER_NAME="$MQTT_USER_NAME" \
-        --build-arg MQTT_USER_PASSWORD="$SSH_USER_PASSWORD" \
+        --build-arg MQTT_USER_PASSWORD="$MQTT_USER_PASSWORD" \
         --build-arg HOSTNAME="$HOSTNAME" \
         --build-arg TIMEZONE="$TIMEZONE" \
         .
