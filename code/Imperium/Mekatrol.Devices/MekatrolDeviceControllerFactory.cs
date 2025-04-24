@@ -14,6 +14,11 @@ public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
     private const string SingleOutputControllerKey = "mekatrol.single.output.controller";
     private const string FourOutputControllerKey = "mekatrol.four.output.controller";
 
+    public IList<string> GetControllerKeys()
+    {
+        return [SunriseSunsetControllerKey, SingleOutputControllerKey, FourOutputControllerKey];
+    }
+
     public void AddDeviceControllers(IServiceProvider services)
     {
         var state = services.GetRequiredService<IImperiumState>();

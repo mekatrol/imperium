@@ -46,6 +46,11 @@ internal class ImperiumState : IPointState, IImperiumState
 
         var pointKey = CreateDevicePointKey(point.DeviceKey, point.Key);
 
+        if (_points.ContainsKey(pointKey))
+        {
+            throw new Exception($"A point with device key '{point.DeviceKey}' and point key '{point.Key}' has already been added.");
+        }
+
         _points.Add(pointKey, point);
     }
 

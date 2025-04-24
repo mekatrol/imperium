@@ -2,5 +2,5 @@
 
 public static class ImperiumConstants
 {
-    public const string VirtualDeviceKey = "virtual";
+    public const string VirtualKey = "virtual";
 }

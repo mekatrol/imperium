@@ -38,14 +38,14 @@ internal class FlowExecutorBackgroundService(
         var waterPumpsOn = now.WithinTimeRange(new TimeOnly(07, 30), new TimeOnly(19, 30));
 
         // Pumps are on (this is a virtual point, Imperium is the device so set point valur type to device).
-        pointState.UpdatePointValue(ImperiumConstants.VirtualDeviceKey, "water.pumps", waterPumpsOn, PointValueType.Control);
+        pointState.UpdatePointValue(ImperiumConstants.VirtualKey, "water.pumps", waterPumpsOn, PointValueType.Control);
 
         pointState.UpdatePointValue("device.greenhousepump", "Relay", waterPumpsOn, PointValueType.Control);
         pointState.UpdatePointValue("device.carport.powerboard", "Relay4", waterPumpsOn, PointValueType.Control);
 
         var alarmZone2Value = (string?)pointState.GetPointValue("housealarm", "zone2");
 
-        var timer = pointState.GetDevicePoint(ImperiumConstants.VirtualDeviceKey, "kitchen.light.timer");
+        var timer = pointState.GetDevicePoint(ImperiumConstants.VirtualKey, "kitchen.light.timer");
         if ("EVT_UNSEALED" == alarmZone2Value && isNighttime.HasValue && isNighttime.Value)
         {
             pointState.UpdatePointValue("device.kitchen.light", "Relay", true, PointValueType.Control);
@@ -53,17 +53,17 @@ internal class FlowExecutorBackgroundService(
             if (timer != null)
             {
                 // Set to expire in two minutes from now
-                pointState.UpdatePointValue(ImperiumConstants.VirtualDeviceKey, "kitchen.light.timer", DateTime.Now + new TimeSpan(0, 5, 0), PointValueType.Control);
+                pointState.UpdatePointValue(ImperiumConstants.VirtualKey, "kitchen.light.timer", DateTime.Now + new TimeSpan(0, 5, 0), PointValueType.Control);
             }
         }
         else if (timer != null)
         {
-            var expiry = pointState.GetPointValue<DateTime?>(ImperiumConstants.VirtualDeviceKey, "kitchen.light.timer");
+            var expiry = pointState.GetPointValue<DateTime?>(ImperiumConstants.VirtualKey, "kitchen.light.timer");
 
             if (expiry != null && expiry <= DateTime.Now)
             {
                 // Clear timer
-                pointState.UpdatePointValue(ImperiumConstants.VirtualDeviceKey, "kitchen.light.timer", null, PointValueType.Control);
+                pointState.UpdatePointValue(ImperiumConstants.VirtualKey, "kitchen.light.timer", null, PointValueType.Control);
 
                 // Turn off kitchen light
                 pointState.UpdatePointValue("device.kitchen.light", "Relay", false, PointValueType.Control);

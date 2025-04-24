@@ -1,5 +1,5 @@
-using Imperium.Common;
 using Imperium.Common.Configuration;
+using Imperium.Common.Controllers;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Server.Background;
@@ -162,6 +162,8 @@ public class Program
 
     private static async Task<ImperiumState> InitialiseImperiumState(IServiceProvider services)
     {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
         var state = services.GetRequiredService<ImperiumState>();
         var options = services.GetRequiredService<ImperiumStateOptions>();
 
@@ -174,21 +176,24 @@ public class Program
         Directory.CreateDirectory(devicesDirectory);
         Directory.CreateDirectory(pointsDirectory);
 
+        // Add virtual point factory and controllers
+        var virtualDeviceCotnrollerFactory = new VirtualDeviceControllerFactory();
+        virtualDeviceCotnrollerFactory.AddDeviceControllers(services);
+
         var mekatrolDeviceContollerFactory = new MekatrolDeviceControllerFactory();
         mekatrolDeviceContollerFactory.AddDeviceControllers(services);
 
-        //var deviceConfiguration = new DeviceConfiguration
-        //{
-        //    ControllerKey = "mekatrol.four.output.controller",
-        //    DeviceKey = "device.carport.powerboard",
-        //    Points = new List<PointDefinition>([
-        //        new PointDefinition("Relay1", "Carport Lights", PointType.Integer),
-        //        new PointDefinition("Relay4", "Fish Plant Pump", PointType.Integer)
-        //    ]),
-        //    Data = "{ \"Url\": \"http://pbcarport.home.wojcik.com.au\" }"
-        //};
+        var factories = new Dictionary<string, IDeviceControllerFactory>(StringComparer.OrdinalIgnoreCase);
 
-        //await File.WriteAllTextAsync($"{Path.Combine(devicesDirectory, deviceConfiguration.DeviceKey)}.json", JsonSerializer.Serialize(deviceConfiguration, JsonSerializerExtensions.ApiSerializerOptions));
+        foreach (var key in virtualDeviceCotnrollerFactory.GetControllerKeys())
+        {
+            factories.Add(key, virtualDeviceCotnrollerFactory);
+        }
+
+        foreach (var key in mekatrolDeviceContollerFactory.GetControllerKeys())
+        {
+            factories.Add(key, mekatrolDeviceContollerFactory);
+        }
 
         // Get all device files
         var deviceFiles = Directory.GetFiles(devicesDirectory, "*.json");
@@ -197,52 +202,22 @@ public class Program
         {
             var json = await File.ReadAllTextAsync(deviceFile);
             var config = JsonSerializer.Deserialize<DeviceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions)!;
-            mekatrolDeviceContollerFactory.AddDeviceInstance(
-                config.DeviceKey,
-                config.ControllerKey,
-                config.Data,
-                config.Points,
-                state);
+
+            if (factories.TryGetValue(config.ControllerKey, out var factory))
+            {
+                factory.AddDeviceInstance(
+                    config.DeviceKey,
+                    config.ControllerKey,
+                    config.Data,
+                    config.Points,
+                    state);
+            }
+            else
+            {
+                logger.LogWarning("{Message}", $"No factory implmented the controller key '{config.ControllerKey}'.");
+            }
         }
 
-        AddHouseAlarmPoint(1, "Lounge room", state);
-        AddHouseAlarmPoint(2, "Dining room", state);
-        AddHouseAlarmPoint(3, "Bedroom 1", state);
-        AddHouseAlarmPoint(4, "Bedroom 2", state);
-        AddHouseAlarmPoint(5, "Bedroom 3", state);
-        AddHouseAlarmPoint(6, "Bedroom 4", state);
-        AddHouseAlarmPoint(7, "Front door", state);
-        AddHouseAlarmPoint(8, "Back door", state);
-
-        AddVirtualPoint("kitchen.light.timer", PointType.DateTime, "Kitchen light timer", state);
-        AddVirtualPoint("water.pumps", PointType.Boolean, "Water Pumps", state);
-        AddVirtualPoint("panic", PointType.Boolean, "Panic", state, false);
-
         return state;
-    }
-
-    private static void AddHouseAlarmPoint(int zone, string friendlyName, ImperiumState state)
-    {
-        // Get with default value
-        var point = new Point("housealarm", DeviceType.Virtual, $"zone{zone}", PointType.String)
-        {
-            // Set friendly name
-            FriendlyName = friendlyName
-        };
-
-        state.AddPoint(point);
-    }
-
-    private static void AddVirtualPoint(string key, PointType type, string friendlyName, ImperiumState state, object? initialValue = null)
-    {
-        // Get with default value
-        var point = new Point(ImperiumConstants.VirtualDeviceKey, DeviceType.Virtual, key, type)
-        {
-            // Set friendly name
-            FriendlyName = friendlyName
-        };
-
-        state.AddPoint(point);
-        point.SetValue(initialValue, PointValueType.Control);
     }
 }
