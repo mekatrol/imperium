@@ -64,13 +64,9 @@ public class MqttClientBackgroundService(
                 .WithTopicFilter(
                     topicFilterBuilder =>
                     {
-                        topicFilterBuilder.WithTopic("ness/status/#");
-                    })
-                .WithTopicFilter(
-                    topicFilterBuilder =>
-                    {
-                        topicFilterBuilder.WithTopic("dog/status/#");
-                    })
+                        // Listen for all topics
+                        topicFilterBuilder.WithTopic("#");
+                    })                
                 .Build();
 
                 var response = await mqttClient.SubscribeAsync(mqttSubscribeOptions, stoppingToken);
