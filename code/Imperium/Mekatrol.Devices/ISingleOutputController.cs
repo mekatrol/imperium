@@ -1,4 +1,4 @@
-﻿using Imperium.Common.Controllers;
+﻿using Imperium.Common.DeviceControllers;
 
 namespace Mekatrol.Devices;
 

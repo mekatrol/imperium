@@ -1,7 +1,7 @@
 ﻿using Imperium.Common.Devices;
 using Imperium.Common.Points;
 
-namespace Imperium.Common.Controllers;
+namespace Imperium.Common.DeviceControllers;
 
 public interface IDeviceControllerFactory
 {

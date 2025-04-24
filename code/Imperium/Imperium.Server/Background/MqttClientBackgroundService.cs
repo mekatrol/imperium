@@ -66,7 +66,7 @@ public class MqttClientBackgroundService(
                     {
                         // Listen for all topics
                         topicFilterBuilder.WithTopic("#");
-                    })                
+                    })
                 .Build();
 
                 var response = await mqttClient.SubscribeAsync(mqttSubscribeOptions, stoppingToken);

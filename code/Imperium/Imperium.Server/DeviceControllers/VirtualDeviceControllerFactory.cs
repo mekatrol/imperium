@@ -1,12 +1,12 @@
 ﻿using Imperium.Common;
-using Imperium.Common.Controllers;
+using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Server.Models;
 using System.Text.Json;
 
-namespace Imperium.Server.State;
+namespace Imperium.Server.DeviceControllers;
 
 public class VirtualDeviceControllerFactory : IDeviceControllerFactory
 {

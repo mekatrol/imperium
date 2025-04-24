@@ -1,8 +1,9 @@
 using Imperium.Common.Configuration;
-using Imperium.Common.Controllers;
+using Imperium.Common.DeviceControllers;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Server.Background;
+using Imperium.Server.DeviceControllers;
 using Imperium.Server.Middleware;
 using Imperium.Server.Options;
 using Imperium.Server.Services;

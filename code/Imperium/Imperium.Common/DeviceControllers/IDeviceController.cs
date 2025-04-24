@@ -1,6 +1,6 @@
 ﻿using Imperium.Common.Devices;
 
-namespace Imperium.Common.Controllers;
+namespace Imperium.Common.DeviceControllers;
 
 public interface IDeviceController
 {

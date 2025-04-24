@@ -1,4 +1,4 @@
-﻿using Imperium.Common.Controllers;
+﻿using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
 
 namespace Imperium.Common.Points;
