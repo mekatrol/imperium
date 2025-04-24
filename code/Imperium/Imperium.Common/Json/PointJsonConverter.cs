@@ -6,7 +6,8 @@ namespace Imperium.Common.Json;
 
 public class PointJsonConverter : JsonConverter<Point>
 {
-    public const string InvalidPointTypeMessage = $"'{nameof(Point.PointType)}' is required and cannot be null, empty or whitespace.";
+    public const string InvalidPointTypeMessage = $"'{nameof(Point.PointType)}' is required and cannot be null, empty or whitespace. It must of a value from the '{nameof(PointType)}' enum.";
+    public const string InvalidDeviceTypeMessage = $"'{nameof(Point.DeviceType)}' is required and cannot be null, empty or whitespace. It must of a value from the '{nameof(DeviceType)}' enum.";
     public const string InvalidKeyMessage = $"'{nameof(Point.Key)}' is required and cannot be null, empty or whitespace.";
     public const string InvalidIdMessage = $"'{nameof(Point.Id)}' is required and cannot be null, empty or whitespace and must not be a all zero GUID value.";
     public const string InvalidIsReadOnlyMessage = $"'{nameof(Point.IsReadOnly)}' must be a valid boolean value.";
@@ -30,6 +31,12 @@ public class PointJsonConverter : JsonConverter<Point>
             !Enum.TryParse<PointType>(pointTypeProp.GetString(), true, out var pointType))
         {
             throw new JsonException(InvalidPointTypeMessage);
+        }
+
+        if (!root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.DeviceType)), out var deviceTypeProp) ||
+            !Enum.TryParse<DeviceType>(deviceTypeProp.GetString(), true, out var deviceType))
+        {
+            throw new JsonException(InvalidDeviceTypeMessage);
         }
 
         if (!root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.Key)), out var keyElement))
@@ -98,7 +105,7 @@ public class PointJsonConverter : JsonConverter<Point>
         }
 
         // Trim key any whitespace for safety
-        var point = new Point(deviceKey, key.Trim(), pointType)
+        var point = new Point(deviceKey, deviceType, key.Trim(), pointType)
         {
             Id = id,
             LastUpdated = lastUpdated,
@@ -124,6 +131,7 @@ public class PointJsonConverter : JsonConverter<Point>
         writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.Id)), point.Id.ToString());
         writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.Key)), point.Key);
         writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.PointType)), propertyNamingPolicy.ConvertName(point.PointType.ToString()));
+        writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.DeviceType)), propertyNamingPolicy.ConvertName(point.DeviceType.ToString()));
         writer.WriteBoolean(propertyNamingPolicy.ConvertName(nameof(Point.IsReadOnly)), point.IsReadOnly);
 
         if (point.PointState != null || !ignoreNull)

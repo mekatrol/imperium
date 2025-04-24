@@ -42,7 +42,7 @@ internal class PointService(IServiceProvider services, ILogger<PointService> log
         }
 
         // Virtual points are updated in meory, not need to update the device
-        if (point.DeviceKey == ImperiumConstants.VirtualDeviceKey)
+        if (point.DeviceType == DeviceType.Virtual)
         {
             return point;
         }

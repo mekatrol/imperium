@@ -17,7 +17,7 @@ public class Point
         Id = Guid.NewGuid();
     }
 
-    public Point(string deviceKey, string pointKey, PointType pointType) : this()
+    public Point(string deviceKey, DeviceType deviceType, string pointKey, PointType pointType) : this()
     {
         if (string.IsNullOrEmpty(deviceKey))
         {
@@ -29,6 +29,7 @@ public class Point
             throw new ArgumentException(PointJsonConverter.InvalidKeyMessage);
         }
 
+        DeviceType = deviceType;
         DeviceKey = deviceKey;
         Key = pointKey;
         PointType = pointType;
@@ -137,6 +138,11 @@ public class Point
     /// </summary>
     public string DeviceKey { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The type of device the point is controlled by.
+    /// </summary>
+    public DeviceType DeviceType { get; set; }
+
     public object? SetValue(object? value, PointValueType valueType)
     {
         // Make sure types match
@@ -161,8 +167,7 @@ public class Point
                 SetControlValue(value);
 
                 // If this is a virtual point then we also set the Device value
-                // as the device is Imperium State
-                if (DeviceKey == ImperiumConstants.VirtualDeviceKey)
+                if (DeviceType == DeviceType.Virtual)
                 {
                     SetDeviceValue(value);
                 }

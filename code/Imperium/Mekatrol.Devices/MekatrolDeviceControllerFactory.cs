@@ -84,6 +84,7 @@ public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
 
         var deviceInstance = new DeviceInstance<InstanceConfiguration>(
            deviceKey,
+           DeviceType.Physical,
            controllerKey,
            instanceConfiguration);
 

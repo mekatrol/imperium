@@ -224,7 +224,7 @@ public class Program
     private static void AddHouseAlarmPoint(int zone, string friendlyName, ImperiumState state)
     {
         // Get with default value
-        var point = new Point("housealarm", $"zone{zone}", PointType.String)
+        var point = new Point("housealarm", DeviceType.Virtual, $"zone{zone}", PointType.String)
         {
             // Set friendly name
             FriendlyName = friendlyName
@@ -236,7 +236,7 @@ public class Program
     private static void AddVirtualPoint(string key, PointType type, string friendlyName, ImperiumState state, object? initialValue = null)
     {
         // Get with default value
-        var point = new Point(ImperiumConstants.VirtualDeviceKey, key, type)
+        var point = new Point(ImperiumConstants.VirtualDeviceKey, DeviceType.Virtual, key, type)
         {
             // Set friendly name
             FriendlyName = friendlyName

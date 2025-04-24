@@ -3,9 +3,11 @@ using Imperium.Common.Points;
 
 namespace Imperium.Common.Devices;
 
-public class DeviceInstance<T>(string key, string deviceControllerKey, object? data = null, bool enabled = true) : IDeviceInstance
+public class DeviceInstance<T>(string key, DeviceType deviceType, string deviceControllerKey, object? data = null, bool enabled = true) : IDeviceInstance
 {
     private readonly IList<Point> _points = [];
+
+    public DeviceType DeviceType { get; set; } = deviceType;
 
     public string Key { get; } = key;
 
@@ -58,7 +60,7 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
         var pointType = nativePointType.GetPointType() ?? throw new InvalidOperationException($"The type of point '{nativePointType.FullName}' is not valid for the type.");
 
         // Not found then use default or create new
-        point = defaultValue ?? new Point(Key, pointKey, pointType) { FriendlyName = pointKey };
+        point = defaultValue ?? new Point(Key, DeviceType, pointKey, pointType) { FriendlyName = pointKey };
 
         // Add the new point
         _points.Add(point);
