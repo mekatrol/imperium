@@ -1,5 +1,5 @@
 <template>
-  <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
+  <div :class="`dashboard-cell dashboard-switch-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
     <button
       @click="togglePointState"
       :disabled="isOffline()"
@@ -145,13 +145,13 @@ const togglePointState = async (): Promise<void> => {
 
 <style lang="css" scoped>
 /* Button layout */
-.dashboard-cell button {
+.dashboard-switch-cell button {
   display: flex;
   flex-direction: row;
 }
 
 /* Button sections (icon + text) */
-.dashboard-cell button > div {
+.dashboard-switch-cell button > div {
   display: flex;
   flex-direction: column;
   align-content: center;
@@ -159,13 +159,13 @@ const togglePointState = async (): Promise<void> => {
 }
 
 /* Icon section */
-.dashboard-cell button > :first-child {
+.dashboard-switch-cell button > :first-child {
   width: 35%;
   display: flex;
 }
 
 /* Text section */
-.dashboard-cell button > :not(:first-child) {
+.dashboard-switch-cell button > :not(:first-child) {
   width: 65%;
   display: flex;
   flex-direction: column;
@@ -174,31 +174,31 @@ const togglePointState = async (): Promise<void> => {
 }
 
 /* Text section children */
-.dashboard-cell button > :not(:first-child) > * {
+.dashboard-switch-cell button > :not(:first-child) > * {
   padding: 0;
   margin: 0;
   line-height: 1rem;
 }
 
-.dashboard-cell button .label {
+.dashboard-switch-cell button .label {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-.dashboard-cell button .label > p {
-  line-height: 2rem;
+.dashboard-switch-cell button .label > p {
+  line-height: 1rem;
   font-size: 1rem;
   text-align: center;
   align-self: center;
 }
 
-.dashboard-cell button .status {
+.dashboard-switch-cell button .status {
   display: flex;
   flex-direction: row;
 }
 
-.dashboard-cell button .status > span:not(.countdown) {
+.dashboard-switch-cell button .status > span:not(.countdown) {
   display: flex;
   line-height: 1.1rem;
   font-size: 1.1rem;
@@ -209,26 +209,26 @@ const togglePointState = async (): Promise<void> => {
   color: transparent;
 }
 
-.dashboard-cell button .status > span.countdown {
+.dashboard-switch-cell button .status > span.countdown {
   display: flex;
   line-height: 0.8rem;
   font-size: 0.8rem;
   color: var(--clr-state-off);
 }
 
-.dashboard-cell.state-off > button:active .status > span {
+.dashboard-switch-cell.state-off > button:active .status > span {
   color: var(--clr-state-off);
 }
 
-.dashboard-cell.state-on > button:active .status > span {
+.dashboard-switch-cell.state-on > button:active .status > span {
   color: var(--clr-state-on);
 }
 
-.dashboard-cell.state-off button .status > span.on {
+.dashboard-switch-cell.state-off button .status > span.on {
   color: var(--clr-state-off);
 }
 
-.dashboard-cell.state-on button .status > span.on {
+.dashboard-switch-cell.state-on button .status > span.on {
   color: var(--clr-state-on);
 }
 </style>

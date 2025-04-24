@@ -15,6 +15,8 @@
 
   --clr-panic-ok: var(--clr-state-on);
   --clr-panic-active: #0478d8;
+  --clr-heat-off: #f9fdc2;
+  --clr-heat-on: #f7621e;
 }
 
 .wrapper {

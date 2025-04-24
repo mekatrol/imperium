@@ -44,6 +44,14 @@ export interface CountdownPoint {
   countdownPoint: Point | undefined;
 }
 
+export interface TemperatureControlPoint {
+  valuePoint: Point;
+  setpointPoint: Point;
+  proportionalBandPoint: Point;
+  enabledPoint: Point;
+  onPoint: Point;
+}
+
 export interface PointValueUpdate {
   deviceKey: string;
   pointKey: string;

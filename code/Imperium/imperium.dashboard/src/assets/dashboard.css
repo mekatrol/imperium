@@ -29,7 +29,8 @@
   outline: 1px solid var(--clr-panic-active);
 }
 
-.dashboard-cell > button {
+.dashboard-cell > button,
+.dashboard-cell > div {
   background-color: inherit;
   width: 100%;
   border: none;

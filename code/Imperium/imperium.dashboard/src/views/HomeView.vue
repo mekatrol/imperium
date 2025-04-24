@@ -54,8 +54,9 @@ import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
 import { computed, ref, shallowRef, type Component, type Ref } from 'vue';
 import { useAppStore } from '@/stores/app-store';
-import type { CountdownPoint, Point } from '@/models/point';
-import DashboardCell from '@/components/DashboardCell.vue';
+import type { CountdownPoint, Point, TemperatureControlPoint } from '@/models/point';
+import DashboardSwitchCell from '@/components/DashboardSwitchCell.vue';
+import DashboardTemperatureControllerCell from '@/components/DashboardTemperatureControllerCell.vue';
 
 interface GridCellProps {
   id: number;
@@ -89,6 +90,7 @@ const carportLightsPoint = ref<CountdownPoint | undefined>();
 const frontDoorLightPoint = ref<CountdownPoint | undefined>();
 const houseNumberLightPoint = ref<CountdownPoint | undefined>();
 const isDaytimePoint = ref<Point | undefined>();
+const dogRoomTemperaturePoint = ref<TemperatureControlPoint | undefined>();
 
 const serverStatusIcon = computed((): string => {
   return appStore.serverOnline ? 'devices' : 'devices_off';
@@ -108,18 +110,18 @@ const isDaytimeClass = computed((): string => {
 
 const createCells = (): void => {
   let id = 0;
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' }, model: carportLightsPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' }, model: frontDoorLightPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'House No.', icon: 'looks_6' }, model: houseNumberLightPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Water Pumps', icon: 'heat_pump_balance' }, model: aquaponicsPumpsPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' }, model: carportLightsPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' }, model: frontDoorLightPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'House No.', icon: 'looks_6' }, model: houseNumberLightPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Water Pumps', icon: 'heat_pump_balance' }, model: aquaponicsPumpsPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
 
-  // gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
-  gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row panic' }, model: panicPoint });
-  // gridCells.value.push({ component: DashboardCell, props: { id: id++, label: 'More', icon: 'arrow_right_alt', cssClass: 'grid-two-row' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row panic' }, model: panicPoint });
+  gridCells.value.push({ component: DashboardTemperatureControllerCell, props: { id: id++, label: 'Dogs room', icon: 'pets', cssClass: 'grid-two-row' }, model: dogRoomTemperaturePoint });
 };
 
 createCells();
@@ -175,6 +177,75 @@ const updateCountdownPoint = (
   };
 };
 
+const updateTemperatureControlPoint = (
+  valueDeviceKey: string,
+  valuePointKey: string,
+  setpointDeviceKey: string,
+  setpointPointKey: string,
+  proportionalBandDeviceKey: string,
+  proportionalBandPointKey: string,
+  enabledDeviceKey: string,
+  enabledPointKey: string,
+  onDeviceKey: string,
+  onPointKey: string,
+  point: Ref<TemperatureControlPoint | undefined>
+): void => {
+  const valuePoints = allPoints.value.filter((p) => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
+  const setpointPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == setpointDeviceKey && p.key === setpointPointKey) : [];
+  const proportionalBandPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == proportionalBandDeviceKey && p.key === proportionalBandPointKey) : [];
+  const enabledPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == enabledDeviceKey && p.key === enabledPointKey) : [];
+  const onPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == onDeviceKey && p.key === onPointKey) : [];
+
+  let valuePoint: Point | undefined = undefined;
+  let setpointPoint: Point | undefined = undefined;
+  let proportionalBandPoint: Point | undefined = undefined;
+  let enabledPoint: Point | undefined = undefined;
+  let onPoint: Point | undefined = undefined;
+
+  if (valuePoints.length === 1) {
+    valuePoint = valuePoints[0];
+  } else {
+    point.value = undefined;
+  }
+
+  if (setpointPoints.length === 1) {
+    setpointPoint = setpointPoints[0];
+  } else {
+    point.value = undefined;
+  }
+
+  if (proportionalBandPoints.length === 1) {
+    proportionalBandPoint = proportionalBandPoints[0];
+  } else {
+    point.value = undefined;
+  }
+
+  if (enabledPoints.length === 1) {
+    enabledPoint = enabledPoints[0];
+  } else {
+    point.value = undefined;
+  }
+
+  if (onPoints.length === 1) {
+    onPoint = onPoints[0];
+  } else {
+    point.value = undefined;
+  }
+
+  if (!valuePoint || !setpointPoint || !proportionalBandPoint || !enabledPoint || !onPoint) {
+    point.value = undefined;
+    return;
+  }
+
+  point.value = {
+    valuePoint: valuePoint,
+    setpointPoint: setpointPoint,
+    proportionalBandPoint: proportionalBandPoint,
+    enabledPoint: enabledPoint,
+    onPoint: onPoint
+  };
+};
+
 const updatePoints = (): void => {
   updateCountdownPoint('device.clothesline', 'Relay', null, undefined, clotheslinePoint);
   updateCountdownPoint('device.alfrescolight', 'Relay', null, undefined, alfrescoLightPoint);
@@ -185,6 +256,7 @@ const updatePoints = (): void => {
   updateCountdownPoint('device.housenumberlight', 'Relay', null, undefined, houseNumberLightPoint);
   updateCountdownPoint('virtual', 'water.pumps', null, undefined, aquaponicsPumpsPoint);
   updateCountdownPoint('virtual', 'panic', null, undefined, panicPoint);
+  updateTemperatureControlPoint('dogheater', 'temp.avg', 'dogheater', 'temp.sp', 'dogheater', 'temp.pb', 'dogheater', 'heater.enabled', 'dogheater', 'heater.on', dogRoomTemperaturePoint);
   updatePoint('device.sunrisesunset', 'IsDaytime', isDaytimePoint);
 };
 
