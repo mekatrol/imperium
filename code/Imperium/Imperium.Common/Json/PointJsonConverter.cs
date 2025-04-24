@@ -11,6 +11,7 @@ public class PointJsonConverter : JsonConverter<Point>
     public const string InvalidIdMessage = $"'{nameof(Point.Id)}' is required and cannot be null, empty or whitespace and must not be a all zero GUID value.";
     public const string InvalidIsReadOnlyMessage = $"'{nameof(Point.IsReadOnly)}' must be a valid boolean value.";
     public const string InvalidPointStateMessage = $"'{nameof(Point.PointState)}' is required and cannot be null, empty or whitespace.";
+    public const string InvalidDeviceKeyMessage = $"'{nameof(Point.DeviceKey)}' is required and cannot be null, empty or whitespace.";
 
     public override Point? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -85,13 +86,23 @@ public class PointJsonConverter : JsonConverter<Point>
             }
         }
 
+        var deviceKey = string.Empty;
+        if (root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.DeviceKey)), out var deviceKeyProp))
+        {
+            deviceKey = deviceKeyProp.GetString();
+
+            if (string.IsNullOrWhiteSpace(deviceKey))
+            {
+                throw new JsonException(InvalidDeviceKeyMessage);
+            }
+        }
+
         // Trim key any whitespace for safety
-        var point = new Point(key.Trim(), pointType)
+        var point = new Point(deviceKey, key.Trim(), pointType)
         {
             Id = id,
             LastUpdated = lastUpdated,
             FriendlyName = root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.FriendlyName)), out var friendlyName) ? friendlyName.GetString() : null,
-            DeviceKey = root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.DeviceKey)), out var deviceKey) ? deviceKey.GetString() : null,
             IsReadOnly = isReadOnly,
             PointState = pointState
         };
@@ -154,18 +165,8 @@ public class PointJsonConverter : JsonConverter<Point>
             }
         }
 
-        if (point.DeviceKey is not null || !ignoreNull)
-        {
-            writer.WritePropertyName(propertyNamingPolicy.ConvertName(nameof(Point.DeviceKey)));
-            if (point.DeviceKey != null)
-            {
-                writer.WriteStringValue(point.DeviceKey);
-            }
-            else
-            {
-                writer.WriteNullValue();
-            }
-        }
+        writer.WritePropertyName(propertyNamingPolicy.ConvertName(nameof(Point.DeviceKey)));
+        writer.WriteStringValue(point.DeviceKey);
 
         WriteValueProperty(point.PointType, point.Value, nameof(Point.Value), ignoreNull, writer, propertyNamingPolicy, options);
         WriteValueProperty(point.PointType, point.ControlValue, nameof(Point.ControlValue), ignoreNull, writer, propertyNamingPolicy, options);

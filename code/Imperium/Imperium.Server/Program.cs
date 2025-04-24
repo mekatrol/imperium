@@ -1,3 +1,4 @@
+using Imperium.Common;
 using Imperium.Common.Configuration;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
@@ -215,7 +216,7 @@ public class Program
 
         AddVirtualPoint("kitchen.light.timer", PointType.DateTime, "Kitchen light timer", state);
         AddVirtualPoint("water.pumps", PointType.Boolean, "Water Pumps", state);
-        AddVirtualPoint("panic", PointType.Boolean, "Panic", state);
+        AddVirtualPoint("panic", PointType.Boolean, "Panic", state, false);
 
         return state;
     }
@@ -223,24 +224,25 @@ public class Program
     private static void AddHouseAlarmPoint(int zone, string friendlyName, ImperiumState state)
     {
         // Get with default value
-        var point = new Point($"zone{zone}", PointType.String)
+        var point = new Point("housealarm", $"zone{zone}", PointType.String)
         {
             // Set friendly name
             FriendlyName = friendlyName
         };
 
-        state.AddPoint("housealarm", point);
+        state.AddPoint(point);
     }
 
-    private static void AddVirtualPoint(string key, PointType type, string friendlyName, ImperiumState state)
+    private static void AddVirtualPoint(string key, PointType type, string friendlyName, ImperiumState state, object? initialValue = null)
     {
         // Get with default value
-        var point = new Point(key, type)
+        var point = new Point(ImperiumConstants.VirtualDeviceKey, key, type)
         {
             // Set friendly name
             FriendlyName = friendlyName
         };
 
-        state.AddPoint("virtual", point);
+        state.AddPoint(point);
+        point.SetValue(initialValue, PointValueType.Control);
     }
 }

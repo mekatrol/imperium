@@ -13,6 +13,8 @@ public interface IImperiumState
 
     string MqttPassword { get; set; }
 
+    IList<Point> GetAllPoints();
+
     void AddDeviceController(string key, IDeviceController deviceController);
 
     IDeviceInstance? GetDeviceInstance(string key, bool includePoints);

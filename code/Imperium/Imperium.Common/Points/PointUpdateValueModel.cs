@@ -2,7 +2,7 @@
 
 public class PointUpdateValueModel
 {
-    public string DeviceKey { get; set; } = string.Empty;
+    public string DeviceKey { get; set; }
 
     public string PointKey { get; set; } = string.Empty;
 

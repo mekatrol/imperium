@@ -17,14 +17,20 @@ public class Point
         Id = Guid.NewGuid();
     }
 
-    public Point(string key, PointType pointType) : this()
+    public Point(string deviceKey, string pointKey, PointType pointType) : this()
     {
-        if (string.IsNullOrEmpty(key))
+        if (string.IsNullOrEmpty(deviceKey))
+        {
+            throw new ArgumentException(PointJsonConverter.InvalidDeviceKeyMessage);
+        }
+
+        if (string.IsNullOrEmpty(pointKey))
         {
             throw new ArgumentException(PointJsonConverter.InvalidKeyMessage);
         }
 
-        Key = key;
+        DeviceKey = deviceKey;
+        Key = pointKey;
         PointType = pointType;
     }
 
@@ -127,9 +133,9 @@ public class Point
 
     /// <summary>
     /// This is the unique key of the device that owns this point.
-    /// It can be null where the point is a virtual in memory point (no actual device)
+    /// It can be 'ImperiumConstants.VirtualDeviceKey' where the point is a virtual in memory point (no actual device)
     /// </summary>
-    public string? DeviceKey { get; set; }
+    public string DeviceKey { get; set; } = string.Empty;
 
     public object? SetValue(object? value, PointValueType valueType)
     {
@@ -153,6 +159,13 @@ public class Point
         {
             case PointValueType.Control:
                 SetControlValue(value);
+
+                // If this is a virtual point then we also set the Device value
+                // as the device is Imperium State
+                if (DeviceKey == ImperiumConstants.VirtualDeviceKey)
+                {
+                    SetDeviceValue(value);
+                }
                 break;
 
             case PointValueType.Device:

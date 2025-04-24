@@ -37,7 +37,7 @@ export const useAppStore = defineStore('app', () => {
     return await httpGet<Point[]>('/points', errorHandlerCallback, false, showBusy);
   };
 
-  const togglePoint = async (deviceKey: string, pointKey: string, value: PointTypes, errorHandlerCallback?: HandleErrorCallback): Promise<Point> => {
+  const togglePointState = async (deviceKey: string, pointKey: string, errorHandlerCallback?: HandleErrorCallback): Promise<Point> => {
     const model: PointValueUpdate = {
       deviceKey: deviceKey,
       pointKey: pointKey,
@@ -76,7 +76,7 @@ export const useAppStore = defineStore('app', () => {
     getApplicationVersion,
 
     getPoints,
-    togglePoint,
+    togglePointState,
     updatePoint
   };
 });

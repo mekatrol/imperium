@@ -41,15 +41,16 @@ internal class PointService(IServiceProvider services, ILogger<PointService> log
                 throw new BadRequestException($"The update action '{pointUpdate.PointUpdateAction}' is not handled by '{nameof(PointService)}.{nameof(UpdatePoint)}'.");
         }
 
-        var state = services.GetRequiredService<IImperiumState>();
-
-        // In read only mode we don't update the actual point
-        if (state.IsReadOnlyMode)
+        // Virtual points are updated in meory, not need to update the device
+        if (point.DeviceKey == ImperiumConstants.VirtualDeviceKey)
         {
             return point;
         }
 
-        if (point.DeviceKey == "virtual" || string.IsNullOrWhiteSpace(point.DeviceKey))
+        var state = services.GetRequiredService<IImperiumState>();
+
+        // In read only mode we don't update the actual point
+        if (state.IsReadOnlyMode)
         {
             return point;
         }
@@ -115,5 +116,12 @@ internal class PointService(IServiceProvider services, ILogger<PointService> log
         var newControlValue = !((bool?)point.ControlValue ?? (bool?)point.DeviceValue ?? false);
         point.SetValue(newControlValue, PointValueType.Control);
         return point;
+    }
+
+    public IList<Point> GetAllPoints()
+    {
+        var state = services.GetRequiredService<IImperiumState>();
+        var allPoints = state.GetAllPoints();
+        return allPoints;
     }
 }

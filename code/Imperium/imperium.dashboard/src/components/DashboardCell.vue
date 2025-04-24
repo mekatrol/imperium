@@ -1,7 +1,7 @@
 <template>
   <div :class="`dashboard-cell${cssClass ? ' ' + cssClass : ''} ${getCssClass()} `">
     <button
-      @click="toggleValue"
+      @click="togglePointState"
       :disabled="isOffline()"
     >
       <div>
@@ -128,13 +128,13 @@ const isOffline = (): boolean => {
   return model.value?.value?.valuePoint.value === null;
 };
 
-const toggleValue = async (): Promise<void> => {
+const togglePointState = async (): Promise<void> => {
   if (!model.value?.value?.valuePoint.id) {
     return;
   }
 
   try {
-    await appStore.togglePoint(model.value.value.valuePoint.deviceKey, model.value.value.valuePoint.key, undefined);
+    await appStore.togglePointState(model.value.value.valuePoint.deviceKey, model.value.value.valuePoint.key);
 
     appStore.setServerOnlineStatus(true);
   } catch {

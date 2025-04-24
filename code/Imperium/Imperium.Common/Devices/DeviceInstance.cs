@@ -58,7 +58,7 @@ public class DeviceInstance<T>(string key, string deviceControllerKey, object? d
         var pointType = nativePointType.GetPointType() ?? throw new InvalidOperationException($"The type of point '{nativePointType.FullName}' is not valid for the type.");
 
         // Not found then use default or create new
-        point = defaultValue ?? new Point(pointKey, pointType) { FriendlyName = pointKey, DeviceKey = Key };
+        point = defaultValue ?? new Point(Key, pointKey, pointType) { FriendlyName = pointKey };
 
         // Add the new point
         _points.Add(point);

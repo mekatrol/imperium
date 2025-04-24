@@ -183,8 +183,8 @@ const updatePoints = (): void => {
   updateCountdownPoint('device.carport.powerboard', 'Relay1', null, undefined, carportLightsPoint);
   updateCountdownPoint('device.frontdoorlight', 'Relay', null, undefined, frontDoorLightPoint);
   updateCountdownPoint('device.housenumberlight', 'Relay', null, undefined, houseNumberLightPoint);
-  updateCountdownPoint(null, 'water.pumps', null, undefined, aquaponicsPumpsPoint);
-  updateCountdownPoint(null, 'panic', null, undefined, panicPoint);
+  updateCountdownPoint('virtual', 'water.pumps', null, undefined, aquaponicsPumpsPoint);
+  updateCountdownPoint('virtual', 'panic', null, undefined, panicPoint);
   updatePoint('device.sunrisesunset', 'IsDaytime', isDaytimePoint);
 };
 

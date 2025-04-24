@@ -1,6 +1,5 @@
 using Imperium.Common.Points;
 using Imperium.Common.Services;
-using Imperium.Server.State;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Imperium.Server.Controllers;
@@ -13,8 +12,8 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
     public IList<Point> Get()
     {
         logger.LogDebug("{msg}", $"Getting all points.");
-        var state = services.GetRequiredService<ImperiumState>();
-        return state.GetAllPoints();
+        var pointService = services.GetRequiredService<IPointService>();
+        return pointService.GetAllPoints();
     }
 
     [HttpPost]
@@ -22,6 +21,7 @@ public class PointsController(ILogger<PointsController> logger, IServiceProvider
     {
         logger.LogDebug("{msg}", $"Updating point '{pointUpdate}'");
         var pointService = services.GetRequiredService<IPointService>();
+
         return await pointService.UpdatePoint(pointUpdate);
     }
 }

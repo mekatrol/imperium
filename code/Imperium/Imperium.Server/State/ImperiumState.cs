@@ -32,14 +32,19 @@ internal class ImperiumState : IPointState, IImperiumState
 
     public string MqttPassword { get; set; } = string.Empty;
 
-    public void AddPoint(string deviceKey, Point point)
+    public void AddPoint(Point point)
     {
-        if (string.IsNullOrWhiteSpace(deviceKey))
+        if (string.IsNullOrWhiteSpace(point.DeviceKey))
         {
-            throw new InvalidOperationException($"The device key must be set");
+            throw new InvalidOperationException($"The point device key must be set");
         }
 
-        var pointKey = CreateDevicePointKey(deviceKey, point.Key);
+        if (string.IsNullOrWhiteSpace(point.Key))
+        {
+            throw new InvalidOperationException($"The point key must be set");
+        }
+
+        var pointKey = CreateDevicePointKey(point.DeviceKey, point.Key);
 
         _points.Add(pointKey, point);
     }
