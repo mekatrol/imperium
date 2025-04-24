@@ -82,9 +82,9 @@ RUN cd /imperium/code/Imperium/imperium.dashboard && \
 RUN dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj -c Release -o /app/publish    
 
 # MQTT  settings
-RUN sed -i 's/"MqttServer": *""/"MqttServer": "$MQTT_HOST_NAME"/' /app/publish/appsettings.json && \
-    sed -i 's/"MqttUser": *""/"MqttUser": "$MQTT_USER_NAME"/' /app/publish/appsettings.json && \
-    sed -i 's/"MqttPassword": *""/"MqttPassword": "$MQTT_USER_PASSWORD"/' /app/publish/appsettings.json
+RUN sed -i "s/\"MqttServer\": *\"\"/\"MqttServer\": \"${MQTT_HOST_NAME}\"/" /app/publish/appsettings.json && \
+    sed -i "s/\"MqttUser\": *\"\"/\"MqttUser\": \"${MQTT_USER_NAME}\"/" /app/publish/appsettings.json && \
+    sed -i "s/\"MqttPassword\": *\"\"/\"MqttPassword\": \"${MQTT_USER_PASSWORD}\"/" /app/publish/appsettings.json
 
 # Start SSH and the .NET app
 CMD ["/entry-point.sh"]
