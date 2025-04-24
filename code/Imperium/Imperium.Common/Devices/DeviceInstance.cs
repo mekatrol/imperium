@@ -3,7 +3,12 @@ using Imperium.Common.Points;
 
 namespace Imperium.Common.Devices;
 
-public class DeviceInstance<T>(string key, DeviceType deviceType, string deviceControllerKey, object? data = null, bool enabled = true) : IDeviceInstance
+public class DeviceInstance<T>(
+    string key,
+    DeviceType deviceType,
+    string deviceControllerKey,
+    object? data = null,
+    bool enabled = true) : IDeviceInstance
 {
     private readonly IList<Point> _points = [];
 

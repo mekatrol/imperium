@@ -10,6 +10,11 @@ public interface IDeviceInstance
     string Key { get; }
 
     /// <summary>
+    /// The device type, e.g. physical or virtual.
+    /// </summary>
+    DeviceType DeviceType { get; }
+
+    /// <summary>
     /// This is the unique key of the device controller used to interact with the device.
     /// </summary>
     string ControllerKey { get; }
