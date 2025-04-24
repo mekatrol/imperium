@@ -65,6 +65,10 @@ public class MqttClientBackgroundService(
                     topicFilterBuilder =>
                     {
                         topicFilterBuilder.WithTopic("ness/status/#");
+                    })
+                .WithTopicFilter(
+                    topicFilterBuilder =>
+                    {
                         topicFilterBuilder.WithTopic("dog/status/#");
                     })
                 .Build();
