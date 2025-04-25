@@ -128,6 +128,11 @@ internal class ImperiumState : IPointState, IImperiumState
         return [.. _points.Values];
     }
 
+    public IList<IDeviceInstance> GetAllDevices()
+    {
+        return _deviceInstances.Values.ToList();
+    }
+
     /// <summary>
     /// Get list of all points belonging to the specified device key
     /// </summary>
@@ -259,21 +264,6 @@ internal class ImperiumState : IPointState, IImperiumState
         }
 
         return (T?)point.Value;
-    }
-
-    /// <inheritdoc/>
-    public Point? UpdatePointValue(Guid pointId, object? value, PointValueType valueType)
-    {
-        var point = _points.Values.SingleOrDefault(p => p.Id == pointId);
-
-        if (point == null)
-        {
-            return null;
-        }
-
-        point.SetValue(value, valueType);
-
-        return point;
     }
 
     /// <inheritdoc/>

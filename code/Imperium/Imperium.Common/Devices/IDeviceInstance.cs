@@ -37,7 +37,7 @@ public interface IDeviceInstance
     /// <summary>
     /// Map the device point.
     /// </summary>
-    Point MapPoint(string key, string friendlyName, Type nativePointType, object? value = null);
+    Point MapPoint(string key, string friendlyName, string? alias, Type nativePointType, object? value = null);
 
     /// <summary>
     /// Helper method to get the existing point or create it new if it does not exist

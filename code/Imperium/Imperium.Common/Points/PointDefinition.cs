@@ -18,5 +18,7 @@ public class PointDefinition
 
     public string FriendlyName { get; set; } = string.Empty;
 
+    public string? Alias { get; set; }
+
     public PointType PointType { get; set; }
 }

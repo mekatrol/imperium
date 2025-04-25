@@ -45,7 +45,7 @@ public class DeviceControllerFactory() : IDeviceControllerFactory
                 throw new Exception($"The point with key '{point.Key}' has type '{point.PointType}' defined which is not defined.");
             }
 
-            deviceInstance.MapPoint(point.Key, point.FriendlyName, nativePointType, null);
+            deviceInstance.MapPoint(point.Key, point.FriendlyName, point.Alias, nativePointType, null);
         }
 
         state.AddDeviceAndPoints(deviceInstance);

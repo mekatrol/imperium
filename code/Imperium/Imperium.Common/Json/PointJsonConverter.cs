@@ -9,7 +9,6 @@ public class PointJsonConverter : JsonConverter<Point>
     public const string InvalidPointTypeMessage = $"'{nameof(Point.PointType)}' is required and cannot be null, empty or whitespace. It must of a value from the '{nameof(PointType)}' enum.";
     public const string InvalidDeviceTypeMessage = $"'{nameof(Point.DeviceType)}' is required and cannot be null, empty or whitespace. It must of a value from the '{nameof(DeviceType)}' enum.";
     public const string InvalidKeyMessage = $"'{nameof(Point.Key)}' is required and cannot be null, empty or whitespace.";
-    public const string InvalidIdMessage = $"'{nameof(Point.Id)}' is required and cannot be null, empty or whitespace and must not be a all zero GUID value.";
     public const string InvalidIsReadOnlyMessage = $"'{nameof(Point.IsReadOnly)}' must be a valid boolean value.";
     public const string InvalidPointStateMessage = $"'{nameof(Point.PointState)}' is required and cannot be null, empty or whitespace.";
     public const string InvalidDeviceKeyMessage = $"'{nameof(Point.DeviceKey)}' is required and cannot be null, empty or whitespace.";
@@ -20,12 +19,6 @@ public class PointJsonConverter : JsonConverter<Point>
 
         using var doc = JsonDocument.ParseValue(ref reader);
         var root = doc.RootElement;
-
-        if (!root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.Id)), out var idProp) ||
-            !Guid.TryParse(idProp.GetString(), out var id) || id == Guid.Empty)
-        {
-            throw new JsonException(InvalidIdMessage);
-        }
 
         if (!root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.PointType)), out var pointTypeProp) ||
             !Enum.TryParse<PointType>(pointTypeProp.GetString(), true, out var pointType))
@@ -107,7 +100,7 @@ public class PointJsonConverter : JsonConverter<Point>
         // Trim key any whitespace for safety
         var point = new Point(deviceKey, deviceType, key.Trim(), pointType)
         {
-            Id = id,
+            Alias = root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.Alias)), out var alias) ? alias.GetString() : null,
             LastUpdated = lastUpdated,
             FriendlyName = root.TryGetProperty(propertyNamingPolicy.ConvertName(nameof(Point.FriendlyName)), out var friendlyName) ? friendlyName.GetString() : null,
             IsReadOnly = isReadOnly,
@@ -128,7 +121,19 @@ public class PointJsonConverter : JsonConverter<Point>
 
         writer.WriteStartObject();
 
-        writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.Id)), point.Id.ToString());
+        if (point.Alias != null || !ignoreNull)
+        {
+            writer.WritePropertyName(propertyNamingPolicy.ConvertName(nameof(Point.Alias)));
+            if (point.Alias != null)
+            {
+                writer.WriteStringValue(point.Alias);
+            }
+            else
+            {
+                writer.WriteNullValue();
+            }
+        }
+
         writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.Key)), point.Key);
         writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.PointType)), propertyNamingPolicy.ConvertName(point.PointType.ToString()));
         writer.WriteString(propertyNamingPolicy.ConvertName(nameof(Point.DeviceType)), propertyNamingPolicy.ConvertName(point.DeviceType.ToString()));

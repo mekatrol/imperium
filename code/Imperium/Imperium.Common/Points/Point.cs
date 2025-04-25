@@ -14,7 +14,7 @@ public class Point
 
     public Point()
     {
-        Id = Guid.NewGuid();
+        // Parameterless constructor for serialization
     }
 
     public Point(string deviceKey, DeviceType deviceType, string pointKey, PointType pointType) : this()
@@ -36,9 +36,10 @@ public class Point
     }
 
     /// <summary>
-    /// The unique ID of the point. 
+    /// An alias for the point, useful for linking back to source system point names (e.g. xpath for JSON payload in MQTT message) that
+    /// allows mapping from source system point name to imperium point name. 
     /// </summary>
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public string? Alias { get; set; }
 
     /// <summary>
     /// The key for the point, unique only with respect to the device it belongs to, e.g. Relay1.

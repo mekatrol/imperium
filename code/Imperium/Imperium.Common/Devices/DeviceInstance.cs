@@ -31,13 +31,16 @@ public class DeviceInstance(
         }
     }
 
-    public Point MapPoint(string key, string friendlyName, Type nativePointType, object? initialValue = null)
+    public Point MapPoint(string key, string friendlyName, string? alias, Type nativePointType, object? initialValue = null)
     {
         // Get with default value
         var point = GetPointWithDefault(key, nativePointType);
 
         // Set friendly name
         point.FriendlyName = friendlyName;
+
+        // Set alias
+        point.Alias = alias;
 
         // Set initial value
         point.SetValue(initialValue, PointValueType.Control);

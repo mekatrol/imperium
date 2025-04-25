@@ -1,10 +1,9 @@
-﻿
+﻿using Imperium.Common;
+using Imperium.Common.Configuration;
+using Imperium.Common.DeviceControllers;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using MQTTnet;
-using System.Buffers;
-using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Imperium.Server.Background;
@@ -33,24 +32,52 @@ public class MqttClientBackgroundService(
                 {
                     try
                     {
+                        // Get all device devices that have the mqtt controller 
+                        var mqttDevices = state.GetAllDevices()
+                            .Where(d => d.ControllerKey == ImperiumConstants.MqttKey)
+                            .ToList();
+
                         var topic = applicationMessageEvent.ApplicationMessage.Topic;
                         var payload = applicationMessageEvent.ApplicationMessage.Payload;
 
-                        var regex = new Regex("ness/status/(\\d)");
-                        var match = regex.Match(topic);
-
-                        if (match.Success)
+                        if (state.GetDeviceController(ImperiumConstants.MqttKey) is IMqttDeviceController controller)
                         {
-                            await ProcessHouseAlarmMessage(match, payload);
+                            foreach (var deviceInstance in mqttDevices)
+                            {
+                                var data = (MqttDataConfiguration)deviceInstance.Data!;
+
+                                var topicFilterRegex = new Regex(data.Topic);
+                                var topicMatch = topicFilterRegex.Match(topic);
+
+                                if (topicMatch.Success)
+                                {
+                                    try
+                                    {
+                                        await controller.ProcessPayload(deviceInstance, topicMatch, payload, pointState);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        logger.LogWarning(ex);
+                                    }
+                                }
+                            }
                         }
 
-                        regex = new Regex("dog/status");
-                        match = regex.Match(topic);
+                        //var regex = new Regex("ness/status/(\\d)");
+                        //var match = regex.Match(topic);
 
-                        if (match.Success)
-                        {
-                            await ProcessDogHeaterMessage(payload);
-                        }
+                        //if (match.Success)
+                        //{
+                        //    await ProcessHouseAlarmMessage(match, payload);
+                        //}
+
+                        //regex = new Regex("dog/status");
+                        //match = regex.Match(topic);
+
+                        //if (match.Success)
+                        //{
+                        //    await ProcessDogHeaterMessage(payload);
+                        //}
                     }
                     catch (Exception ex)
                     {
@@ -90,73 +117,73 @@ public class MqttClientBackgroundService(
         }
     }
 
-    private Task ProcessHouseAlarmMessage(Match match, ReadOnlySequence<byte> payload)
-    {
-        var zone = int.Parse(match.Groups[1].Value);
+    //private Task ProcessHouseAlarmMessage(Match match, ReadOnlySequence<byte> payload)
+    //{
+    //    var zone = int.Parse(match.Groups[1].Value);
 
-        if (payload.IsSingleSegment)
-        {
-            var json = Encoding.UTF8.GetString(payload.First.Span);
+    //    if (payload.IsSingleSegment)
+    //    {
+    //        var json = Encoding.UTF8.GetString(payload.First.Span);
 
-            var zoneStatus = JsonSerializer.Deserialize<ZoneMessage>(json, JsonSerializerExtensions.ApiSerializerOptions);
+    //        var zoneStatus = JsonSerializer.Deserialize<ZoneMessage>(json, JsonSerializerExtensions.ApiSerializerOptions);
 
-            if (zoneStatus != null)
-            {
-                pointState.UpdatePointValue("housealarm", $"zone{zone}", zoneStatus.Event, PointValueType.Device);
-            }
-        }
+    //        if (zoneStatus != null)
+    //        {
+    //            pointState.UpdatePointValue("housealarm", $"zone{zone}", zoneStatus.Event, PointValueType.Device);
+    //        }
+    //    }
 
-        return Task.CompletedTask;
-    }
+    //    return Task.CompletedTask;
+    //}
 
-    private Task ProcessDogHeaterMessage(ReadOnlySequence<byte> payload)
-    {
-        if (payload.IsSingleSegment)
-        {
-            var json = Encoding.UTF8.GetString(payload.First.Span);
+    //private Task ProcessDogHeaterMessage(ReadOnlySequence<byte> payload)
+    //{
+    //    if (payload.IsSingleSegment)
+    //    {
+    //        var json = Encoding.UTF8.GetString(payload.First.Span);
 
-            var status = JsonSerializer.Deserialize<DogHeaterStatusMessage>(json, JsonSerializerExtensions.ApiSerializerOptions);
+    //        var status = JsonSerializer.Deserialize<DogHeaterStatusMessage>(json, JsonSerializerExtensions.ApiSerializerOptions);
 
-            if (status != null)
-            {
-                pointState.UpdatePointValue("dogheater", "temp.1", status.Temperature1, PointValueType.Device);
-                pointState.UpdatePointValue("dogheater", "temp.2", status.Temperature2, PointValueType.Device);
-                pointState.UpdatePointValue("dogheater", "temp.avg", status.TemperatureAverage, PointValueType.Device);
-                pointState.UpdatePointValue("dogheater", "temp.sp", status.TemperatureSetpoint, PointValueType.Device);
-                pointState.UpdatePointValue("dogheater", "temp.pb", status.TemperatureProportionalBand, PointValueType.Device);
-                pointState.UpdatePointValue("dogheater", "heater.on", status.HeaterOn, PointValueType.Device);
-                pointState.UpdatePointValue("dogheater", "heater.enabled", status.Enabled, PointValueType.Device);
-            }
-        }
+    //        if (status != null)
+    //        {
+    //            pointState.UpdatePointValue("dogheater", "temp.1", status.Temperature1, PointValueType.Device);
+    //            pointState.UpdatePointValue("dogheater", "temp.2", status.Temperature2, PointValueType.Device);
+    //            pointState.UpdatePointValue("dogheater", "temp.avg", status.TemperatureAverage, PointValueType.Device);
+    //            pointState.UpdatePointValue("dogheater", "temp.sp", status.TemperatureSetpoint, PointValueType.Device);
+    //            pointState.UpdatePointValue("dogheater", "temp.pb", status.TemperatureProportionalBand, PointValueType.Device);
+    //            pointState.UpdatePointValue("dogheater", "heater.on", status.HeaterOn, PointValueType.Device);
+    //            pointState.UpdatePointValue("dogheater", "heater.enabled", status.Enabled, PointValueType.Device);
+    //        }
+    //    }
 
-        return Task.CompletedTask;
-    }
+    //    return Task.CompletedTask;
+    //}
 }
 
-class ZoneMessage
-{
-    public string Type { get; set; } = string.Empty;
+//class ZoneMessage
+//{
+//    public string Type { get; set; } = string.Empty;
 
-    public int Area { get; set; }
+//    public int Area { get; set; }
 
-    public int Zone { get; set; }
+//    public int Zone { get; set; }
 
-    public string Event { get; set; } = string.Empty;
-}
+//    public string Event { get; set; } = string.Empty;
+//}
 
-class DogHeaterStatusMessage
-{
-    public float Temperature1 { get; set; }
+//class DogHeaterStatusMessage
+//{
+//    public float Temperature1 { get; set; }
 
-    public float Temperature2 { get; set; }
+//    public float Temperature2 { get; set; }
 
-    public float TemperatureAverage { get; set; }
+//    public float TemperatureAverage { get; set; }
 
-    public float TemperatureSetpoint { get; set; }
+//    public float TemperatureSetpoint { get; set; }
 
-    public float TemperatureProportionalBand { get; set; }
+//    public float TemperatureProportionalBand { get; set; }
 
-    public bool HeaterOn { get; set; }
+//    public bool HeaterOn { get; set; }
 
-    public bool Enabled { get; set; }
-}
+//    public bool Enabled { get; set; }
+//}
