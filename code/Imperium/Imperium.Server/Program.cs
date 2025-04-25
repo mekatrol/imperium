@@ -1,3 +1,4 @@
+using Imperium.Common;
 using Imperium.Common.Configuration;
 using Imperium.Common.DeviceControllers;
 using Imperium.Common.Extensions;
@@ -107,6 +108,7 @@ public class Program
         builder.Services.AddSingleton(imperiumState);
         builder.Services.AddSingleton<IPointState>(imperiumState);
         builder.Services.AddSingleton<IImperiumState>(imperiumState);
+        builder.Services.AddSingleton<IDeviceControllerFactory, DeviceControllerFactory>();
 
         builder.Services.AddHostedService<DeviceControllerBackgroundService>();
         builder.Services.AddHostedService<FlowExecutorBackgroundService>();
@@ -164,7 +166,6 @@ public class Program
     private static async Task<ImperiumState> InitialiseImperiumState(IServiceProvider services)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-
         var state = services.GetRequiredService<ImperiumState>();
         var options = services.GetRequiredService<ImperiumStateOptions>();
 
@@ -178,23 +179,10 @@ public class Program
         Directory.CreateDirectory(pointsDirectory);
 
         // Add virtual point factory and controllers
-        var virtualDeviceCotnrollerFactory = new VirtualDeviceControllerFactory();
-        virtualDeviceCotnrollerFactory.AddDeviceControllers(services);
+        var virtualDeviceControllerFactory = services.GetRequiredService<IDeviceControllerFactory>();
 
-        var mekatrolDeviceContollerFactory = new MekatrolDeviceControllerFactory();
-        mekatrolDeviceContollerFactory.AddDeviceControllers(services);
-
-        var factories = new Dictionary<string, IDeviceControllerFactory>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var key in virtualDeviceCotnrollerFactory.GetControllerKeys())
-        {
-            factories.Add(key, virtualDeviceCotnrollerFactory);
-        }
-
-        foreach (var key in mekatrolDeviceContollerFactory.GetControllerKeys())
-        {
-            factories.Add(key, mekatrolDeviceContollerFactory);
-        }
+        state.AddMekatrolDeviceControllers(services);
+        state.AddDeviceController(ImperiumConstants.VirtualKey, new VirtualPointDeviceController());
 
         // Get all device files
         var deviceFiles = Directory.GetFiles(devicesDirectory, "*.json");
@@ -204,19 +192,20 @@ public class Program
             var json = await File.ReadAllTextAsync(deviceFile);
             var config = JsonSerializer.Deserialize<DeviceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions)!;
 
-            if (factories.TryGetValue(config.ControllerKey, out var factory))
+            try
             {
-                factory.AddDeviceInstance(
+                virtualDeviceControllerFactory.AddDeviceInstance(
                     config.DeviceKey,
                     config.ControllerKey,
                     config.Data,
                     config.Points,
                     state);
             }
-            else
+            catch (Exception ex)
             {
-                logger.LogWarning("{Message}", $"No factory implmented the controller key '{config.ControllerKey}'.");
+                logger.LogWarning(ex);
             }
+
         }
 
         return state;

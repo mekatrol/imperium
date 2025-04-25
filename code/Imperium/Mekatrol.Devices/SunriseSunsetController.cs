@@ -22,16 +22,51 @@ internal class SunriseSunsetController(
         WriteIndented = true
     };
 
-    public async Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
+    private void UpdateIsDaytime(IDeviceInstance deviceInstance)
+    {
+        var sunrise = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise)).Value;
+        var sunset = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunset)).Value;
+
+        if (sunrise == null || sunset == null)
+        {
+            return;
+        }
+
+        var now = DateTime.Now;
+        var isDaytime = now.WithinTimeRange(TimeOnly.FromDateTime(sunrise.Value), TimeOnly.FromDateTime(sunset.Value));
+
+        var point = deviceInstance.GetPointWithDefault<bool>("IsDaytime");
+        pointState.UpdatePointValue(deviceInstance, point, isDaytime, PointValueType.Device);
+
+        point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");
+        pointState.UpdatePointValue(deviceInstance, point, !isDaytime, PointValueType.Device);
+
+        logger.LogDebug("{msg}", $"Sunrise: '{sunrise:HH:mm:ss}', Sunset: '{sunset:HH:mm:ss}', is daytime: '{isDaytime}', now: '{DateTime.Now}', kind: '{DateTime.Now.Kind}'");
+    }
+
+    public override Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
+    {
+        // Nothing to do in write method
+        return Task.CompletedTask;
+    }
+
+    public override string ToString()
+    {
+        return nameof(SunriseSunsetController);
+    }
+
+    public async override Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
         logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        if (deviceInstance.Data == null)
+        if (deviceInstance.DataJson == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not InstanceConfiguration config)
+        var config = JsonSerializer.Deserialize<InstanceConfiguration>(deviceInstance.DataJson);
+
+        if (config == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }
@@ -99,38 +134,5 @@ internal class SunriseSunsetController(
             // Make sure to update daytime flags
             UpdateIsDaytime(deviceInstance);
         }
-    }
-
-    private void UpdateIsDaytime(IDeviceInstance deviceInstance)
-    {
-        var sunrise = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunrise)).Value;
-        var sunset = (DateTime?)deviceInstance.GetPointWithDefault<DateTime>(nameof(SunriseSunsetResultsModel.Sunset)).Value;
-
-        if (sunrise == null || sunset == null)
-        {
-            return;
-        }
-
-        var now = DateTime.Now;
-        var isDaytime = now.WithinTimeRange(TimeOnly.FromDateTime(sunrise.Value), TimeOnly.FromDateTime(sunset.Value));
-
-        var point = deviceInstance.GetPointWithDefault<bool>("IsDaytime");
-        pointState.UpdatePointValue(deviceInstance, point, isDaytime, PointValueType.Device);
-
-        point = deviceInstance.GetPointWithDefault<bool>("IsNighttime");
-        pointState.UpdatePointValue(deviceInstance, point, !isDaytime, PointValueType.Device);
-
-        logger.LogDebug("{msg}", $"Sunrise: '{sunrise:HH:mm:ss}', Sunset: '{sunset:HH:mm:ss}', is daytime: '{isDaytime}', now: '{DateTime.Now}', kind: '{DateTime.Now.Kind}'");
-    }
-
-    public Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
-    {
-        // Nothing to do in write method
-        return Task.CompletedTask;
-    }
-
-    public override string ToString()
-    {
-        return nameof(SunriseSunsetController);
     }
 }

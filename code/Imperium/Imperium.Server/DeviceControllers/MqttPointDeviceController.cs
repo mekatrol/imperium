@@ -3,11 +3,10 @@ using Imperium.Common.Devices;
 
 namespace Imperium.Server.DeviceControllers;
 
-public class VirtualPointDeviceController() : IDeviceController
+public class MqttPointDeviceController : IDeviceController
 {
     public object? GetInstanceDataFromJson(string json)
     {
-        // No configuration needed for this controller
         return null;
     }
 

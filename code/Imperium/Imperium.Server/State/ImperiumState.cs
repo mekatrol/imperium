@@ -166,6 +166,14 @@ internal class ImperiumState : IPointState, IImperiumState
     }
 
     /// <summary>
+    /// Get a copy of the defined device controllers.
+    /// </summary>
+    public IDictionary<string, IDeviceController> GetDeviceControllers()
+    {
+        return _deviceControllers.ToDictionary(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Get the controller for the specified key, will return null if no matching controller. 
     /// The key is case insensitive.
     /// </summary>

@@ -7,7 +7,8 @@ using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
-internal class FourOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<FourOutputController> logger) : BaseOutputController(), IFourOutputController
+internal class FourOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<FourOutputController> logger) 
+    : BaseOutputController(), IFourOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -15,16 +16,18 @@ internal class FourOutputController(IHttpClientFactory clientFactory, IPointStat
         WriteIndented = true
     };
 
-    public async Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
+    public async override Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
         logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        if (deviceInstance.Data == null)
+        if (deviceInstance.DataJson == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not InstanceConfiguration config)
+        var config = JsonSerializer.Deserialize<InstanceConfiguration>(deviceInstance.DataJson);
+
+        if (config == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }
@@ -74,16 +77,18 @@ internal class FourOutputController(IHttpClientFactory clientFactory, IPointStat
         pointState.UpdatePointValue(deviceInstance, relay4, ConvertIntToBool(model!.Relay4), PointValueType.Device);
     }
 
-    public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
+    public async override Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
         logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        if (deviceInstance.Data == null)
+        if (deviceInstance.DataJson == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not InstanceConfiguration config)
+        var config = JsonSerializer.Deserialize<InstanceConfiguration>(deviceInstance.DataJson);
+
+        if (config == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }

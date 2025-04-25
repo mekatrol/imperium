@@ -3,11 +3,15 @@ using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
-internal class SingleOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<SingleOutputController> logger) : BaseOutputController(), ISingleOutputController
+internal class SingleOutputController(
+    IHttpClientFactory clientFactory, 
+    IPointState pointState, 
+    ILogger<SingleOutputController> logger) : BaseOutputController(), ISingleOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -15,18 +19,20 @@ internal class SingleOutputController(IHttpClientFactory clientFactory, IPointSt
         WriteIndented = true
     };
 
-    public async Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
+    public async override Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
         try
         {
             logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-            if (deviceInstance.Data == null)
+            if (deviceInstance.DataJson == null)
             {
                 throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
             }
 
-            if (deviceInstance.Data is not InstanceConfiguration config)
+            var config = JsonSerializer.Deserialize<InstanceConfiguration>(deviceInstance.DataJson);
+
+            if (config == null)
             {
                 throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
             }
@@ -70,16 +76,18 @@ internal class SingleOutputController(IHttpClientFactory clientFactory, IPointSt
         }
     }
 
-    public async Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
+    public async override Task Write(IDeviceInstance deviceInstance, CancellationToken stoppingToken)
     {
         logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        if (deviceInstance.Data == null)
+        if (deviceInstance.DataJson == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        if (deviceInstance.Data is not InstanceConfiguration config)
+        var config = JsonSerializer.Deserialize<InstanceConfiguration>(deviceInstance.DataJson);
+
+        if (config == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }
@@ -102,5 +110,11 @@ internal class SingleOutputController(IHttpClientFactory clientFactory, IPointSt
     public override string ToString()
     {
         return nameof(SingleOutputController);
+    }
+
+    public Dictionary<string, PropertyInfo> GetMappablePointProperties()
+    {
+        return typeof(SingleOutputControllerModel).GetProperties()
+                    .ToDictionary(k => k.Name, v => v, StringComparer.OrdinalIgnoreCase);
     }
 }

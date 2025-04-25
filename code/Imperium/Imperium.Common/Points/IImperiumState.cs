@@ -19,6 +19,7 @@ public interface IImperiumState
 
     IDeviceInstance? GetDeviceInstance(string key, bool includePoints);
 
+    IDictionary<string, IDeviceController> GetDeviceControllers();
 
     IDeviceController? GetDeviceController(string controllerKey);
 
