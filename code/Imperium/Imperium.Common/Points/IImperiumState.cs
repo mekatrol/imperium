@@ -19,6 +19,7 @@ public interface IImperiumState
 
     IDeviceInstance? GetDeviceInstance(string key, bool includePoints);
 
+
     IDeviceController? GetDeviceController(string controllerKey);
 
     void AddDeviceAndPoints(IDeviceInstance deviceInstance);
