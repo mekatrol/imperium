@@ -5,7 +5,7 @@ namespace Imperium.ScriptCompiler;
 
 public class ScriptExecutor
 {
-    public static async Task RunAndUnload(
+    public static async Task<IList<string>> RunAndUnload(
         string executingAssemblyPath,
         string sourceCode,
         IList<string> additionalAssemblies,
@@ -15,12 +15,14 @@ public class ScriptExecutor
         int unloadDelayBetweenTries,
         CancellationToken stoppingToken = default)
     {
-        var weakRef = await Run(executingAssemblyPath, sourceCode, additionalAssemblies, executeScript, unload, stoppingToken);
+        var (weakRef, errors) = await Run(executingAssemblyPath, sourceCode, additionalAssemblies, executeScript, unload, stoppingToken);
 
         if (weakRef != null)
         {
             await WaitForUnload(weakRef, unloadMaxAttempts, unloadDelayBetweenTries, stoppingToken);
         }
+
+        return errors;
     }
 
     public static (ScriptAssemblyContext, Assembly?, IList<string>) Load(
@@ -35,10 +37,11 @@ public class ScriptExecutor
             additionalAssemblies,
             unload,
             OptimizationLevel.Debug);
+        
         return (scriptCompiler, assembly, errors);
     }
 
-    public static async Task<WeakReference?> Run(
+    public static async Task<(WeakReference?, IList<string>)> Run(
         string executingAssemblyPath,
         string sourceCode,
         IList<string> additionalAssemmblies,
@@ -55,19 +58,14 @@ public class ScriptExecutor
 
         if (assembly == null || errors.Count > 0)
         {
-            foreach (var error in errors)
-            {
-                Console.WriteLine(error);
-            }
-
-            return alcWeakRef;
+            return (alcWeakRef, errors);
         }
 
         await executeScript(assembly, stoppingToken);
 
         scriptCompiler.Unload();
 
-        return alcWeakRef;
+        return (alcWeakRef, new List<string>());
     }
 
     public static async Task WaitForUnload(

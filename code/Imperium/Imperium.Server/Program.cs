@@ -3,6 +3,8 @@ using Imperium.Common.Configuration;
 using Imperium.Common.DeviceControllers;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
+using Imperium.Common.Scripting;
+using Imperium.ScriptCompiler;
 using Imperium.Server.Background;
 using Imperium.Server.DeviceControllers;
 using Imperium.Server.Middleware;
@@ -12,6 +14,7 @@ using Imperium.Server.State;
 using Mekatrol.Devices;
 using Serilog;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -174,9 +177,11 @@ public class Program
 
         var devicesDirectory = Path.Combine(configurationPath, "devices");
         var pointsDirectory = Path.Combine(configurationPath, "points");
+        var scriptDirectory = Path.Combine(configurationPath, "scripts");
 
         Directory.CreateDirectory(devicesDirectory);
         Directory.CreateDirectory(pointsDirectory);
+        Directory.CreateDirectory(scriptDirectory);
 
         var deviceControllerFactory = services.GetRequiredService<IDeviceControllerFactory>();
 
@@ -200,6 +205,98 @@ public class Program
                     config.Data,
                     config.Points,
                     state);
+
+                if (!string.IsNullOrWhiteSpace(config.JsonTransformScriptFile))
+                {
+                    try
+                    {
+                        var scriptFullpath = Path.Combine(scriptDirectory, config.JsonTransformScriptFile);
+
+                        var code = await File.ReadAllTextAsync(scriptFullpath);
+
+                        var currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+                        var executingAssemblyPath = Path.GetFullPath(currentAssemblyDirectory);
+
+                        IList<string> additionalAssemblies = ["System.Runtime.dll", "System.Private.CoreLib.dll", "System.Text.Json.dll", "Imperium.Common.dll"];
+
+                        // Try and load compiler and assembly
+                        var (context, assembly, errors) = ScriptAssemblyContext.LoadAndCompile(
+                            executingAssemblyPath,
+                            code,
+                            additionalAssemblies,
+                            () => { /* unload */ });
+
+                        if (errors.Count > 0)
+                        {
+                            foreach (var error in errors)
+                            {
+                                Console.WriteLine(error);
+                            }
+                        }
+                        else
+                        {
+                            var isAssignable = 0;
+
+                            foreach (var definedType in assembly!.DefinedTypes)
+                            {
+                                if (definedType.IsAssignableTo(typeof(IJsonMessageTransformer)))
+                                {
+                                    isAssignable++;
+                                }
+                            }
+
+                            // There should be exactly 1 type assignable from IJsonMessageTransformer
+                            if (isAssignable != 1)
+                            {
+                                Console.WriteLine("Cannot assign");
+                            }
+                        }
+
+                        // Unload loaded context
+                        context.Unload();
+
+                        //var compileErrors = await ScriptExecutor.RunAndUnload(
+                        //    executingAssemblyPath,
+                        //    code,
+                        //    additionalAssemblies: ["System.Runtime.dll", "System.Private.CoreLib.dll", "System.Text.Json.dll", "Imperium.Common.dll"],
+                        //    executeScript: async (assembly, stoppingToken) =>
+                        //    {
+                        //        // Get the plugin interface by calling the PluginClass.GetInterface method via reflection.
+                        //        var scriptType = assembly.GetType("HouseAlarmTransformer") ?? throw new Exception("HouseAlarmTransformer");
+
+                        //        var instance = Activator.CreateInstance(scriptType, true);
+
+                        //        // Call script if not null an no errors
+                        //        if (instance != null)
+                        //        {
+                        //            var execute = scriptType.GetMethod("FromDeviceJson", BindingFlags.Instance | BindingFlags.Public) ?? throw new Exception("FromDeviceJson");
+
+                        //            // Now we can call methods of the plugin using the interface
+                        //            var executor = (Task<string>?)execute.Invoke(instance, ["{ \"zone\": 1, \"event\": \"EVENT\"  }", stoppingToken]);
+                        //            var json = await executor!;
+
+                        //            Console.WriteLine(json);
+                        //        }
+                        //    },
+                        //    () =>
+                        //    {
+                        //        Console.WriteLine("Script assembly unloaded");
+                        //    },
+                        //    unloadMaxAttempts: 10, unloadDelayBetweenTries: 100, stoppingToken: CancellationToken.None);
+
+                        //if (compileErrors.Count > 0)
+                        //{
+                        //    foreach (var error in compileErrors)
+                        //    {
+                        //        Console.WriteLine(error);
+                        //    }
+                        //}
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex);
+                    }
+                }
             }
             catch (Exception ex)
             {

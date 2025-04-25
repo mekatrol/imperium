@@ -72,12 +72,9 @@ public class ScriptAssemblyContext : AssemblyLoadContext
 
     protected override Assembly? Load(AssemblyName name)
     {
-        Console.WriteLine(name);
-
         var assemblyPath = _resolver.ResolveAssemblyToPath(name);
         if (assemblyPath != null)
         {
-            Console.WriteLine($"Loading assembly {assemblyPath} into the ScriptCompiler");
             return LoadFromAssemblyPath(assemblyPath);
         }
 

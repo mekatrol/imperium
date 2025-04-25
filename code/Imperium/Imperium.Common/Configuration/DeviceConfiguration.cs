@@ -24,4 +24,9 @@ public class DeviceConfiguration
     /// specific to the type of device.
     /// </summary>
     public string? Data { get; set; }
+
+    /// <summary>
+    /// The filename of the script that allows mapping between message data and point data
+    /// </summary>
+    public string? JsonTransformScriptFile { get; set; }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Imperium.ScriptCompiler;
@@ -64,6 +65,14 @@ public class ScriptCompiler
         if (string.IsNullOrWhiteSpace(assemblyDllFileName))
         {
             return false;
+        }
+
+        var currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        var executingAssemblyPath = Path.GetFullPath(currentAssemblyDirectory);
+
+        if(!Path.IsPathRooted(assemblyDllFileName))
+        {
+            assemblyDllFileName = Path.Combine(executingAssemblyPath, assemblyDllFileName);
         }
 
         // Get full path, will convert relative to full paths
