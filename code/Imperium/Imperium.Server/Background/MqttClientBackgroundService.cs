@@ -55,7 +55,7 @@ public class MqttClientBackgroundService(
                                     {
                                         await controller.ProcessPayload(deviceInstance, topicMatch, payload, pointState);
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
                                         logger.LogWarning(ex);
                                     }
