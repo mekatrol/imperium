@@ -4,6 +4,7 @@ using Imperium.Common.DeviceControllers;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Common.Scripting;
+using Imperium.Common.Status;
 using Imperium.ScriptCompiler;
 using Imperium.Server.Background;
 using Imperium.Server.DeviceControllers;
@@ -17,6 +18,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Imperium.Server;
 
@@ -171,6 +173,7 @@ public class Program
         var logger = services.GetRequiredService<ILogger<Program>>();
         var state = services.GetRequiredService<ImperiumState>();
         var options = services.GetRequiredService<ImperiumStateOptions>();
+        var statusService = services.GetRequiredService<IStatusService>();
 
         // Make sure configuration path exists
         var configurationPath = options.ConfigurationPath;
@@ -230,7 +233,7 @@ public class Program
                         {
                             foreach (var error in errors)
                             {
-                                Console.WriteLine(error);
+                                statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Error, config.JsonTransformScriptFile, error);
                             }
                         }
                         else
@@ -246,9 +249,17 @@ public class Program
                             }
 
                             // There should be exactly 1 type assignable from IJsonMessageTransformer
-                            if (isAssignable != 1)
+                            if (isAssignable == 0)
                             {
-                                Console.WriteLine("Cannot assign");
+                                statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Error, config.JsonTransformScriptFile, $"There was no class found that implements '{nameof(IJsonMessageTransformer)}'.");
+                            }
+                            else if(isAssignable > 1)
+                            {
+                                statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Error, config.JsonTransformScriptFile, $"There are multiple classes that implement '{nameof(IJsonMessageTransformer)}'. There should only be one.");
+                            }
+                            else
+                            {
+                                statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Information, config.JsonTransformScriptFile, $"Compilation success.");
                             }
                         }
 
