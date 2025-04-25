@@ -3,7 +3,6 @@ using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
-using System.Reflection;
 using System.Text.Json;
 
 namespace Mekatrol.Devices;
@@ -25,14 +24,12 @@ internal class SingleOutputController(
         {
             logger.LogDebug("{msg}", $"Reading device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-            if (deviceInstance.DataJson == null)
+            if (deviceInstance.Data == null)
             {
                 throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
             }
 
-            var config = JsonSerializer.Deserialize<InstanceConfiguration>(deviceInstance.DataJson);
-
-            if (config == null)
+            if (deviceInstance.Data is not InstanceConfiguration config)
             {
                 throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
             }
@@ -80,14 +77,12 @@ internal class SingleOutputController(
     {
         logger.LogDebug("{msg}", $"Writing device instance '{deviceInstance.Key}' using device controller '{this}'");
 
-        if (deviceInstance.DataJson == null)
+        if (deviceInstance.Data == null)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' does not have any configuration data set.");
         }
 
-        var config = JsonSerializer.Deserialize<InstanceConfiguration>(deviceInstance.DataJson);
-
-        if (config == null)
+        if (deviceInstance.Data is not InstanceConfiguration config)
         {
             throw new InvalidDataException($"Device instance '{deviceInstance.Key}' data is not of type '{typeof(InstanceConfiguration).FullName}'.");
         }

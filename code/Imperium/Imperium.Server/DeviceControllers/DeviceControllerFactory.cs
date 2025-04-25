@@ -5,7 +5,7 @@ using Imperium.Common.Points;
 
 namespace Imperium.Server.DeviceControllers;
 
-public class DeviceControllerFactory(ILogger<DeviceControllerFactory> logger) : IDeviceControllerFactory
+public class DeviceControllerFactory() : IDeviceControllerFactory
 {
     public IDeviceInstance? AddDeviceInstance(
         string deviceKey,
@@ -23,11 +23,18 @@ public class DeviceControllerFactory(ILogger<DeviceControllerFactory> logger) : 
             throw new Exception($"A controller with the key '{controllerKey}' has not been registered.");
         }
 
+        object? data = null;
+
+        if (dataJson != null)
+        {
+            data = controller.GetInstanceDataFromJson(dataJson);
+        }
+
         var deviceInstance = new DeviceInstance(
            deviceKey,
            DeviceType.Physical,
            controllerKey,
-           dataJson);
+           data);
 
         foreach (var point in points)
         {

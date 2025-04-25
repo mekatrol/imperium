@@ -30,9 +30,9 @@ public interface IDeviceInstance
     IList<Point> Points { get; }
 
     /// <summary>
-    /// Instance specific data in JSON string format
+    /// Instance specific data
     /// </summary>
-    string? DataJson { get; }
+    object? Data { get; }
 
     /// <summary>
     /// Map the device point.

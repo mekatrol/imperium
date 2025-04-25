@@ -178,11 +178,11 @@ public class Program
         Directory.CreateDirectory(devicesDirectory);
         Directory.CreateDirectory(pointsDirectory);
 
-        // Add virtual point factory and controllers
-        var virtualDeviceControllerFactory = services.GetRequiredService<IDeviceControllerFactory>();
+        var deviceControllerFactory = services.GetRequiredService<IDeviceControllerFactory>();
 
         state.AddMekatrolDeviceControllers(services);
         state.AddDeviceController(ImperiumConstants.VirtualKey, new VirtualPointDeviceController());
+        state.AddDeviceController(ImperiumConstants.MqttKey, new MqttPointDeviceController());
 
         // Get all device files
         var deviceFiles = Directory.GetFiles(devicesDirectory, "*.json");
@@ -194,7 +194,7 @@ public class Program
 
             try
             {
-                virtualDeviceControllerFactory.AddDeviceInstance(
+                deviceControllerFactory.AddDeviceInstance(
                     config.DeviceKey,
                     config.ControllerKey,
                     config.Data,
@@ -205,7 +205,6 @@ public class Program
             {
                 logger.LogWarning(ex);
             }
-
         }
 
         return state;

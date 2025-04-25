@@ -7,7 +7,7 @@ public class DeviceInstance(
     string key,
     DeviceType deviceType,
     string deviceControllerKey,
-    string? dataJson = null,
+    object? data = null,
     bool enabled = true) : IDeviceInstance
 {
     private readonly IList<Point> _points = [];
@@ -20,7 +20,7 @@ public class DeviceInstance(
 
     public bool Enabled { get; set; } = enabled;
 
-    public string? DataJson { get; } = dataJson;
+    public object? Data { get; } = data;
 
     public IList<Point> Points
     {
@@ -72,10 +72,5 @@ public class DeviceInstance(
 
         // Return the point
         return point;
-    }
-
-    public override string ToString()
-    {
-        return $"{{ Key='{Key}', ControllerKey='{ControllerKey}' }}";
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
+using Imperium.Common.Extensions;
 using System.Text.Json;
 
 namespace Mekatrol.Devices;
@@ -8,7 +9,7 @@ internal abstract class BaseOutputController : IDeviceController
 {
     public object? GetInstanceDataFromJson(string json)
     {
-        return JsonSerializer.Deserialize<InstanceConfiguration>(json);
+        return JsonSerializer.Deserialize<InstanceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions);
     }
 
     public abstract Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken);
