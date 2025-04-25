@@ -8,10 +8,10 @@ namespace Imperium.Server.DeviceControllers;
 public class DeviceControllerFactory(ILogger<DeviceControllerFactory> logger) : IDeviceControllerFactory
 {
     public IDeviceInstance? AddDeviceInstance(
-        string deviceKey, 
+        string deviceKey,
         string controllerKey,
-        string? dataJson, 
-        IList<PointDefinition> points, 
+        string? dataJson,
+        IList<PointDefinition> points,
         IImperiumState state)
     {
         // Get the controller by get controller key.
@@ -22,7 +22,7 @@ public class DeviceControllerFactory(ILogger<DeviceControllerFactory> logger) : 
         {
             throw new Exception($"A controller with the key '{controllerKey}' has not been registered.");
         }
-        
+
         var deviceInstance = new DeviceInstance(
            deviceKey,
            DeviceType.Physical,

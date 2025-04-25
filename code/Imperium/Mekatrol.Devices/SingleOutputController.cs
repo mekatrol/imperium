@@ -9,8 +9,8 @@ using System.Text.Json;
 namespace Mekatrol.Devices;
 
 internal class SingleOutputController(
-    IHttpClientFactory clientFactory, 
-    IPointState pointState, 
+    IHttpClientFactory clientFactory,
+    IPointState pointState,
     ILogger<SingleOutputController> logger) : BaseOutputController(), ISingleOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
@@ -110,11 +110,5 @@ internal class SingleOutputController(
     public override string ToString()
     {
         return nameof(SingleOutputController);
-    }
-
-    public Dictionary<string, PropertyInfo> GetMappablePointProperties()
-    {
-        return typeof(SingleOutputControllerModel).GetProperties()
-                    .ToDictionary(k => k.Name, v => v, StringComparer.OrdinalIgnoreCase);
     }
 }

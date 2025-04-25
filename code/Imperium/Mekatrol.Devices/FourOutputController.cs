@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Mekatrol.Devices;
 
-internal class FourOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<FourOutputController> logger) 
+internal class FourOutputController(IHttpClientFactory clientFactory, IPointState pointState, ILogger<FourOutputController> logger)
     : BaseOutputController(), IFourOutputController
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
