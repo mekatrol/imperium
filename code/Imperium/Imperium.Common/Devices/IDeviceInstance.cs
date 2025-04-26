@@ -1,4 +1,5 @@
 ﻿using Imperium.Common.Points;
+using System.Reflection;
 
 namespace Imperium.Common.Devices;
 
@@ -33,6 +34,11 @@ public interface IDeviceInstance
     /// Instance specific data
     /// </summary>
     object? Data { get; }
+
+    /// <summary>
+    /// If the device has any defined scripts then they will be contained in this assembly
+    /// </summary>
+    Assembly? ScriptAssembly { get; set; }
 
     /// <summary>
     /// Map the device point.
