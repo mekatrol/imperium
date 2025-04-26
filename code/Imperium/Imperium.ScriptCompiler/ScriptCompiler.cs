@@ -70,7 +70,7 @@ public class ScriptCompiler
         var currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         var executingAssemblyPath = Path.GetFullPath(currentAssemblyDirectory);
 
-        if(!Path.IsPathRooted(assemblyDllFileName))
+        if (!Path.IsPathRooted(assemblyDllFileName))
         {
             assemblyDllFileName = Path.Combine(executingAssemblyPath, assemblyDllFileName);
         }

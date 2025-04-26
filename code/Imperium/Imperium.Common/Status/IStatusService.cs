@@ -2,9 +2,9 @@
 
 public interface IStatusService
 {
-    Guid ReportItem(string category, StatusItemSeverity severity, string key, string message);
+    Guid ReportItem(string category, StatusItemSeverity severity, string key, string message, Guid? correlationId = null);
 
-    Guid ReportItem(KnownStatusCategories category, StatusItemSeverity severity, string key, string message);
+    Guid ReportItem(KnownStatusCategories category, StatusItemSeverity severity, string key, string message, Guid? correlationId = null);
 
     IList<IStatusItem> GetStatuses(IList<StatusItemSeverity>? filter = null);
 
@@ -12,7 +12,7 @@ public interface IStatusService
 
     IList<IStatusItem> GetStatuses(DateTime rangeStart, DateTime rangeEnd, IList<StatusItemSeverity>? filter = null);
 
-    IStatusItem? GetStatus(Guid correlationId);
+    IList<IStatusItem> GetCorrelationStatuses(Guid correlationId);
 
     void ClearOlderThan(DateTime? olderThan);
 }

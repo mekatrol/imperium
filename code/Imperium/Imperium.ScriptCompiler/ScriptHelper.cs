@@ -9,14 +9,17 @@ namespace Imperium.ScriptCompiler;
 
 public class ScriptHelper
 {
-    public static async Task CompileJsonTransformerScript(IServiceProvider services, string scriptFileDirectory, string scriptFileName)
+    public static async Task<bool> CompileJsonTransformerScript(
+        IServiceProvider services,
+        string scriptFileDirectory,
+        string scriptFileName,
+        Guid correlationId)
     {
         var logger = services.GetRequiredService<ILogger<ScriptHelper>>();
-        
+        var statusService = services.GetRequiredService<IStatusService>();
+
         try
         {
-            var statusService = services.GetRequiredService<IStatusService>();
-
             var scriptFullpath = Path.Combine(scriptFileDirectory, scriptFileName);
 
             var code = await File.ReadAllTextAsync(scriptFullpath);
@@ -25,6 +28,8 @@ public class ScriptHelper
             var executingAssemblyPath = Path.GetFullPath(currentAssemblyDirectory);
 
             IList<string> additionalAssemblies = ["System.Runtime.dll", "System.Private.CoreLib.dll", "System.Text.Json.dll", "Imperium.Common.dll"];
+
+            var scriptError = false;
 
             // Try and load compiler and assembly
             var (context, assembly, errors) = ScriptAssemblyContext.LoadAndCompile(
@@ -35,9 +40,11 @@ public class ScriptHelper
 
             if (errors.Count > 0)
             {
+                scriptError = true;
+
                 foreach (var error in errors)
                 {
-                    statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Error, scriptFileName, error);
+                    statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Error, scriptFileName, error, correlationId);
                 }
             }
             else
@@ -55,15 +62,34 @@ public class ScriptHelper
                 // There should be exactly 1 type assignable from IJsonMessageTransformer
                 if (isAssignable == 0)
                 {
-                    statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Error, scriptFileName, $"There was no class found that implements '{nameof(IJsonMessageTransformer)}'.");
+                    statusService.ReportItem(
+                        KnownStatusCategories.Scripting,
+                        StatusItemSeverity.Error,
+                        scriptFileName,
+                        $"There was no class found that implements '{nameof(IJsonMessageTransformer)}'.",
+                        correlationId);
+
+                    scriptError = true;
                 }
                 else if (isAssignable > 1)
                 {
-                    statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Error, scriptFileName, $"There are multiple classes that implement '{nameof(IJsonMessageTransformer)}'. There should only be one.");
+                    statusService.ReportItem(
+                        KnownStatusCategories.Scripting,
+                        StatusItemSeverity.Error,
+                        scriptFileName,
+                        $"There are multiple classes that implement '{nameof(IJsonMessageTransformer)}'. There should only be one.",
+                        correlationId);
+
+                    scriptError = true;
                 }
                 else
                 {
-                    statusService.ReportItem(KnownStatusCategories.Scripting, StatusItemSeverity.Information, scriptFileName, $"Compilation success.");
+                    statusService.ReportItem(
+                        KnownStatusCategories.Scripting,
+                        StatusItemSeverity.Information,
+                        scriptFileName,
+                        $"Compilation success.",
+                        correlationId);
                 }
             }
 
@@ -106,10 +132,20 @@ public class ScriptHelper
             //        Console.WriteLine(error);
             //    }
             //}
+
+            return scriptError;
         }
         catch (Exception ex)
         {
             logger.LogError(ex);
+            statusService.ReportItem(
+                KnownStatusCategories.Scripting,
+                StatusItemSeverity.Error,
+                scriptFileName,
+                ex.ToString(),
+                correlationId);
+
+            return false;
         }
     }
 }

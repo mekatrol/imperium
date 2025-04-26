@@ -37,7 +37,7 @@ public class ScriptExecutor
             additionalAssemblies,
             unload,
             OptimizationLevel.Debug);
-        
+
         return (scriptCompiler, assembly, errors);
     }
 

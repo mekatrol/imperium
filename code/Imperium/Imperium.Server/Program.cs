@@ -3,6 +3,7 @@ using Imperium.Common.Configuration;
 using Imperium.Common.DeviceControllers;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
+using Imperium.Common.Status;
 using Imperium.ScriptCompiler;
 using Imperium.Server.Background;
 using Imperium.Server.DeviceControllers;
@@ -170,6 +171,7 @@ public class Program
         var logger = services.GetRequiredService<ILogger<Program>>();
         var state = services.GetRequiredService<ImperiumState>();
         var options = services.GetRequiredService<ImperiumStateOptions>();
+        var statusService = services.GetRequiredService<IStatusService>();
 
         // Make sure configuration path exists
         var configurationPath = options.ConfigurationPath;
@@ -193,26 +195,47 @@ public class Program
 
         foreach (var deviceFile in deviceFiles)
         {
+            var correlationId = statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, deviceFile, $"Starting device initialisation.");
+
+            statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, "Loading configuration file.", correlationId);
             var json = await File.ReadAllTextAsync(deviceFile);
+
+            statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, "Deserializing JSON.", correlationId);
             var config = JsonSerializer.Deserialize<DeviceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions)!;
 
             try
             {
-                deviceControllerFactory.AddDeviceInstance(
-                    config.DeviceKey,
-                    config.ControllerKey,
-                    config.Data,
-                    config.Points,
-                    state);
+                var noScriptsOrNoScriptErrors = false;
 
                 if (!string.IsNullOrWhiteSpace(config.JsonTransformScriptFile))
-                {                    
-                    await ScriptHelper.CompileJsonTransformerScript(services, scriptDirectory, config.JsonTransformScriptFile);
+                {
+                    statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, $"Compiling device script: '{config.JsonTransformScriptFile}'.", correlationId);
+                    noScriptsOrNoScriptErrors |= await ScriptHelper.CompileJsonTransformerScript(services, scriptDirectory, config.JsonTransformScriptFile, correlationId);
+                }
+
+                // Only add if there are no scripts or no script errors
+                if (!noScriptsOrNoScriptErrors)
+                {
+                    deviceControllerFactory.AddDeviceInstance(
+                        config.DeviceKey,
+                        config.ControllerKey,
+                        config.Data,
+                        config.Points,
+                        state);
+
+                    statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, config.DeviceKey, $"Device initialisation success.", correlationId);
+                }
+                else
+                {
+                    statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Warning, config.DeviceKey, "Device initialisation failed.", correlationId);
                 }
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex);
+
+                statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, config.DeviceKey, ex.ToString(), correlationId);
+                statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, config.DeviceKey, "Device initialisation failed.", correlationId);
             }
         }
 

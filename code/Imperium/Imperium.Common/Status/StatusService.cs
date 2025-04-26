@@ -8,18 +8,19 @@ internal class StatusService : IStatusService
 
     static StatusService()
     {
-        _allSeverities =  Enum.GetValues<StatusItemSeverity>();
+        _allSeverities = Enum.GetValues<StatusItemSeverity>();
     }
 
-    public Guid ReportItem(KnownStatusCategories category, StatusItemSeverity severity, string key, string message)
+    public Guid ReportItem(KnownStatusCategories category, StatusItemSeverity severity, string key, string message, Guid? correlationId = null)
     {
-        return ReportItem(category.ToString(), severity, key, message);
+        return ReportItem(category.ToString(), severity, key, message, correlationId);
     }
 
-    public Guid ReportItem(string category, StatusItemSeverity severity, string key, string message)
+    public Guid ReportItem(string category, StatusItemSeverity severity, string key, string message, Guid? correlationId = null)
     {
         var statusItem = new StatusItem
         {
+            CorrelationId = correlationId ?? Guid.NewGuid(),
             Severity = severity,
             DateTime = DateTime.UtcNow,
             Category = category,
@@ -71,11 +72,13 @@ internal class StatusService : IStatusService
         }
     }
 
-    public IStatusItem? GetStatus(Guid correlationId)
+    public IList<IStatusItem> GetCorrelationStatuses(Guid correlationId)
     {
         lock (_sync)
         {
-            return _statuses.SingleOrDefault(si => si.CorrelationId == correlationId);
+            return _statuses
+                .Where(si => si.CorrelationId == correlationId)
+                .ToList();
         }
     }
 

@@ -14,6 +14,13 @@ public class StatusController(IServiceProvider services) : ControllerBase
         return statusService.GetStatuses(withSeverities);
     }
 
+    [HttpGet("{correlationId}")]
+    public IList<IStatusItem> Get(Guid correlationId)
+    {
+        var statusService = services.GetRequiredService<IStatusService>();
+        return statusService.GetCorrelationStatuses(correlationId);
+    }
+
     [HttpDelete]
     public void Delete([FromQuery] DateTime? olderThan)
     {
