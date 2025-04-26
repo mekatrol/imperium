@@ -26,14 +26,6 @@ internal class ImperiumState : IPointState, IImperiumState
     /// </summary>
     public bool IsReadOnlyMode { get; set; } = false;
 
-    public string MqttServer { get; set; } = string.Empty;
-
-    public int MqttPort { get; set; } = 1883;
-
-    public string MqttUser { get; set; } = string.Empty;
-
-    public string MqttPassword { get; set; } = string.Empty;
-
     public void AddPoint(Point point)
     {
         if (string.IsNullOrWhiteSpace(point.DeviceKey))

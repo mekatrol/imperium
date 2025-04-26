@@ -1,6 +1,7 @@
 using Imperium.Common;
 using Imperium.Common.Configuration;
 using Imperium.Common.DeviceControllers;
+using Imperium.Common.Directories;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Common.Status;
@@ -93,19 +94,17 @@ public class Program
         {
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.Timeout = httpClientOptions.Timeout;
-
         });
 
         var imperiumStateConfig = new ImperiumStateOptions();
         builder.Configuration.Bind(ImperiumStateOptions.SectionName, imperiumStateConfig);
         builder.Services.AddSingleton(imperiumStateConfig);
 
+        InitialiseConfiguration(builder.Services, imperiumStateConfig);
+
         var imperiumState = new ImperiumState
         {
-            IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode,
-            MqttServer = imperiumStateConfig.MqttServer,
-            MqttUser = imperiumStateConfig.MqttUser,
-            MqttPassword = imperiumStateConfig.MqttPassword
+            IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode
         };
 
         builder.Services.AddSingleton(imperiumState);
@@ -169,23 +168,22 @@ public class Program
         app.Run();
     }
 
+    private static void InitialiseConfiguration(IServiceCollection services, ImperiumStateOptions config)
+    {
+        var imperiumDirectories = new ImperiumDirectories(config.ConfigurationPath);
+        services.AddSingleton(imperiumDirectories);
+
+        Directory.CreateDirectory(imperiumDirectories.Devices);
+        Directory.CreateDirectory(imperiumDirectories.Points);
+        Directory.CreateDirectory(imperiumDirectories.Scripts);
+    }
+
     private static async Task<ImperiumState> InitialiseImperiumState(IServiceProvider services, CancellationToken cancellationToken)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         var state = services.GetRequiredService<ImperiumState>();
-        var options = services.GetRequiredService<ImperiumStateOptions>();
         var statusService = services.GetRequiredService<IStatusService>();
-
-        // Make sure configuration path exists
-        var configurationPath = options.ConfigurationPath;
-
-        var devicesDirectory = Path.Combine(configurationPath, "devices");
-        var pointsDirectory = Path.Combine(configurationPath, "points");
-        var scriptDirectory = Path.Combine(configurationPath, "scripts");
-
-        Directory.CreateDirectory(devicesDirectory);
-        Directory.CreateDirectory(pointsDirectory);
-        Directory.CreateDirectory(scriptDirectory);
+        var imperiumDirectories = services.GetRequiredService<ImperiumDirectories>();
 
         var deviceControllerFactory = services.GetRequiredService<IDeviceControllerFactory>();
 
@@ -194,7 +192,7 @@ public class Program
         state.AddDeviceController(ImperiumConstants.MqttKey, new MqttPointDeviceController(services));
 
         // Get all device files
-        var deviceFiles = Directory.GetFiles(devicesDirectory, "*.json");
+        var deviceFiles = Directory.GetFiles(imperiumDirectories.Devices, "*.json");
 
         foreach (var deviceFile in deviceFiles)
         {
@@ -224,7 +222,7 @@ public class Program
                     assembly = await ScriptHelper.CompileJsonTransformerScript(
                         services,
                         assemblyName,
-                        scriptDirectory,
+                        imperiumDirectories.Scripts,
                         config.JsonTransformScriptFile,
                         correlationId,
                         cancellationToken);

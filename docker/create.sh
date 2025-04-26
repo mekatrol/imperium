@@ -3,9 +3,6 @@
 # e.g. to run this script:
 # SSH_USER_NAME="ssh" \
 # SSH_USER_PASSWORD="pwd" \
-# MQTT_HOST_NAME="mqtt.net" \
-# MQTT_USER_NAME="mqtt" \
-# MQTT_USER_PASSWORD="pwd" \
 # HOSTNAME="home-automation.lan" \
 # TIMEZONE="Australia/Sydney" \
 # ./create.sh
@@ -17,21 +14,6 @@ fi
 
 if [ -z "$SSH_USER_PASSWORD" ]; then
     echo "Error: SSH_USER_PASSWORD must be defined!"
-    exit 1
-fi
-
-if [ -z "$MQTT_HOST_NAME" ]; then
-    echo "Error: MQTT_HOST_NAME must be defined!"
-    exit 1
-fi
-
-if [ -z "$MQTT_USER_NAME" ]; then
-    echo "Error: MQTT_USER_NAME must be defined!"
-    exit 1
-fi
-
-if [ -z "$MQTT_USER_PASSWORD" ]; then
-    echo "Error: MQTT_USER_PASSWORD must be defined!"
     exit 1
 fi
 
@@ -88,9 +70,6 @@ if ! docker image ls --format '{{.Tag}}' | grep -q "^$IMAGE_NAME$"; then
     docker build -t "$IMAGE_NAME" \
         --build-arg SSH_USER_NAME="$SSH_USER_NAME" \
         --build-arg SSH_USER_PASSWORD="$SSH_USER_PASSWORD" \
-        --build-arg MQTT_HOST_NAME="$MQTT_HOST_NAME" \
-        --build-arg MQTT_USER_NAME="$MQTT_USER_NAME" \
-        --build-arg MQTT_USER_PASSWORD="$MQTT_USER_PASSWORD" \
         --build-arg HOSTNAME="$HOSTNAME" \
         --build-arg TIMEZONE="$TIMEZONE" \
         .

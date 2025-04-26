@@ -7,12 +7,6 @@ public interface IImperiumState
 {
     bool IsReadOnlyMode { get; }
 
-    string MqttServer { get; set; }
-
-    string MqttUser { get; set; }
-
-    string MqttPassword { get; set; }
-
     IList<Point> GetAllPoints();
 
     IList<IDeviceInstance> GetAllDevices();
