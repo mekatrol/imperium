@@ -20,7 +20,7 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
 
     public async Task ProcessPayload(
         IDeviceInstance deviceInstance,
-        Match topicMatch, 
+        Match topicMatch,
         ReadOnlySequence<byte> payload,
         IPointState pointState)
     {
@@ -34,8 +34,8 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
                 // Transform the JSON file
                 json = await ScriptHelper.ExecuteJsonTransformerFromDeviceJsonScript(
                     services,
-                    deviceInstance.ScriptAssembly, 
-                    json, 
+                    deviceInstance.ScriptAssembly,
+                    json,
                     CancellationToken.None);
             }
 

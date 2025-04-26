@@ -1,9 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Reflection;
-using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -31,7 +29,7 @@ public class ScriptCompiler
         // Add the assembly references that the caller needs
         var failedAssemblies = AddAssemblies(additionalAssemblies);
 
-        if(failedAssemblies.Count > 0)
+        if (failedAssemblies.Count > 0)
         {
             throw new InvalidOperationException($"Failed to load the assemblies '{string.Join(',', failedAssemblies)}'.");
         }
