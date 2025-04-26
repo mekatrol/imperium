@@ -29,7 +29,7 @@ public class ScriptHelper
             var currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
             var executingAssemblyPath = Path.GetFullPath(currentAssemblyDirectory);
 
-            IList<string> additionalAssemblies = ["System.Runtime.dll", "System.Private.CoreLib.dll", "System.Text.Json.dll", "Imperium.Common.dll"];
+            IList<string> additionalAssemblies = [];
 
             // Try and load compiler and assembly
             var (context, assembly, errors) = ScriptAssemblyContext.LoadAndCompile(
@@ -96,11 +96,6 @@ public class ScriptHelper
             // Unload loaded context
             context.Unload();
 
-            //if (assembly != null)
-            //{
-            //    var transformed = await ExecuteJsonTransformerFromDeviceJsonScript(assembly, "{ \"zone\": 1, \"event\": \"EVENT\"  }", cancellationToken);
-            //}
-
             return assembly;
         }
         catch (Exception ex)
@@ -118,22 +113,25 @@ public class ScriptHelper
     }
 
     public static Task<string> ExecuteJsonTransformerFromDeviceJsonScript(
+        IServiceProvider services,
         Assembly assembly,
         string json,
         CancellationToken stoppingToken)
     {
-        return ExecuteJsonTransformerScript(assembly, nameof(IJsonMessageTransformer.FromDeviceJson), json, stoppingToken);
+        return ExecuteJsonTransformerScript(services, assembly, nameof(IJsonMessageTransformer.FromDeviceJson), json, stoppingToken);
     }
 
     public static Task<string> ExecuteJsonTransformerToDeviceJsonScript(
+        IServiceProvider services,
         Assembly assembly,
         string json,
         CancellationToken stoppingToken)
     {
-        return ExecuteJsonTransformerScript(assembly, nameof(IJsonMessageTransformer.ToDeviceJson), json, stoppingToken);
+        return ExecuteJsonTransformerScript(services, assembly, nameof(IJsonMessageTransformer.ToDeviceJson), json, stoppingToken);
     }
 
     private static Task<string> ExecuteJsonTransformerScript(
+        IServiceProvider services,
         Assembly assembly,
         string methodName,
         string json,
@@ -143,8 +141,19 @@ public class ScriptHelper
         // validated during compilation of the assembly
         var type = assembly.DefinedTypes.Single(t => t.IsAssignableTo(typeof(IJsonMessageTransformer)));
 
+        var hasServicesConstructor = type.GetConstructors()
+            .Any(ctor =>
+            {
+                var parameters = ctor.GetParameters();
+                return parameters.Length == 1 &&
+                        parameters[0].ParameterType == typeof(IServiceProvider);
+            });
+
         // Create an instance of the type
-        var instance = Activator.CreateInstance(type, true);
+        object[] constructorArgs = [services];
+        var instance = hasServicesConstructor
+            ? Activator.CreateInstance(type, constructorArgs)
+            : Activator.CreateInstance(type, true);
 
         if (instance == null)
         {

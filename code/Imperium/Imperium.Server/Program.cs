@@ -191,7 +191,7 @@ public class Program
 
         state.AddMekatrolDeviceControllers(services);
         state.AddDeviceController(ImperiumConstants.VirtualKey, new VirtualPointDeviceController());
-        state.AddDeviceController(ImperiumConstants.MqttKey, new MqttPointDeviceController());
+        state.AddDeviceController(ImperiumConstants.MqttKey, new MqttPointDeviceController(services));
 
         // Get all device files
         var deviceFiles = Directory.GetFiles(devicesDirectory, "*.json");

@@ -1,7 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Reflection;
+using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Imperium.ScriptCompiler;
 
@@ -25,7 +29,12 @@ public class ScriptCompiler
         OptimizationLevel optimizationLevel)
     {
         // Add the assembly references that the caller needs
-        AddAssemblies(additionalAssemblies);
+        var failedAssemblies = AddAssemblies(additionalAssemblies);
+
+        if(failedAssemblies.Count > 0)
+        {
+            throw new InvalidOperationException($"Failed to load the assemblies '{string.Join(',', failedAssemblies)}'.");
+        }
 
         // Parse source code into a tree
         var tree = SyntaxFactory.ParseSyntaxTree(sourceCode.Trim());
@@ -118,12 +127,35 @@ public class ScriptCompiler
     private IList<string> AddAssemblies(IList<string> assemblies)
     {
         IList<string> failedAssemblies = [];
+
         foreach (var assembly in assemblies)
         {
             if (!AddAssembly(assembly))
             {
                 // Add to failed list
                 failedAssemblies.Add(assembly);
+            }
+        }
+
+        var systemRuntimePath = Path.Combine(_dotNetFrameworkAssemblyPath, "System.Runtime.dll");
+
+        // Supplement with required assemblies for dynamic scripting
+        var additionalReferences = new List<PortableExecutableReference>
+        {
+            MetadataReference.CreateFromFile(systemRuntimePath), // System.Runtime
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location), // System.Private.CoreLib
+            MetadataReference.CreateFromFile(typeof(IServiceProvider).Assembly.Location), // System.ComponentModel
+            MetadataReference.CreateFromFile(typeof(IServiceCollection).Assembly.Location), // Microsoft.Extensions.DependencyInjection.Abstractions
+            MetadataReference.CreateFromFile(typeof(JsonSerializer).Assembly.Location), // System.Text.Json
+            MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.ILogger<>).Assembly.Location), // Microsoft.Extensions.Logging.Abstractions
+            MetadataReference.CreateFromFile(typeof(Common.Scripting.IJsonMessageTransformer).Assembly.Location) // Imperium.Common
+        };
+
+        foreach (var reference in additionalReferences)
+        {
+            if (!_assemblyReferences.Any(ar => ar.FilePath == reference.FilePath))
+            {
+                _assemblyReferences.Add(reference);
             }
         }
 

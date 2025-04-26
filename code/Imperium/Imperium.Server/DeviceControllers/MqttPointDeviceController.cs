@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace Imperium.Server.DeviceControllers;
 
-public class MqttPointDeviceController : IMqttDeviceController
+public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceController
 {
     public object? GetInstanceDataFromJson(string json)
     {
@@ -20,7 +20,8 @@ public class MqttPointDeviceController : IMqttDeviceController
 
     public async Task ProcessPayload(
         IDeviceInstance deviceInstance,
-        Match topicMatch, ReadOnlySequence<byte> payload,
+        Match topicMatch, 
+        ReadOnlySequence<byte> payload,
         IPointState pointState)
     {
         if (payload.IsSingleSegment)
@@ -31,7 +32,11 @@ public class MqttPointDeviceController : IMqttDeviceController
             if (deviceInstance.ScriptAssembly != null)
             {
                 // Transform the JSON file
-                json = await ScriptHelper.ExecuteJsonTransformerFromDeviceJsonScript(deviceInstance.ScriptAssembly, json, CancellationToken.None);
+                json = await ScriptHelper.ExecuteJsonTransformerFromDeviceJsonScript(
+                    services,
+                    deviceInstance.ScriptAssembly, 
+                    json, 
+                    CancellationToken.None);
             }
 
             var payloadObj = JsonSerializer.Deserialize<JsonElement>(json)!;
