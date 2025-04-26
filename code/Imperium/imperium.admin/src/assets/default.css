@@ -1,0 +1,46 @@
+:root {
+  --clr-information: rgb(33, 150, 243);
+  --clr-success: hsl(143, 100%, 26%);
+  --clr-warning: hsl(43, 100%, 66%);
+  --clr-error: hsl(348, 55%, 49%);
+  --clr-state-offline: #991503;
+  --clr-state-off: #838282;
+  --clr-state-on: #01a301;
+  --clr-time: #ff0000;
+  --clr-date: #55ff88;
+  --clr-sunrise: #f1e20f;
+  --clr-sunset: #f7621e;
+  --clr-dashboard-background: #222;
+  --clr-grid-cell-outline: #ccc;
+
+  --clr-panic-ok: var(--clr-state-on);
+  --clr-panic-active: #0478d8;
+  --clr-heat-off: #f9fdc2;
+  --clr-heat-on: #f7621e;
+}
+
+.wrapper {
+  width: min(900px, 100% - 3rem);
+  margin-inline: auto;
+}
+
+.btn {
+  padding-inline: 0.5rem;
+  padding-block: 0.2rem;
+  cursor: pointer;
+}
+
+.btn.icon {
+  padding-inline: 0.5rem;
+  padding-block: 0.2rem;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+
+  gap: 0.3rem;
+
+  font-weight: 500;
+  font-size: 1rem;
+}

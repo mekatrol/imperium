@@ -1,0 +1,120 @@
+.dashboard-cell {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+  outline-offset: -1px;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.dashboard-cell.state-offline {
+  outline: 1px solid var(--clr-state-offline);
+}
+
+.dashboard-cell.state-off {
+  outline: 1px solid var(--clr-state-off);
+}
+
+.dashboard-cell.state-on {
+  outline: 1px solid var(--clr-state-on);
+}
+
+.dashboard-cell.state-off.panic {
+  outline: 1px solid var(--clr-panic-ok);
+}
+
+.dashboard-cell.state-on.panic {
+  outline: 1px solid var(--clr-panic-active);
+}
+
+.dashboard-cell > button,
+.dashboard-cell > div {
+  background-color: inherit;
+  width: 100%;
+  border: none;
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+}
+
+.dashboard-cell.state-offline > button {
+  cursor: not-allowed;
+}
+
+.dashboard-cell.state-off > button:active {
+  background-color: var(--clr-state-off);
+}
+
+.dashboard-cell.state-on > button:active {
+  background-color: var(--clr-state-on);
+}
+
+.dashboard-cell span {
+  margin: auto;
+  font-size: 3rem;
+  align-self: flex-start;
+}
+
+.dashboard-cell.state-offline > button span,
+.dashboard-cell.state-offline > button p {
+  color: var(--clr-state-offline);
+}
+
+.dashboard-cell.state-off > button span,
+.dashboard-cell.state-off > button p {
+  color: var(--clr-state-off);
+}
+
+.dashboard-cell.state-on > button span,
+.dashboard-cell.state-on > button p {
+  color: var(--clr-state-on);
+}
+
+.dashboard-cell.state-off.panic > button span,
+.dashboard-cell.state-off.panic > button p {
+  color: var(--clr-panic-ok);
+}
+
+.dashboard-cell.state-on.panic > button span,
+.dashboard-cell.state-on.panic > button p {
+  color: var(--clr-panic-active);
+}
+
+.dashboard-cell.state-off > button:active {
+  background-color: var(--clr-state-off);
+}
+
+.dashboard-cell.state-on > button:active {
+  background-color: var(--clr-state-on);
+}
+
+.dashboard-cell.state-offline > button:active:not(:disabled) span,
+.dashboard-cell.state-offline > button:active:not(:disabled) p {
+  color: inherit;
+}
+
+.dashboard-cell.state-off > button:active:not(:disabled) span,
+.dashboard-cell.state-off > button:active:not(:disabled) p {
+  color: inherit;
+}
+
+.dashboard-cell.state-on > button:active:not(:disabled) span,
+.dashboard-cell.state-on > button:active:not(:disabled) p {
+  color: inherit;
+}
+
+.dashboard-cell > button > p {
+  margin: auto;
+  font-size: 1rem;
+}
+
+.grid-two-row > button > span {
+  font-size: 4rem;
+}
+
+.grid-two-col {
+  grid-column-start: 2;
+  grid-column-end: 4;
+}
