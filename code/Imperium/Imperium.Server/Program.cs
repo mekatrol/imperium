@@ -14,7 +14,7 @@ using Imperium.Server.State;
 using Mekatrol.Devices;
 using Serilog;
 using System.Net.Http.Headers;
-
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -128,7 +128,10 @@ public class Program
 
         var app = builder.Build();
 
-        await InitialiseImperiumState(app.Services);
+        using (var cancellationTokenSouce = new CancellationTokenSource())
+        {
+            await InitialiseImperiumState(app.Services, cancellationTokenSouce.Token);
+        }
 
         app.UseCors(AppCorsPolicy);
 
@@ -166,7 +169,7 @@ public class Program
         app.Run();
     }
 
-    private static async Task<ImperiumState> InitialiseImperiumState(IServiceProvider services)
+    private static async Task<ImperiumState> InitialiseImperiumState(IServiceProvider services, CancellationToken cancellationToken)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         var state = services.GetRequiredService<ImperiumState>();
@@ -198,30 +201,45 @@ public class Program
             var correlationId = statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, deviceFile, $"Starting device initialisation.");
 
             statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, "Loading configuration file.", correlationId);
-            var json = await File.ReadAllTextAsync(deviceFile);
+            var json = await File.ReadAllTextAsync(deviceFile, cancellationToken);
 
             statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, "Deserializing JSON.", correlationId);
             var config = JsonSerializer.Deserialize<DeviceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions)!;
 
             try
             {
-                var noScriptsOrNoScriptErrors = false;
+                Assembly? assembly = null;
 
                 if (!string.IsNullOrWhiteSpace(config.JsonTransformScriptFile))
                 {
-                    statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, $"Compiling device script: '{config.JsonTransformScriptFile}'.", correlationId);
-                    noScriptsOrNoScriptErrors |= await ScriptHelper.CompileJsonTransformerScript(services, scriptDirectory, config.JsonTransformScriptFile, correlationId);
+                    statusService.ReportItem(
+                        KnownStatusCategories.Configuration,
+                        StatusItemSeverity.Debug,
+                        deviceFile,
+                        $"Compiling device script: '{config.JsonTransformScriptFile}'.",
+                        correlationId);
+
+                    var assemblyName = "Device_" + Path.GetFileNameWithoutExtension(config.JsonTransformScriptFile).Replace(".", "_");
+
+                    assembly = await ScriptHelper.CompileJsonTransformerScript(
+                        services,
+                        assemblyName,
+                        scriptDirectory,
+                        config.JsonTransformScriptFile,
+                        correlationId,
+                        cancellationToken);
                 }
 
                 // Only add if there are no scripts or no script errors
-                if (!noScriptsOrNoScriptErrors)
+                if (string.IsNullOrWhiteSpace(config.JsonTransformScriptFile) || assembly != null)
                 {
                     deviceControllerFactory.AddDeviceInstance(
                         config.DeviceKey,
                         config.ControllerKey,
                         config.Data,
                         config.Points,
-                        state);
+                        state,
+                        assembly);
 
                     statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, config.DeviceKey, $"Device initialisation success.", correlationId);
                 }

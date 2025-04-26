@@ -6,6 +6,7 @@ namespace Imperium.ScriptCompiler;
 public class ScriptExecutor
 {
     public static async Task<IList<string>> RunAndUnload(
+        string assemblyName,
         string executingAssemblyPath,
         string sourceCode,
         IList<string> additionalAssemblies,
@@ -15,7 +16,7 @@ public class ScriptExecutor
         int unloadDelayBetweenTries,
         CancellationToken stoppingToken = default)
     {
-        var (weakRef, errors) = await Run(executingAssemblyPath, sourceCode, additionalAssemblies, executeScript, unload, stoppingToken);
+        var (weakRef, errors) = await Run(assemblyName, executingAssemblyPath, sourceCode, additionalAssemblies, executeScript, unload, stoppingToken);
 
         if (weakRef != null)
         {
@@ -26,12 +27,14 @@ public class ScriptExecutor
     }
 
     public static (ScriptAssemblyContext, Assembly?, IList<string>) Load(
+        string assemblyName,
         string executingAssemblyPath,
         string sourceCode,
         IList<string> additionalAssemblies,
         Action unload)
     {
         var (scriptCompiler, assembly, errors) = ScriptAssemblyContext.LoadAndCompile(
+            assemblyName,
             executingAssemblyPath,
             sourceCode,
             additionalAssemblies,
@@ -42,6 +45,7 @@ public class ScriptExecutor
     }
 
     public static async Task<(WeakReference?, IList<string>)> Run(
+        string assemblyName,
         string executingAssemblyPath,
         string sourceCode,
         IList<string> additionalAssemmblies,
@@ -50,7 +54,7 @@ public class ScriptExecutor
         CancellationToken stoppingToken = default)
     {
         // Try and load compiler and assembly
-        var (scriptCompiler, assembly, errors) = Load(executingAssemblyPath, sourceCode, additionalAssemmblies, unload);
+        var (scriptCompiler, assembly, errors) = Load(assemblyName, executingAssemblyPath, sourceCode, additionalAssemmblies, unload);
 
         // Create a weak reference to the AssemblyLoadContext that will allow us to detect
         // when the unload completes.

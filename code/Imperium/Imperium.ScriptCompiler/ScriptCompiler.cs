@@ -8,17 +8,21 @@ namespace Imperium.ScriptCompiler;
 public class ScriptCompiler
 {
     /// <summary>
-    /// The full path to the currently executing .NET framework assemblies
+    /// The full path to the currently executing .NET framework assemblies (the 'object' type assembly is in that location).
     /// </summary>
-    private readonly string _dotNetFrameworkAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+    private static readonly string _dotNetFrameworkAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
     /// <summary>
-    /// The list of assembly references that are used by the script class
+    /// The list of assembly references that are used, stops assembly references being add more than once
     /// </summary>
     private readonly IList<PortableExecutableReference> _assemblyReferences = [];
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public (IList<byte>, IList<string>) CompileToByteCode(string sourceCode, IList<string> additionalAssemblies, OptimizationLevel optimizationLevel)
+    public (IList<byte>, IList<string>) CompileToByteCode(
+        string assemblyName,
+        string sourceCode,
+        IList<string> additionalAssemblies,
+        OptimizationLevel optimizationLevel)
     {
         // Add the assembly references that the caller needs
         AddAssemblies(additionalAssemblies);
@@ -27,7 +31,7 @@ public class ScriptCompiler
         var tree = SyntaxFactory.ParseSyntaxTree(sourceCode.Trim());
 
         // Make sure it compiles
-        var compilation = CSharpCompilation.Create(Guid.NewGuid().ToString("D"))
+        var compilation = CSharpCompilation.Create(assemblyName)
             .WithOptions(
                 new CSharpCompilationOptions(
                     OutputKind.DynamicallyLinkedLibrary,
@@ -59,7 +63,7 @@ public class ScriptCompiler
         return (byteCode, []);
     }
 
-    public bool AddAssembly(string assemblyDllFileName)
+    private bool AddAssembly(string assemblyDllFileName)
     {
         // Ignore empty entries
         if (string.IsNullOrWhiteSpace(assemblyDllFileName))
@@ -111,7 +115,7 @@ public class ScriptCompiler
         }
     }
 
-    public IList<string> AddAssemblies(IList<string> assemblies)
+    private IList<string> AddAssemblies(IList<string> assemblies)
     {
         IList<string> failedAssemblies = [];
         foreach (var assembly in assemblies)

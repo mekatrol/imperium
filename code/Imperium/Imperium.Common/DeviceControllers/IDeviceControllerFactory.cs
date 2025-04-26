@@ -1,5 +1,6 @@
 ﻿using Imperium.Common.Devices;
 using Imperium.Common.Points;
+using System.Reflection;
 
 namespace Imperium.Common.DeviceControllers;
 
@@ -10,5 +11,6 @@ public interface IDeviceControllerFactory
         string controllerKey,
         string? dataJson,
         IList<PointDefinition> points,
-        IImperiumState state);
+        IImperiumState state,
+        Assembly? scriptAssembly);
 }

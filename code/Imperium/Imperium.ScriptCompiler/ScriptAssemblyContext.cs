@@ -18,6 +18,7 @@ public class ScriptAssemblyContext : AssemblyLoadContext
     }
 
     public static (ScriptAssemblyContext, Assembly?, IList<string>) LoadAndCompile(
+        string assemblyName,
         string pluginPath,
         string sourceCode,
         IList<string> additionalAssemblies,
@@ -26,20 +27,21 @@ public class ScriptAssemblyContext : AssemblyLoadContext
     {
         var context = new ScriptAssemblyContext(pluginPath, unload);
 
-        var (assembly, errors) = context.LoadFromSource(sourceCode, additionalAssemblies, optimizationLevel);
+        var (assembly, errors) = context.LoadFromSource(assemblyName, sourceCode, additionalAssemblies, optimizationLevel);
 
         return (context, assembly, errors);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     public (Assembly?, IList<string>) LoadFromSource(
+        string assemblyName,
         string sourceCode,
         IList<string> additionalAssemblies,
         OptimizationLevel optimizationLevel)
     {
         var scriptCompiler = new ScriptCompiler();
 
-        var (byteCode, errors) = scriptCompiler.CompileToByteCode(sourceCode, additionalAssemblies, optimizationLevel);
+        var (byteCode, errors) = scriptCompiler.CompileToByteCode(assemblyName, sourceCode, additionalAssemblies, optimizationLevel);
 
         if (errors.Count > 0)
         {

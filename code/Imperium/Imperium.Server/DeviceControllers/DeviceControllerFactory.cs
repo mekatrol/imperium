@@ -2,6 +2,7 @@
 using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
+using System.Reflection;
 
 namespace Imperium.Server.DeviceControllers;
 
@@ -12,7 +13,8 @@ public class DeviceControllerFactory() : IDeviceControllerFactory
         string controllerKey,
         string? dataJson,
         IList<PointDefinition> points,
-        IImperiumState state)
+        IImperiumState state,
+        Assembly? scriptAssembly)
     {
         // Get the controller by get controller key.
         var controller = state.GetDeviceController(controllerKey);
@@ -34,7 +36,8 @@ public class DeviceControllerFactory() : IDeviceControllerFactory
            deviceKey,
            DeviceType.Physical,
            controllerKey,
-           data);
+           data,
+           scriptAssembly: scriptAssembly);
 
         foreach (var point in points)
         {

@@ -1,5 +1,6 @@
 ﻿using Imperium.Common.Extensions;
 using Imperium.Common.Points;
+using System.Reflection;
 
 namespace Imperium.Common.Devices;
 
@@ -8,7 +9,8 @@ public class DeviceInstance(
     DeviceType deviceType,
     string deviceControllerKey,
     object? data = null,
-    bool enabled = true) : IDeviceInstance
+    bool enabled = true,
+    Assembly? scriptAssembly = null) : IDeviceInstance
 {
     private readonly IList<Point> _points = [];
 
@@ -30,6 +32,8 @@ public class DeviceInstance(
             return [.. _points];
         }
     }
+
+    public Assembly? ScriptAssembly { get; set; } = scriptAssembly;
 
     public Point MapPoint(string key, string friendlyName, string? alias, Type nativePointType, object? initialValue = null)
     {
