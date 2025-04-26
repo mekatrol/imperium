@@ -16,7 +16,7 @@ public static class MiddlewareExtensions
                 context.Response.ContentType = "text/html";
 
                 // Read the index.html file
-                var indexHtmlContent = await File.ReadAllTextAsync(Path.Combine(env.WebRootPath, "index.html"));
+                var indexHtmlContent = await File.ReadAllTextAsync(Path.Combine(env.WebRootPath, "dashboard", "index.html"));
 
                 // Replace api base URL
                 var apiBaseUrl = $"{context.Request.Scheme}://{context.Request.Host.Host}:{context.Request.Host.Port}/api";
