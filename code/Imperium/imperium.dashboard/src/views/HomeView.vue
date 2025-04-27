@@ -313,7 +313,8 @@ useIntervalTimer(async () => {
 
   if (serverApplicationExecutionVersion != applicationExecutionVersion) {
     // Reload the page using the new version
-    window.location.replace(location.protocol + '//' + location.host + location.pathname + `?v=${serverApplicationExecutionVersion}`);
+    const updatedUrl = location.protocol + '//' + location.host + location.pathname + `?v=${serverApplicationExecutionVersion}`;
+    window.location.replace(updatedUrl);
   }
 
   // Keep timer running

@@ -76,6 +76,10 @@ RUN cd /imperium/code/Imperium/imperium.dashboard && \
     npm i && \
     npm run compile && \
     cd /
+RUN cd /imperium/code/Imperium/imperium.admin && \
+    npm i && \
+    npm run compile && \
+    cd /
 RUN dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.csproj -c Release -o /app/publish    
 
 # Start SSH and the .NET app
