@@ -17,14 +17,8 @@ public static class MiddlewareExtensions
 
             if (context.Request.Path.HasValue && IsSpaIndexPage(context.Request.Path.Value))
             {
-                // If this is a SPA path, then return the SPA index file
+                // If this is a SPA path, then return the SPA index file                
                 context.Response.ContentType = "text/html";
-
-                //var responseCompressionFeature = context.Features.Get<IResponseCompressionFeature>();
-                //if (responseCompressionFeature is not null)
-                //{
-                //    responseCompressionFeature.EnableCompression = false;
-                //}
 
                 // Read the index.html file
                 var indexHtmlContent = await File.ReadAllTextAsync(Path.Combine(env.WebRootPath, "dashboard", "index.html"));
@@ -47,7 +41,7 @@ public static class MiddlewareExtensions
 
     public static bool IsSpaIndexPage(string path)
     {
-        var indexPathPattern = @"^/($|/index.html$)";
+        var indexPathPattern = @"^\/($|index\.html$|dashboard$|dashboard\/$|dashboard\/index\.html$|admin$|admin\/$|admin\/index\.html$)";
         var regex = new Regex(indexPathPattern, RegexOptions.IgnoreCase);
 
         // If the path does not start with '/api/' or '/swagger/' then is UI path
