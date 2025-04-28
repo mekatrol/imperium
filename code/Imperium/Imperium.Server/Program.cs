@@ -132,15 +132,16 @@ public class Program
             await InitialiseImperiumState(app.Services, cancellationTokenSouce.Token);
         }
 
-        app.UseCors(AppCorsPolicy);
-
         app.UseExceptionMiddleware();
+        app.UseMiddleware<PrivateNetworkCorsHeaderMiddleware>();
+
+        app.UseCors(AppCorsPolicy);
 
         // Middleware for injecting API base URL into index.html
         app.UseInjectApiBaseUrl(app.Environment);
 
-        app.UseDefaultFiles();
         app.UseStaticFiles();
+        app.UseDefaultFiles();
 
         app.UseSwagger();
         app.UseSwaggerUI(options =>

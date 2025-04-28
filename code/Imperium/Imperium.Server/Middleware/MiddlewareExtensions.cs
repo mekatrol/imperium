@@ -10,10 +10,21 @@ public static class MiddlewareExtensions
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
+            if (context.Request.Method == "OPTIONS")
+            {
+                context.Response.Headers["Access-Control-Allow-Private-Network"] = "true";
+            }
+
             if (context.Request.Path.HasValue && IsSpaIndexPage(context.Request.Path.Value))
             {
                 // If this is a SPA path, then return the SPA index file
                 context.Response.ContentType = "text/html";
+
+                //var responseCompressionFeature = context.Features.Get<IResponseCompressionFeature>();
+                //if (responseCompressionFeature is not null)
+                //{
+                //    responseCompressionFeature.EnableCompression = false;
+                //}
 
                 // Read the index.html file
                 var indexHtmlContent = await File.ReadAllTextAsync(Path.Combine(env.WebRootPath, "dashboard", "index.html"));
@@ -36,8 +47,8 @@ public static class MiddlewareExtensions
 
     public static bool IsSpaIndexPage(string path)
     {
-        var apiPathPattern = @"^/($|/index.html$)";
-        var regex = new Regex(apiPathPattern, RegexOptions.IgnoreCase);
+        var indexPathPattern = @"^/($|/index.html$)";
+        var regex = new Regex(indexPathPattern, RegexOptions.IgnoreCase);
 
         // If the path does not start with '/api/' or '/swagger/' then is UI path
         return regex.IsMatch(path);
@@ -45,10 +56,10 @@ public static class MiddlewareExtensions
 
     public static bool IsSpaPath(string path)
     {
-        var apiPathPattern = @"^/(api|swagger)(/|$)";
+        var apiPathPattern = @"^/(dashboard|admin)(/|$)";
         var regex = new Regex(apiPathPattern, RegexOptions.IgnoreCase);
 
-        // If the path does not start with '/api/' or '/swagger/' then is UI path
-        return !regex.IsMatch(path);
+        // If the path starts with '/dashboard/' or '/admin/' then is UI path
+        return regex.IsMatch(path);
     }
 }
