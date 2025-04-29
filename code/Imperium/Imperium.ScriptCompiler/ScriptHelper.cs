@@ -105,7 +105,7 @@ public class ScriptHelper
                 KnownStatusCategories.Scripting,
                 StatusItemSeverity.Error,
                 scriptFileName,
-                ex.ToString(),
+                ex,
                 correlationId);
 
             return null;

@@ -81,6 +81,8 @@ public class Program
         builder.Configuration.Bind(FlowExecutorBackgroundServiceOptions.SectionName, flowExecutorControllerOptions);
         builder.Services.AddSingleton(flowExecutorControllerOptions);
 
+        builder.Services.AddSingleton(new MqttHostConfiguration());
+
         var handler = new SocketsHttpHandler
         {
             ConnectTimeout = httpClientOptions.ConnectTimeout,
@@ -256,7 +258,7 @@ public class Program
             {
                 logger.LogWarning(ex);
 
-                statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, config.DeviceKey, ex.ToString(), correlationId);
+                statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, config.DeviceKey, ex, correlationId);
                 statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, config.DeviceKey, "Device initialisation failed.", correlationId);
             }
         }

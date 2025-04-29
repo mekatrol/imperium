@@ -16,6 +16,11 @@ internal class StatusService : IStatusService
         return ReportItem(category.ToString(), severity, key, message, correlationId);
     }
 
+    public Guid ReportItem(KnownStatusCategories category, StatusItemSeverity severity, string key, Exception ex, Guid? correlationId = null)
+    {
+        return ReportItem(category.ToString(), severity, key, ex.ToString(), correlationId);
+    }
+
     public Guid ReportItem(string category, StatusItemSeverity severity, string key, string message, Guid? correlationId = null)
     {
         var statusItem = new StatusItem

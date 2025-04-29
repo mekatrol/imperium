@@ -5,8 +5,8 @@ using Imperium.Common.Directories;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Common.Status;
+using Microsoft.AspNetCore.Hosting.Server;
 using MQTTnet;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Imperium.Server.Background;
@@ -15,99 +15,204 @@ public class MqttClientBackgroundService(
     IServiceProvider services,
     ILogger<MqttClientBackgroundService> logger) : BackgroundService()
 {
+    private readonly MqttClientFactory _mqttFactory = new();
+
+    private int _lastMqttHostConfigurationVersion = int.MinValue;
+    private IMqttClient? _mqttClient = null;
+    private DateTime? _nextConectTryTime = null;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var statusService = services.GetRequiredService<IStatusService>();
+
         try
         {
             var state = services.GetRequiredService<IImperiumState>();
             var pointState = services.GetRequiredService<IPointState>();
             var imperiumDirectories = services.GetRequiredService<ImperiumDirectories>();
-            var statusService = services.GetRequiredService<IStatusService>();
-
-            MqttConfiguration? mqttConfig = null;
-
-            // Wait for a readable configuration file
-            while (mqttConfig == null && !stoppingToken.IsCancellationRequested)
-            {
-                var mqttHostConfigurationFile = Path.Combine(imperiumDirectories.Base, "mqtt.json");
-
-                if (File.Exists(mqttHostConfigurationFile))
-                {
-                    try
-                    {
-                        var json = await File.ReadAllTextAsync(mqttHostConfigurationFile, stoppingToken);
-                        mqttConfig = JsonSerializer.Deserialize<MqttConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions);
-                    }
-                    catch (Exception ex)
-                    {
-                        statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex.Message);
-                    }
-                }
-
-                if (mqttConfig != null && mqttConfig.Hosts.Count > 0)
-                {
-                    break;
-                }
-
-                await Task.Delay(5000, stoppingToken);
-            }
-
-            var mqttHost = mqttConfig!.Hosts.First();
-            var mqttFactory = new MqttClientFactory();
+            var mqttHostConfiguration = services.GetRequiredService<MqttHostConfiguration>();
+            var mqttConfig = mqttHostConfiguration.MqttConfiguration;
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                using var mqttClient = mqttFactory.CreateMqttClient();
-
-                var mqttClientOptions = new MqttClientOptionsBuilder()
-                    .WithTcpServer(mqttHost.Server, mqttHost.Port)
-                    .WithCredentials(mqttHost.User, mqttHost.Password)
-                    .Build();
-
-                mqttClient.ApplicationMessageReceivedAsync += async (applicationMessageEvent) =>
+                try
                 {
-                    try
+                    while (!stoppingToken.IsCancellationRequested)
                     {
-                        // Get all device devices that have the mqtt controller 
-                        var mqttDevices = state.GetAllDevices()
-                            .Where(d => d.ControllerKey == ImperiumConstants.MqttKey)
-                            .ToList();
-
-                        var topic = applicationMessageEvent.ApplicationMessage.Topic;
-                        var payload = applicationMessageEvent.ApplicationMessage.Payload;
-
-                        if (state.GetDeviceController(ImperiumConstants.MqttKey) is IMqttDeviceController controller)
+                        // Has the host configuration changed?
+                        if (_lastMqttHostConfigurationVersion != mqttHostConfiguration.ChangeVersion ||
+                            (_nextConectTryTime != null && DateTime.Now > _nextConectTryTime))
                         {
-                            foreach (var deviceInstance in mqttDevices)
+                            // Update to current version
+                            _lastMqttHostConfigurationVersion = mqttHostConfiguration.ChangeVersion;
+
+                            // Safely disconnect if any existing connection
+                            await SafeDisconnectClient(stoppingToken);
+
+                            // Update configuration
+                            mqttConfig = mqttHostConfiguration.MqttConfiguration;
+
+                            // Connect if MQTT host defined
+                            if(!await SafeConnectClient(mqttConfig, state, pointState, statusService, stoppingToken))
                             {
-                                var data = (MqttDataConfiguration)deviceInstance.Data!;
+                                // Try and connect again in one minute
+                                _nextConectTryTime = DateTime.Now + TimeSpan.FromMinutes(1);
+                            }
+                            else
+                            {
+                                // We are connected no need to try to reconnect
+                                _nextConectTryTime = null;
+                            }
+                        }
 
-                                var topicFilterRegex = new Regex(data.Topic);
-                                var topicMatch = topicFilterRegex.Match(topic);
+                        await Task.Delay(1000, stoppingToken);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log status issue
+                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex);
 
-                                if (topicMatch.Success)
-                                {
-                                    try
-                                    {
-                                        await controller.ProcessPayload(deviceInstance, topicMatch, payload, pointState);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        logger.LogWarning(ex);
-                                    }
-                                }
+                    // Try to connect again in ten seconds if we disconnected
+                    _nextConectTryTime = DateTime.Now + TimeSpan.FromSeconds(10);
+                }
+                finally
+                {
+                    // Safely disconnect any existing connection
+                    await SafeDisconnectClient(stoppingToken);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex);
+            statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex);
+        }
+        finally
+        {
+            // Safely disconnect any existing connection
+            await SafeDisconnectClient(stoppingToken);
+
+            statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Information, nameof(MqttClientBackgroundService), "Exiting background task");
+        }
+    }
+
+    private async Task<bool> SafeConnectClient(MqttConfiguration? mqttConfig, IImperiumState state, IPointState pointState, IStatusService statusService, CancellationToken stoppingToken)
+    {
+        // Make sure any existing connection terminated
+        await SafeDisconnectClient(stoppingToken);
+
+        // Use the first host that matches the key
+        var mqttHost = mqttConfig!.Hosts.FirstOrDefault(h => h.Key == ImperiumConstants.MqttKey);
+
+        if (mqttHost == null)
+        {
+            // No hosts defined
+            return true;
+        }
+
+        var mqttClientOptions = new MqttClientOptionsBuilder()
+            .WithTcpServer(mqttHost.Server, mqttHost.Port)
+            .WithCredentials(mqttHost.User, mqttHost.Password)
+            .Build();
+
+        _mqttClient = _mqttFactory.CreateMqttClient();
+
+        _mqttClient.DisconnectedAsync += async (e) =>
+        {
+            if (e.ClientWasConnected)
+            {
+                await SafeDisconnectClient(stoppingToken);
+
+                if (e.Exception != null)
+                {
+                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), e.Exception);
+                }
+                else if(!string.IsNullOrWhiteSpace(e.ReasonString))
+                {
+                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), e.ReasonString);
+                }
+                else
+                {
+                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), e.Reason.ToString());
+                }
+
+                // Try and connect again in one minute
+                _nextConectTryTime = DateTime.Now + TimeSpan.FromMinutes(1);
+            }
+        };
+
+        // Listen for topic message events
+        _mqttClient.ApplicationMessageReceivedAsync += async (e) =>
+        {
+            try
+            {
+                // Get all device devices that have the mqtt controller 
+                var mqttDevices = state.GetAllDevices()
+                    .Where(d => d.ControllerKey == ImperiumConstants.MqttKey)
+                    .ToList();
+
+                var topic = e.ApplicationMessage.Topic;
+                var payload = e.ApplicationMessage.Payload;
+
+                if (state.GetDeviceController(ImperiumConstants.MqttKey) is IMqttDeviceController controller)
+                {
+                    foreach (var deviceInstance in mqttDevices)
+                    {
+                        var data = (MqttDataConfiguration)deviceInstance.Data!;
+
+                        var topicFilterRegex = new Regex(data.Topic);
+                        var topicMatch = topicFilterRegex.Match(topic);
+
+                        if (topicMatch.Success)
+                        {
+                            try
+                            {
+                                await controller.ProcessPayload(deviceInstance, topicMatch, payload, pointState);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogWarning(ex);
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex);
-                    }
-                };
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex);
+                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex);
+            }
+        };
 
-                await mqttClient.ConnectAsync(mqttClientOptions, stoppingToken);
+        var correlationId = statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Information, nameof(MqttClientBackgroundService), $"Connecting to host '{mqttHost.Server}'.");
 
-                var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
+        try
+        {
+            // Try and connect
+            var result = await _mqttClient.ConnectAsync(mqttClientOptions, stoppingToken);
+
+            // Was ther a result
+            if (result != null)
+            {
+                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Information, nameof(MqttClientBackgroundService), $"Connect to host '{mqttHost.Server}' result was '{result.ResultCode}'.", correlationId);
+
+                if (result.ResultCode != MqttClientConnectResultCode.Success)
+                {
+                    await SafeDisconnectClient(stoppingToken);
+                    return false;
+                }
+            }
+            else
+            {
+                // No result so failed to connect, report and return
+                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), $"Failed to connect to host '{mqttHost.Server}'.", correlationId);
+                await SafeDisconnectClient(stoppingToken);
+                return false;
+            }
+
+            // Subscribe to all topics
+            var mqttSubscribeOptions = _mqttFactory.CreateSubscribeOptionsBuilder()
                 .WithTopicFilter(
                     topicFilterBuilder =>
                     {
@@ -116,24 +221,58 @@ public class MqttClientBackgroundService(
                     })
                 .Build();
 
-                var response = await mqttClient.SubscribeAsync(mqttSubscribeOptions, stoppingToken);
+            var response = await _mqttClient.SubscribeAsync(mqttSubscribeOptions, stoppingToken);
 
-                logger.DebugDump(response);
+            // Was ther a result
+            if (response != null)
+            {
+                var firstResult = response.Items.First();
 
-                while (!stoppingToken.IsCancellationRequested)
+                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Information, nameof(MqttClientBackgroundService), $"Connect to host '{mqttHost.Server}' result was '{firstResult.ResultCode}'.", correlationId);
+
+                if (firstResult.ResultCode > MqttClientSubscribeResultCode.GrantedQoS2)
                 {
-                    await Task.Delay(1000, stoppingToken);
+                    await SafeDisconnectClient(stoppingToken);
+                    return false;
                 }
-
-                await mqttClient
-                    .DisconnectAsync(new MqttClientDisconnectOptionsBuilder()
-                    .WithReason(MqttClientDisconnectOptionsReason.NormalDisconnection)
-                    .Build(), stoppingToken);
             }
+            else
+            {
+                // No result so failed to connect, report and return
+                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), $"Failed to subscribe to host '{mqttHost.Server}' with topic filter '#'.", correlationId);
+                await SafeDisconnectClient(stoppingToken);
+                return false;
+            }
+
+            return true;
         }
         catch (Exception ex)
         {
             logger.LogError(ex);
+            statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex, correlationId);
+            return false;
+        }
+    }
+
+    private async Task SafeDisconnectClient(CancellationToken stoppingToken)
+    {
+        try
+        {
+            if (_mqttClient != null)
+            {
+                try
+                {
+                    await _mqttClient.DisconnectAsync(cancellationToken: stoppingToken);
+                }
+                finally
+                {
+                    _mqttClient.Dispose();
+                }
+            }
+        }
+        finally
+        {
+            _mqttClient = null;
         }
     }
 }

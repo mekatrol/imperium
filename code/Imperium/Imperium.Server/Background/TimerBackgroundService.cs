@@ -1,5 +1,10 @@
-﻿using Imperium.Server.Options;
+﻿using Imperium.Common.Configuration;
+using Imperium.Common.Directories;
+using Imperium.Common.Extensions;
+using Imperium.Common.Status;
+using Imperium.Server.Options;
 using Imperium.Server.Services;
+using System.Text.Json;
 
 namespace Imperium.Server.Background;
 
@@ -13,8 +18,9 @@ internal class TimerBackgroundService(
         logger)
 {
     private DateTime _lastTickDateTime = DateTime.Now;
+    private bool _mqttHostConfigurationErrorStatusReported = false;
 
-    protected override Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
+    protected override async Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
     {
         var now = DateTime.Now;
 
@@ -28,6 +34,41 @@ internal class TimerBackgroundService(
             appVersionService.ExecutionVersion = Guid.NewGuid();
         }
 
-        return Task.FromResult(true);
+        await UpdateMqttHostConfiguration(services, stoppingToken);
+
+        return true;
+    }
+
+    private async Task UpdateMqttHostConfiguration(IServiceProvider services, CancellationToken stoppingToken)
+    {
+        var imperiumDirectories = services.GetRequiredService<ImperiumDirectories>();
+        var mqttHostConfigurationFile = Path.Combine(imperiumDirectories.Base, "mqtt.json");
+        var statusService = services.GetRequiredService<IStatusService>();
+        var mqttHostConfiguration = services.GetRequiredService<MqttHostConfiguration>();
+
+        var mqttConfig = mqttHostConfiguration.MqttConfiguration;
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(mqttHostConfigurationFile, stoppingToken);
+            mqttConfig = JsonSerializer.Deserialize<MqttConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions);
+
+            // Reset have reported configuration error
+            _mqttHostConfigurationErrorStatusReported = false;
+        }
+        catch (Exception ex)
+        {
+            if (!_mqttHostConfigurationErrorStatusReported)
+            {
+                statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex.Message);
+
+                // Set have reported configuration error
+                _mqttHostConfigurationErrorStatusReported = true;
+            }
+
+            mqttConfig = null;
+        }
+
+        mqttHostConfiguration.MqttConfiguration = mqttConfig;
     }
 }
