@@ -18,9 +18,9 @@ Accept: application/json
 POST {{Imperium.3DPrinter}}/outputs
 Accept: application/json
 {
-  "relay1": 1,
+  "relay1": 0,
   "relay2": 0,
-  "relay3": 1,
+  "relay3": 0,
   "relay4": 0,
   "usb": 0,
   "btn": 0
