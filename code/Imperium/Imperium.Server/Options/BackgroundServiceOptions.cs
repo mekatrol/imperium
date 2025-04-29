@@ -21,6 +21,11 @@ public abstract class BackgroundServiceOptions
     public int LoopIterationSleep { get; set; } = 500;
 }
 
+public class TimerBackgroundServiceOptions : BackgroundServiceOptions
+{
+    public static string SectionName { get; } = "Timer";
+}
+
 public class DeviceControllerBackgroundServiceOptions : BackgroundServiceOptions
 {
     public static string SectionName { get; } = "DeviceController";

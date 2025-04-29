@@ -4,5 +4,5 @@ public interface IAppVersionService
 {
     Version ApplicationVersion { get; }
 
-    Guid ExecutionVersion { get; }
+    Guid ExecutionVersion { get; set; }
 }

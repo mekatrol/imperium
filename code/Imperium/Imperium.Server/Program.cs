@@ -69,6 +69,10 @@ public class Program
         builder.Services.AddSingleton(httpClientOptions);
 
         // Bind background service options        
+        var timerOptions = new TimerBackgroundServiceOptions();
+        builder.Configuration.Bind(TimerBackgroundServiceOptions.SectionName, timerOptions);
+        builder.Services.AddSingleton(timerOptions);
+
         var deviceControllerOptions = new DeviceControllerBackgroundServiceOptions();
         builder.Configuration.Bind(DeviceControllerBackgroundServiceOptions.SectionName, deviceControllerOptions);
         builder.Services.AddSingleton(deviceControllerOptions);
@@ -112,6 +116,7 @@ public class Program
         builder.Services.AddSingleton<IImperiumState>(imperiumState);
         builder.Services.AddSingleton<IDeviceControllerFactory, DeviceControllerFactory>();
 
+        builder.Services.AddHostedService<TimerBackgroundService>();
         builder.Services.AddHostedService<DeviceControllerBackgroundService>();
         builder.Services.AddHostedService<FlowExecutorBackgroundService>();
         builder.Services.AddHostedService<MqttClientBackgroundService>();
