@@ -21,6 +21,11 @@ internal class StatusService : IStatusService
         return ReportItem(category.ToString(), severity, key, ex.ToString(), correlationId);
     }
 
+    public Guid ReportItem(string category, StatusItemSeverity severity, string key, Exception ex, Guid? correlationId = null)
+    {
+        return ReportItem(category.ToString(), severity, key, ex.ToString(), correlationId);
+    }
+
     public Guid ReportItem(string category, StatusItemSeverity severity, string key, string message, Guid? correlationId = null)
     {
         var statusItem = new StatusItem
@@ -106,5 +111,15 @@ internal class StatusService : IStatusService
             // Replace list with ones we want kept
             _statuses = keepStatusItems;
         }
+    }
+
+    public IStatusReporter CreateStatusReporter(KnownStatusCategories category, string key, Guid? correlationId = null)
+    {
+        return new StatusReporter(this, category, key, correlationId ?? Guid.NewGuid());
+    }
+
+    public IStatusReporter CreateStatusReporter(string category, string key, Guid? correlationId = null)
+    {
+        return new StatusReporter(this, category, key, correlationId ?? Guid.NewGuid());
     }
 }

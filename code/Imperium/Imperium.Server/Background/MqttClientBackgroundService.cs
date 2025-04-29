@@ -5,7 +5,6 @@ using Imperium.Common.Directories;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Common.Status;
-using Microsoft.AspNetCore.Hosting.Server;
 using MQTTnet;
 using System.Text.RegularExpressions;
 
@@ -24,6 +23,7 @@ public class MqttClientBackgroundService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var statusService = services.GetRequiredService<IStatusService>();
+        var statusReporter = statusService.CreateStatusReporter(KnownStatusCategories.Mqtt, nameof(MqttClientBackgroundService));
 
         try
         {
@@ -53,7 +53,7 @@ public class MqttClientBackgroundService(
                             mqttConfig = mqttHostConfiguration.MqttConfiguration;
 
                             // Connect if MQTT host defined
-                            if(!await SafeConnectClient(mqttConfig, state, pointState, statusService, stoppingToken))
+                            if (!await SafeConnectClient(mqttConfig, state, pointState, statusReporter, stoppingToken))
                             {
                                 // Try and connect again in one minute
                                 _nextConectTryTime = DateTime.Now + TimeSpan.FromMinutes(1);
@@ -71,7 +71,7 @@ public class MqttClientBackgroundService(
                 catch (Exception ex)
                 {
                     // Log status issue
-                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex);
+                    statusReporter.ReportItem(StatusItemSeverity.Error, ex);
 
                     // Try to connect again in ten seconds if we disconnected
                     _nextConectTryTime = DateTime.Now + TimeSpan.FromSeconds(10);
@@ -80,13 +80,16 @@ public class MqttClientBackgroundService(
                 {
                     // Safely disconnect any existing connection
                     await SafeDisconnectClient(stoppingToken);
+
+                    // Start a new status reporter (will create a new correlation ID)
+                    statusReporter = statusService.CreateStatusReporter(KnownStatusCategories.Mqtt, nameof(MqttClientBackgroundService));
                 }
             }
         }
         catch (Exception ex)
         {
             logger.LogError(ex);
-            statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex);
+            statusReporter.ReportItem(StatusItemSeverity.Error, ex);
         }
         finally
         {
@@ -97,7 +100,7 @@ public class MqttClientBackgroundService(
         }
     }
 
-    private async Task<bool> SafeConnectClient(MqttConfiguration? mqttConfig, IImperiumState state, IPointState pointState, IStatusService statusService, CancellationToken stoppingToken)
+    private async Task<bool> SafeConnectClient(MqttConfiguration? mqttConfig, IImperiumState state, IPointState pointState, IStatusReporter statusReporter, CancellationToken stoppingToken)
     {
         // Make sure any existing connection terminated
         await SafeDisconnectClient(stoppingToken);
@@ -126,15 +129,15 @@ public class MqttClientBackgroundService(
 
                 if (e.Exception != null)
                 {
-                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), e.Exception);
+                    statusReporter.ReportItem(StatusItemSeverity.Error, e.Exception);
                 }
-                else if(!string.IsNullOrWhiteSpace(e.ReasonString))
+                else if (!string.IsNullOrWhiteSpace(e.ReasonString))
                 {
-                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), e.ReasonString);
+                    statusReporter.ReportItem(StatusItemSeverity.Error, e.ReasonString);
                 }
                 else
                 {
-                    statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), e.Reason.ToString());
+                    statusReporter.ReportItem(StatusItemSeverity.Error, e.Reason.ToString());
                 }
 
                 // Try and connect again in one minute
@@ -181,11 +184,11 @@ public class MqttClientBackgroundService(
             catch (Exception ex)
             {
                 logger.LogError(ex);
-                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex);
+                statusReporter.ReportItem(StatusItemSeverity.Error, ex);
             }
         };
 
-        var correlationId = statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Information, nameof(MqttClientBackgroundService), $"Connecting to host '{mqttHost.Server}'.");
+        statusReporter.ReportItem(StatusItemSeverity.Information, $"Connecting to host '{mqttHost.Server}'.");
 
         try
         {
@@ -195,7 +198,7 @@ public class MqttClientBackgroundService(
             // Was ther a result
             if (result != null)
             {
-                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Information, nameof(MqttClientBackgroundService), $"Connect to host '{mqttHost.Server}' result was '{result.ResultCode}'.", correlationId);
+                statusReporter.ReportItem(StatusItemSeverity.Information, $"Connect to host '{mqttHost.Server}' result was '{result.ResultCode}'.");
 
                 if (result.ResultCode != MqttClientConnectResultCode.Success)
                 {
@@ -206,7 +209,7 @@ public class MqttClientBackgroundService(
             else
             {
                 // No result so failed to connect, report and return
-                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), $"Failed to connect to host '{mqttHost.Server}'.", correlationId);
+                statusReporter.ReportItem(StatusItemSeverity.Error, $"Failed to connect to host '{mqttHost.Server}'.");
                 await SafeDisconnectClient(stoppingToken);
                 return false;
             }
@@ -228,7 +231,7 @@ public class MqttClientBackgroundService(
             {
                 var firstResult = response.Items.First();
 
-                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Information, nameof(MqttClientBackgroundService), $"Connect to host '{mqttHost.Server}' result was '{firstResult.ResultCode}'.", correlationId);
+                statusReporter.ReportItem(StatusItemSeverity.Information, $"Connect to host '{mqttHost.Server}' result was '{firstResult.ResultCode}'.");
 
                 if (firstResult.ResultCode > MqttClientSubscribeResultCode.GrantedQoS2)
                 {
@@ -239,7 +242,7 @@ public class MqttClientBackgroundService(
             else
             {
                 // No result so failed to connect, report and return
-                statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), $"Failed to subscribe to host '{mqttHost.Server}' with topic filter '#'.", correlationId);
+                statusReporter.ReportItem(StatusItemSeverity.Error, $"Failed to subscribe to host '{mqttHost.Server}' with topic filter '#'.");
                 await SafeDisconnectClient(stoppingToken);
                 return false;
             }
@@ -249,7 +252,7 @@ public class MqttClientBackgroundService(
         catch (Exception ex)
         {
             logger.LogError(ex);
-            statusService.ReportItem(KnownStatusCategories.Mqtt, StatusItemSeverity.Error, nameof(MqttClientBackgroundService), ex, correlationId);
+            statusReporter.ReportItem(StatusItemSeverity.Error, ex);
             return false;
         }
     }

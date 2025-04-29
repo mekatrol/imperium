@@ -17,7 +17,7 @@ internal class AppVersionService : IAppVersionService
     {
         get
         {
-            lock(_sync)
+            lock (_sync)
             {
                 return _appExecutionVersion;
             }
@@ -25,7 +25,7 @@ internal class AppVersionService : IAppVersionService
 
         set
         {
-            lock(_sync)
+            lock (_sync)
             {
                 _appExecutionVersion = value;
             }
