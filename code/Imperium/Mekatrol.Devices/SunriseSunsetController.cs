@@ -86,6 +86,10 @@ internal class SunriseSunsetController(
                 return;
             }
 
+            // The device is online and has been communicated with
+            deviceInstance.Online = true;
+            deviceInstance.LastCommunication = DateTime.UtcNow;
+
             // Get the body JSON as a ApiResponse object
             var model = await response.Content.ReadFromJsonAsync<SunriseSunsetModel>(_jsonOptions, stoppingToken);
 

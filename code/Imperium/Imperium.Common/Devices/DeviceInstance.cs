@@ -35,6 +35,12 @@ public class DeviceInstance(
 
     public Assembly? ScriptAssembly { get; set; } = scriptAssembly;
 
+    public DateTime? LastCommunication { get; set; }
+
+    public TimeSpan OfflineStatusDuration { get; set; } = TimeSpan.FromMinutes(5);
+
+    public bool Online { get; set; } = false;
+
     public Point MapPoint(string key, string friendlyName, string? alias, Type nativePointType, object? initialValue = null)
     {
         // Get with default value

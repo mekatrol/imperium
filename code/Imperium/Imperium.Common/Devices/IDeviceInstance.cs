@@ -41,6 +41,21 @@ public interface IDeviceInstance
     Assembly? ScriptAssembly { get; set; }
 
     /// <summary>
+    ///  The most recent date and time that the device was communicated with.
+    /// </summary>
+    DateTime? LastCommunication { get; set; }
+
+    /// <summary>
+    /// The duration after which the device has an offline status if it has not been commuicated with.
+    /// </summary>
+    TimeSpan OfflineStatusDuration { get; set; }
+
+    /// <summary>
+    /// True if the device is online, false otherwise.
+    /// </summary>
+    bool Online { get; set; }
+
+    /// <summary>
     /// Map the device point.
     /// </summary>
     Point MapPoint(string key, string friendlyName, string? alias, Type nativePointType, object? value = null);

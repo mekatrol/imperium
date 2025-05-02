@@ -1,6 +1,6 @@
-﻿using Imperium.Common.Configuration;
+﻿using Imperium.Common;
+using Imperium.Common.Configuration;
 using Imperium.Common.DeviceControllers;
-using Imperium.Common;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
 using Imperium.Common.Services;
@@ -37,6 +37,7 @@ public class MqttClientBackgroundService(
                         var topic = e.ApplicationMessage.Topic;
                         var payload = e.ApplicationMessage.Payload;
 
+                        // Get the mqtt controller for the devices
                         if (state.GetDeviceController(ImperiumConstants.MqttKey) is IMqttDeviceController controller)
                         {
                             foreach (var deviceInstance in mqttDevices)
@@ -58,6 +59,10 @@ public class MqttClientBackgroundService(
                                     }
                                 }
                             }
+                        }
+                        else
+                        {
+                            statusReporter.ReportItem(StatusItemSeverity.Warning, $"There was no device controller configured with the key '{ImperiumConstants.MqttKey}'");
                         }
                     }
                     catch (Exception ex)

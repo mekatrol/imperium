@@ -8,9 +8,10 @@ namespace Imperium.Server.DeviceControllers;
 
 public class DeviceControllerFactory() : IDeviceControllerFactory
 {
-    public IDeviceInstance? AddDeviceInstance(
+    public IDeviceInstance AddDeviceInstance(
         string deviceKey,
         string controllerKey,
+        DeviceType deviceType,
         string? dataJson,
         IList<PointDefinition> points,
         IImperiumState state,
@@ -34,7 +35,7 @@ public class DeviceControllerFactory() : IDeviceControllerFactory
 
         var deviceInstance = new DeviceInstance(
            deviceKey,
-           DeviceType.Physical,
+           deviceType,
            controllerKey,
            data,
            scriptAssembly: scriptAssembly);

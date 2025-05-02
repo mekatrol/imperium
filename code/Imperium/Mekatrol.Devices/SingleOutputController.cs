@@ -50,6 +50,10 @@ internal class SingleOutputController(
                 throw new Exception($"Failed to read from URL: '{deviceInstance.Key}'");
             }
 
+            // The device is online and has been communicated with
+            deviceInstance.Online = true;
+            deviceInstance.LastCommunication = DateTime.UtcNow;
+
             // Get the body JSON as a ApiResponse object
             var model = await response.Content.ReadFromJsonAsync<SingleOutputControllerModel>(_jsonOptions, stoppingToken);
 
@@ -100,6 +104,10 @@ internal class SingleOutputController(
         {
             throw new Exception($"Failed to update '{deviceInstance.Key}'");
         }
+
+        // The device is online and has been communicated with
+        deviceInstance.Online = true;
+        deviceInstance.LastCommunication = DateTime.UtcNow;
     }
 
     public override string ToString()

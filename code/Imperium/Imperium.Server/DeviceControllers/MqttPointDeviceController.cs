@@ -45,7 +45,7 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
             {
                 foreach (var property in payloadObj.EnumerateObject())
                 {
-                    var point = 
+                    var point =
                         // Try alias first
                         deviceInstance.Points.SingleOrDefault(p => property.Name.Equals(p.Alias, StringComparison.OrdinalIgnoreCase)) ??
                         // Else property key
@@ -58,6 +58,10 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
                     }
 
                     point.SetValue(property.Value.ToString(), PointValueType.Control);
+
+                    // The device is online and has been communicated with
+                    deviceInstance.Online = true;
+                    deviceInstance.LastCommunication = DateTime.UtcNow;
                 }
             }
         }

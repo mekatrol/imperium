@@ -6,9 +6,10 @@ namespace Imperium.Common.DeviceControllers;
 
 public interface IDeviceControllerFactory
 {
-    IDeviceInstance? AddDeviceInstance(
+    IDeviceInstance AddDeviceInstance(
         string deviceKey,
         string controllerKey,
+        DeviceType deviceType,
         string? dataJson,
         IList<PointDefinition> points,
         IImperiumState state,

@@ -1,4 +1,5 @@
-﻿using Imperium.Common.Extensions;
+﻿using Imperium.Common.Points;
+using Imperium.Common.Status;
 using Imperium.Server.Options;
 using Imperium.Server.State;
 
@@ -17,6 +18,7 @@ internal class DeviceControllerBackgroundService(
 
     protected override async Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
     {
+        var statusService = services.GetRequiredService<IStatusService>();
         var state = Services.GetRequiredService<ImperiumState>();
         var deviceInstances = state.GetEnabledDeviceInstances(true);
 
@@ -38,20 +40,22 @@ internal class DeviceControllerBackgroundService(
                 if (deviceController == null)
                 {
                     // No controller found, log warning and continue
-                    Logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
+                    var warning = $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.";
+                    StatusReporter.ReportItem(StatusItemSeverity.Warning, warning);
                     continue;
                 }
 
                 try
                 {
-                    Logger.LogDebug("{msg}", $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
+                    var debug = $"Reading the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.";
+                    StatusReporter.ReportItem(StatusItemSeverity.Debug, debug);
 
                     // Read all points for this device instance
                     readTasks.Add(deviceController.Read(deviceInstance, stoppingToken));
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning(ex);
+                    StatusReporter.ReportItem(StatusItemSeverity.Error, ex);
                 }
             }
 
@@ -61,7 +65,7 @@ internal class DeviceControllerBackgroundService(
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex);
+                StatusReporter.ReportItem(StatusItemSeverity.Error, ex);
             }
         }
 
@@ -76,7 +80,8 @@ internal class DeviceControllerBackgroundService(
             if (deviceController == null)
             {
                 // No controller found, log warning and continue
-                Logger.LogWarning("{msg}", $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.");
+                var warning = $"The device instance with key '{deviceInstance.Key}' specified the device controller with key '{deviceInstance.ControllerKey}'. A device controller with that key was not found.";
+                StatusReporter.ReportItem(StatusItemSeverity.Warning, warning);
                 continue;
             }
 
@@ -90,20 +95,20 @@ internal class DeviceControllerBackgroundService(
 
                     if (changedPoints.Count > 0 || forceUpdate)
                     {
-                        Logger.LogDebug("{msg}", $"Writing the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
+                        StatusReporter.ReportItem(StatusItemSeverity.Debug, $"Writing the device instance with key '{deviceInstance.Key}' and controller with key '{deviceInstance.ControllerKey}'.");
                         writeTasks.Add(deviceController.Write(deviceInstance, stoppingToken));
                     }
 
                     // Clear all changed
                     foreach (var point in changedPoints)
                     {
-                        // TODO: this only updates the devic instance copy
+                        // TODO: this only updates the device instance copy
                         point.HasChanged = false;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning(ex);
+                    StatusReporter.ReportItem(StatusItemSeverity.Error, ex);
                 }
             }
         }
@@ -114,7 +119,24 @@ internal class DeviceControllerBackgroundService(
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex);
+            StatusReporter.ReportItem(StatusItemSeverity.Error, ex);
+        }
+
+        // Check all devices to see if they have gone offline
+        foreach (var deviceInstance in deviceInstances.Where(d => d.DeviceType != DeviceType.Virtual))
+        {
+            // Check to see if the device has gone offline
+            if (deviceInstance.LastCommunication == null || DateTime.UtcNow > (deviceInstance.LastCommunication + deviceInstance.OfflineStatusDuration))
+            {
+                if (deviceInstance.Online)
+                {
+                    // The device was flagged as online and is now going offline so report
+                    StatusReporter.ReportItem(StatusItemSeverity.Warning, $"The device '{deviceInstance.Key}' has gone offline. The last communication was '{deviceInstance.LastCommunication}'");
+                }
+
+                // The last communication has never been set or no update has been received within the offline status dureation
+                deviceInstance.Online = false;
+            }
         }
 
         return true;

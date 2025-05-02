@@ -239,13 +239,16 @@ public class Program
                 // Only add if there are no scripts or no script errors
                 if (string.IsNullOrWhiteSpace(config.JsonTransformScriptFile) || assembly != null)
                 {
-                    deviceControllerFactory.AddDeviceInstance(
+                    var deviceInstance = deviceControllerFactory.AddDeviceInstance(
                         config.DeviceKey,
                         config.ControllerKey,
+                        config.ControllerKey == ImperiumConstants.VirtualKey ? DeviceType.Virtual : DeviceType.Physical,
                         config.Data,
                         config.Points,
                         state,
                         assembly);
+
+                    deviceInstance.OfflineStatusDuration = config.OfflineStatusDuration;
 
                     statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, config.DeviceKey, $"Device initialisation success.", correlationId);
                 }
