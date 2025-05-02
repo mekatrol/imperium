@@ -11,6 +11,8 @@ public static class ServiceExtensions
         services.AddSingleton<IPointService, PointService>();
         services.AddSingleton<IStatusService, StatusService>();
 
+        services.AddTransient<IMqttClientService, MqttClientService>();
+
         return services;
     }
 }

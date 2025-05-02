@@ -45,10 +45,15 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
             {
                 foreach (var property in payloadObj.EnumerateObject())
                 {
-                    var point = deviceInstance.Points.SingleOrDefault(p => property.Name.Equals(p.Alias, StringComparison.OrdinalIgnoreCase));
+                    var point = 
+                        // Try alias first
+                        deviceInstance.Points.SingleOrDefault(p => property.Name.Equals(p.Alias, StringComparison.OrdinalIgnoreCase)) ??
+                        // Else property key
+                        deviceInstance.Points.SingleOrDefault(p => property.Name.Equals(p.Key, StringComparison.OrdinalIgnoreCase));
 
                     if (point == null)
                     {
+                        // No mapped point
                         continue;
                     }
 

@@ -86,4 +86,5 @@ docker run \
     --hostname="$CONTAINER_HOST_NAME" \
     --volume="$LETS_ENCRYPT_VOLUME" \
     --volume="$PWD/volumes/imperium/data:/imperium/data" \
+    --restart unless-stopped \
     "$IMAGE_NAME"

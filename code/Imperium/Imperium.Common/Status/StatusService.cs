@@ -54,6 +54,7 @@ internal class StatusService : IStatusService
         {
             return _statuses
                 .Where(si => filter.Contains(si.Severity))
+                .OrderByDescending(si => si.DateTime)
                 .ToList();
         }
     }
