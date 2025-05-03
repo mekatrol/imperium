@@ -17,6 +17,8 @@
   --clr-panic-active: #0478d8;
   --clr-heat-off: #f9fdc2;
   --clr-heat-on: #f7621e;
+
+  --z-index-top-most: 99999;
 }
 
 .wrapper {
