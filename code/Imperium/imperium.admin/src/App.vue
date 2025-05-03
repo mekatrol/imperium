@@ -8,7 +8,6 @@
 <script setup lang="ts">
 import { routes } from '@/router/index';
 import HamburgerMenu from '@/components/HamburgerMenu.vue';
-
 </script>
 
 <style lang="css" scoped>

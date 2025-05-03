@@ -1,19 +1,42 @@
 <template>
-  <div class="hamburger-menu" @click.self="closeMenu" ref="menuRef">
-    <input type="checkbox" id="menu-toggle" class="menu-toggle" v-model="checked" />
-    <label for="menu-toggle" class="menu-icon" @click.stop="toggleMenu">
+  <div
+    class="hamburger-menu"
+    @click.self="closeMenu"
+    ref="menuRef"
+  >
+    <input
+      type="checkbox"
+      id="menu-toggle"
+      class="menu-toggle"
+      v-model="checked"
+    />
+    <label
+      for="menu-toggle"
+      class="menu-icon"
+      @click.stop="toggleMenu"
+    >
       <span :class="{ open: isOpen }"></span>
       <span :class="{ open: isOpen }"></span>
       <span :class="{ open: isOpen }"></span>
     </label>
     <nav class="menu">
       <ul>
-        <li v-for="(menuItem, i) in menuItems" :key="i">
-          <router-link :to="menuItem.path" @click="closeMenu"><span>
-              <span v-if="menuItem.icon" class="material-symbols-outlined">{{
-                menuItem.icon }}</span>
+        <li
+          v-for="(menuItem, i) in menuItems"
+          :key="i"
+        >
+          <router-link
+            :to="menuItem.path"
+            @click="closeMenu"
+            ><span>
+              <span
+                v-if="menuItem.icon"
+                class="material-symbols-outlined"
+                >{{ menuItem.icon }}</span
+              >
             </span>
-            <span>{{ menuItem.label }}</span></router-link>
+            <span>{{ menuItem.label }}</span></router-link
+          >
         </li>
       </ul>
     </nav>
@@ -58,7 +81,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
-
 </script>
 
 <style scoped>
@@ -114,7 +136,9 @@ onBeforeUnmount(() => {
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transition: max-height 0.4s ease, opacity 0.4s ease;
+  transition:
+    max-height 0.4s ease,
+    opacity 0.4s ease;
 
   /* Show on top of all else */
   z-index: var(--z-index-top-most);
@@ -134,24 +158,23 @@ onBeforeUnmount(() => {
   border-bottom: none;
 }
 
-.menu li>a {
+.menu li > a {
   display: flex;
   flex-direction: row;
   gap: 0.3rem;
   justify-content: left;
   align-content: center;
   align-items: center;
-
 }
 
-.menu li>a>span:first-child {
+.menu li > a > span:first-child {
   min-width: 20%;
   display: flex;
   justify-content: center;
   padding: 0;
 }
 
-.menu li>a>span:first-child>span {
+.menu li > a > span:first-child > span {
   font-size: 1.8rem;
 }
 
@@ -168,7 +191,7 @@ onBeforeUnmount(() => {
 }
 
 /* Show menu '.menu' when menu-toggle is checked (and is immediately followed by an element */
-.menu-toggle:checked+.menu-icon+.menu {
+.menu-toggle:checked + .menu-icon + .menu {
   max-height: 500px;
   /* large enough to fit all items */
   opacity: 1;
