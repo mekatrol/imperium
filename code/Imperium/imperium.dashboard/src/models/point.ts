@@ -25,16 +25,15 @@ export enum PointUpdateAction {
 export type PointTypes = object | string | number | boolean | Date | undefined | null;
 
 export interface Point {
-  id: string;
   key: string;
   deviceKey: string;
-  friendlyName: string;
+  friendlyName?: string;
   pointType: PointType;
   value?: PointTypes;
   controlValue?: PointTypes;
   deviceValue?: PointTypes;
   overrideValue?: PointTypes;
-  lastUpdated: Date;
+  lastUpdated?: Date;
   pointState: PointState | undefined;
   readonly: boolean;
 }

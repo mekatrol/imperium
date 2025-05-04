@@ -1,7 +1,10 @@
 ﻿using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
+using Imperium.Common.Events;
 using Imperium.Common.Extensions;
+using Imperium.Common.Models;
 using Imperium.Common.Points;
+using System.Collections.Concurrent;
 
 namespace Imperium.Server.State;
 
@@ -20,6 +23,8 @@ internal class ImperiumState : IPointState, IImperiumState
     // The list of device instances currently being managed, this is typically the definition of the device along with state (but not point state)
     private readonly Dictionary<string, Point> _points = new(StringComparer.OrdinalIgnoreCase);
 
+    private readonly ConcurrentQueue<SubscriptionEvent> _changeEvents = new();
+
     /// <summary>
     /// When the server read only mode is true then the server will read IO, but not update IO. Useful when testing a running server 
     /// where you don't want to actually change the device IO
@@ -30,6 +35,11 @@ internal class ImperiumState : IPointState, IImperiumState
     /// The websocket URL to listen on
     /// </summary>
     public Uri WebSocketUri { get; set; } = new Uri("ws://localhost");
+
+    /// <summary>
+    /// The queued change events
+    /// </summary>
+    public ConcurrentQueue<SubscriptionEvent> ChangeEvents => _changeEvents;
 
     public void AddPoint(Point point)
     {
@@ -272,7 +282,15 @@ internal class ImperiumState : IPointState, IImperiumState
         // Try and get the point
         if (_points.TryGetValue(key, out var point))
         {
+            var oldValue = point.Value;
             point.SetValue(value, valueType);
+
+            if (oldValue != point.Value)
+            {
+                // The value has changed so notify any subscribers
+                var valueChangeEvent = new SubscriptionEvent(SubscriptionEventType.ValueChange, SubscriptionEventEntityType.Point, deviceKey, pointKey, value);
+                _changeEvents.Enqueue(valueChangeEvent);
+            }
 
             return point;
         }

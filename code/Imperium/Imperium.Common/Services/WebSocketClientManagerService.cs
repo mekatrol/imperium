@@ -24,6 +24,14 @@ internal class WebSocketClientManagerService : IWebSocketClientManagerService
         }
     }
 
+    public IReadOnlyList<WebSocketClient> GetAll()
+    {
+        lock (_lock)
+        {
+            return _clients.ToList();
+        }
+    }
+
     public async Task CloseAll()
     {
         var waitSockets = new List<Task>();

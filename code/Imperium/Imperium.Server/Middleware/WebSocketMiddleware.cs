@@ -45,7 +45,7 @@ public class WebSocketMiddleware(
                             try
                             {
                                 var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                                var message = JsonSerializer.Deserialize<EventSubscription>(json, JsonSerializerExtensions.ApiSerializerOptions);
+                                var message = JsonSerializer.Deserialize<SubscriptionEvent>(json, JsonSerializerExtensions.ApiSerializerOptions);
                             }
                             catch (Exception ex)
                             {
@@ -65,10 +65,6 @@ public class WebSocketMiddleware(
                             logger.LogWarning("{Message}", $"Unknown message type '{result.MessageType}'.");
                             break;
                     }
-
-                    var payload = JsonSerializer.Serialize(new ValueChangeEvent("device.point", 23.5));
-                    var bytes = Encoding.UTF8.GetBytes(payload);
-                    await webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cancellationToken);
                 }
 
                 webSocketManager.Remove(client);

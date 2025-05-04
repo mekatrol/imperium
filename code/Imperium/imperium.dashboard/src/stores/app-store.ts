@@ -5,11 +5,14 @@ import { type HandleErrorCallback } from '@/services/api';
 import { PointUpdateAction, type Point, type PointTypes, type PointValueUpdate } from '@/models/point';
 import { httpGet, httpPost } from '@/services/http';
 import type { ApplicationVersion } from '@/models/application-version';
+import { FifoQueue } from '@/utils/fifi-queue';
+import { type SubscriptionEvent } from '@/models/subscription-event';
 
 export const useAppStore = defineStore('app', () => {
   const isBusyCount = ref(0);
   const messageData = ref<MessageData | undefined>(undefined);
   const serverOnline = ref(false);
+  const subscriptionEvents = ref<FifoQueue<SubscriptionEvent>>(new FifoQueue<SubscriptionEvent>());
 
   const isBusy = computed(() => isBusyCount.value > 0);
 
@@ -77,6 +80,8 @@ export const useAppStore = defineStore('app', () => {
 
     getPoints,
     togglePointState,
-    updatePoint
+    updatePoint,
+
+    subscriptionEvents
   };
 });

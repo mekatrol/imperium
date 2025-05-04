@@ -1,9 +1,15 @@
 ﻿using Imperium.Common.Configuration;
 using Imperium.Common.Directories;
+using Imperium.Common.Events;
 using Imperium.Common.Extensions;
+using Imperium.Common.Models;
+using Imperium.Common.Points;
+using Imperium.Common.Services;
 using Imperium.Common.Status;
 using Imperium.Server.Options;
 using Imperium.Server.Services;
+using System.Net.WebSockets;
+using System.Text;
 using System.Text.Json;
 
 namespace Imperium.Server.Background;
@@ -17,6 +23,7 @@ internal class TimerBackgroundService(
         serviceProvider,
         logger)
 {
+    private DateTime _nextPublishAllDateTime = DateTime.MinValue;
     private DateTime _lastTickDateTime = DateTime.Now;
     private bool _mqttHostConfigurationErrorStatusReported = false;
 
@@ -34,9 +41,81 @@ internal class TimerBackgroundService(
             appVersionService.ExecutionVersion = Guid.NewGuid();
         }
 
+        if (_nextPublishAllDateTime < (now - TimeSpan.FromSeconds(10)))
+        {
+
+        }
+
         await UpdateMqttHostConfiguration(services, stoppingToken);
+        await ProcessEvents(services, stoppingToken);
+
+        if (_nextPublishAllDateTime < (now - TimeSpan.FromSeconds(10)))
+        {
+            _nextPublishAllDateTime = now;
+            await PublishAll(services, stoppingToken);
+        }
 
         return true;
+    }
+
+    private async Task PublishAll(IServiceProvider services, CancellationToken stoppingToken)
+    {
+        var state = services.GetRequiredService<IImperiumState>();
+        var webSocketClientManager = services.GetRequiredService<IWebSocketClientManagerService>();
+
+        var points = state.GetAllPoints();
+        var clients = webSocketClientManager.GetAll();
+
+        foreach (var point in points)
+        {
+            var payload = JsonSerializer.Serialize(
+                new SubscriptionEvent(
+                    SubscriptionEventType.Refresh,
+                    SubscriptionEventEntityType.Point,
+                    point.DeviceKey,
+                    point.Key,
+                    point.Value),
+                JsonSerializerExtensions.ApiSerializerOptions);
+
+            var bytes = Encoding.UTF8.GetBytes(payload);
+
+            foreach (var client in clients)
+            {
+                try
+                {
+                    await client.WebSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex);
+                }
+            }
+        }
+    }
+
+    private async Task ProcessEvents(IServiceProvider services, CancellationToken stoppingToken)
+    {
+        var state = services.GetRequiredService<IImperiumState>();
+        var webSocketClientManager = services.GetRequiredService<IWebSocketClientManagerService>();
+
+        if (state.ChangeEvents.TryDequeue(out var changeEvent))
+        {
+            var payload = JsonSerializer.Serialize(changeEvent, JsonSerializerExtensions.ApiSerializerOptions);
+            var bytes = Encoding.UTF8.GetBytes(payload);
+            var clients = webSocketClientManager.GetAll();
+
+            foreach (var client in clients)
+            {
+                try
+                {
+                    await client.WebSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex);
+                }
+            }
+        }
     }
 
     private async Task UpdateMqttHostConfiguration(IServiceProvider services, CancellationToken stoppingToken)

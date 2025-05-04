@@ -1,6 +1,6 @@
 ﻿namespace Imperium.Common.Models;
 
-public enum EntityType
+public enum SubscriptionEventEntityType
 {
     Device,
     Point

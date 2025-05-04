@@ -54,7 +54,7 @@ import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
 import { computed, ref, shallowRef, type Component, type Ref } from 'vue';
 import { useAppStore } from '@/stores/app-store';
-import type { CountdownPoint, Point, TemperatureControlPoint } from '@/models/point';
+import { PointState, PointType, type CountdownPoint, type Point, type TemperatureControlPoint } from '@/models/point';
 import DashboardSwitchCell from '@/components/DashboardSwitchCell.vue';
 import DashboardTemperatureControllerCell from '@/components/DashboardTemperatureControllerCell.vue';
 
@@ -78,8 +78,7 @@ const timeDisplay = ref('');
 const dateDisplay = ref('');
 const gridCells = shallowRef<GridCell[]>([]);
 const allPoints = ref<Point[]>([]);
-const sunsetPoint = ref<Point | undefined>();
-const sunrisePoint = ref<Point | undefined>();
+
 const clotheslinePoint = ref<CountdownPoint | undefined>();
 const alfrescoLightPoint = ref<CountdownPoint | undefined>();
 const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
@@ -89,8 +88,33 @@ const panicPoint = ref<CountdownPoint | undefined>();
 const carportLightsPoint = ref<CountdownPoint | undefined>();
 const frontDoorLightPoint = ref<CountdownPoint | undefined>();
 const houseNumberLightPoint = ref<CountdownPoint | undefined>();
-const isDaytimePoint = ref<Point | undefined>();
 const dogRoomTemperaturePoint = ref<TemperatureControlPoint | undefined>();
+
+const isDaytimePoint = ref<Point | undefined>({
+  deviceKey: 'device.sunrisesunset',
+  key: 'IsDaytime',
+  pointType: PointType.Boolean,
+  pointState: PointState.Offline,
+  readonly: true
+});
+
+const sunsetPoint = ref<Point>({
+  deviceKey: 'device.sunrisesunset',
+  key: 'Sunset',
+  pointType: PointType.DateTime,
+  pointState: PointState.Offline,
+  readonly: true
+});
+
+const sunrisePoint = ref<Point | undefined>({
+  deviceKey: 'device.sunrisesunset',
+  key: 'Sunrise',
+  pointType: PointType.DateTime,
+  pointState: PointState.Offline,
+  readonly: true
+});
+
+const pointList: Ref<Point | undefined>[] = [sunsetPoint, sunrisePoint, isDaytimePoint];
 
 const serverStatusIcon = computed((): string => {
   return appStore.serverOnline ? 'devices' : 'devices_off';
@@ -264,32 +288,13 @@ useIntervalTimer(async () => {
   // Update the date and time
   updateDateTime();
 
-  try {
-    // Update points
-    const points = await appStore.getPoints(() => {
-      return true;
-    }, false);
+  while (!appStore.subscriptionEvents.isEmpty()) {
+    const event = appStore.subscriptionEvents.dequeue()!;
+    const point = pointList.find((p) => p.value != undefined && p.value.deviceKey === event.deviceKey && p.value.key === event.pointKey);
 
-    allPoints.value = points;
-
-    const sunrise = points.filter((p) => p.key === 'Sunrise');
-    if (sunrise.length === 1) {
-      sunrisePoint.value = sunrise[0];
+    if (point != undefined) {
+      point.value!.value = event.value;
     }
-
-    const sunset = points.filter((p) => p.key === 'Sunset');
-    if (sunset.length === 1) {
-      sunsetPoint.value = sunset[0];
-    }
-
-    updatePoints();
-
-    appStore.setServerOnlineStatus(true);
-  } catch {
-    allPoints.value = [];
-    updatePoints();
-
-    appStore.setServerOnlineStatus(false);
   }
 
   // Keep timer running
@@ -322,6 +327,7 @@ useIntervalTimer(async () => {
 }, 5000);
 
 updateDateTime();
+updatePoints();
 </script>
 
 <style lang="css">

@@ -23,19 +23,19 @@ internal class PointService(IServiceProvider services, ILogger<PointService> log
         switch (pointUpdate.PointUpdateAction)
         {
             case PointUpdateAction.Control:
-                point.SetValue(pointUpdate.Value, PointValueType.Control);
+                pointState.UpdatePointValue(pointUpdate.DeviceKey, pointUpdate.PointKey, pointUpdate.Value, PointValueType.Control);
                 break;
 
             case PointUpdateAction.Override:
-                point.SetValue(pointUpdate.Value, PointValueType.Override);
+                pointState.UpdatePointValue(pointUpdate.DeviceKey, pointUpdate.PointKey, pointUpdate.Value, PointValueType.Override);
                 break;
 
             case PointUpdateAction.OverrideRelease:
-                point.SetValue(null, PointValueType.Override);
+                pointState.UpdatePointValue(pointUpdate.DeviceKey, pointUpdate.PointKey, null, PointValueType.Override);
                 break;
 
             case PointUpdateAction.Toggle:
-                point = ToggleValue(pointUpdate, point);
+                point = ToggleValue(pointState, pointUpdate, point);
                 break;
 
             default:
@@ -92,7 +92,7 @@ internal class PointService(IServiceProvider services, ILogger<PointService> log
         return point;
     }
 
-    private static Point ToggleValue(PointUpdateValueModel pointUpdate, Point point)
+    private static Point ToggleValue(IPointState pointState, PointUpdateValueModel pointUpdate, Point point)
     {
         if (point.PointType != PointType.Boolean)
         {
@@ -109,13 +109,13 @@ internal class PointService(IServiceProvider services, ILogger<PointService> log
         {
             // New value is inverted override value
             var newOverrideValue = !((bool)point.OverrideValue);
-            point.SetValue(newOverrideValue, PointValueType.Override);
+            pointState.UpdatePointValue(pointUpdate.DeviceKey, pointUpdate.PointKey, newOverrideValue, PointValueType.Override);
             return point;
         }
 
         // Perform toggle control value
         var newControlValue = !((bool?)point.ControlValue ?? (bool?)point.DeviceValue ?? false);
-        point.SetValue(newControlValue, PointValueType.Control);
+        pointState.UpdatePointValue(pointUpdate.DeviceKey, pointUpdate.PointKey, newControlValue, PointValueType.Control);
         return point;
     }
 

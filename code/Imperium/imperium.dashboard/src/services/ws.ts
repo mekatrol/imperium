@@ -1,11 +1,11 @@
+import { useAppStore } from '@/stores/app-store';
 import { getWebSocketBaseUrl } from './url';
 
 const url = getWebSocketBaseUrl();
 const ws = new WebSocket(url);
 
 ws.onopen = (): void => {
-  console.log('WebSocket connected');
-  // Simulate authentication or subscription
+  // Subscribe to value changes
   ws.send(
     JSON.stringify({
       subscriptionType: 'valueChange'
@@ -14,13 +14,10 @@ ws.onopen = (): void => {
 };
 
 ws.onmessage = (event): void => {
-  const data = JSON.parse(event.data);
-  console.log('Event received:', data);
+  const { subscriptionEvents } = useAppStore();
 
-  if (data.type === 'event' && data.event_type === 'stateChanged') {
-    const { entity_id, new_state } = data.data;
-    console.log(`Entity ${entity_id} changed to: ${new_state.state}`);
-  }
+  const data = JSON.parse(event.data);
+  subscriptionEvents.enqueue(data);
 };
 
 ws.onclose = (e): void => {

@@ -1,5 +1,7 @@
 ﻿using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
+using Imperium.Common.Events;
+using System.Collections.Concurrent;
 
 namespace Imperium.Common.Points;
 
@@ -8,6 +10,8 @@ public interface IImperiumState
     bool IsReadOnlyMode { get; }
 
     Uri WebSocketUri { get; }
+
+    ConcurrentQueue<SubscriptionEvent> ChangeEvents { get; }
 
     IList<Point> GetAllPoints();
 

@@ -73,7 +73,7 @@ public class Point
         }
     }
 
-    public object? ControlValue { get; set; } = null;
+    public object? ControlValue { get; private set; } = null;
 
     /// <summary>
     /// The current device value of the point where point value is different to the imperium control value.
@@ -82,13 +82,13 @@ public class Point
     ///   * A device where it has local control logic overriding whatever value imperium is sending the device.
     /// This value is only set if the device supports reading abck the current actual value for a point.
     /// </summary>
-    public object? DeviceValue { get; set; } = null;
+    public object? DeviceValue { get; private set; } = null;
 
     /// <summary>
     /// If non null then will override the value set by any flow logic and triggers. Useful for overriding a point
     /// to a known state not alterable by control logic.
     /// </summary>
-    public object? OverrideValue { get; set; } = null;
+    public object? OverrideValue { get; private set; } = null;
 
     /// <summary>
     /// The previous value when the point was last updated

@@ -57,7 +57,7 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
                         continue;
                     }
 
-                    point.SetValue(property.Value.ToString(), PointValueType.Control);
+                    pointState.UpdatePointValue(deviceInstance, point, property.Value.ToString(), PointValueType.Control);
 
                     // The device is online and has been communicated with
                     deviceInstance.Online = true;

@@ -8,5 +8,7 @@ public interface IWebSocketClientManagerService
 
     void Remove(WebSocketClient client);
 
+    IReadOnlyList<WebSocketClient> GetAll();
+
     Task CloseAll();
 }

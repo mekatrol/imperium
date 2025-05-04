@@ -129,7 +129,7 @@ const isOffline = (): boolean => {
 };
 
 const togglePointState = async (): Promise<void> => {
-  if (!model.value?.value?.valuePoint.id) {
+  if (!model.value?.value?.valuePoint.deviceKey) {
     return;
   }
 
