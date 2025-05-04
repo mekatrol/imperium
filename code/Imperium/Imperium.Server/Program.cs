@@ -3,6 +3,7 @@ using Imperium.Common.Configuration;
 using Imperium.Common.DeviceControllers;
 using Imperium.Common.Directories;
 using Imperium.Common.Extensions;
+using Imperium.Common.Models;
 using Imperium.Common.Points;
 using Imperium.Common.Services;
 using Imperium.Common.Status;
@@ -161,9 +162,11 @@ public class Program
         var app = builder.Build();
 
         var cancennationTokenSourceService = app.Services.GetRequiredService<ICancellationTokenSourceService>();
-        app.Lifetime.ApplicationStopping.Register(() =>
+        var webSocketManager = app.Services.GetRequiredService<IWebSocketClientManagerService>();
+        app.Lifetime.ApplicationStopping.Register(async () =>
         {
             cancennationTokenSourceService.CancelAll();
+            await webSocketManager.CloseAll();
         });
 
         using (var cancellationTokenSouce = new CancellationTokenSource())

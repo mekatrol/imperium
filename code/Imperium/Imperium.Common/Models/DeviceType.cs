@@ -1,4 +1,4 @@
-﻿namespace Imperium.Common.Points;
+﻿namespace Imperium.Common.Models;
 
 public enum DeviceType
 {

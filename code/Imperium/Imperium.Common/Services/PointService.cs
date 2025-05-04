@@ -1,5 +1,6 @@
 ﻿using Imperium.Common.Exceptions;
 using Imperium.Common.Extensions;
+using Imperium.Common.Models;
 using Imperium.Common.Points;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

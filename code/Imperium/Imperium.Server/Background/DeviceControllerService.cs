@@ -1,4 +1,4 @@
-﻿using Imperium.Common.Points;
+﻿using Imperium.Common.Models;
 using Imperium.Common.Status;
 using Imperium.Server.Options;
 using Imperium.Server.State;

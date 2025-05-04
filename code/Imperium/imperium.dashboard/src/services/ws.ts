@@ -3,15 +3,12 @@ import { getWebSocketBaseUrl } from './url';
 const url = getWebSocketBaseUrl();
 const ws = new WebSocket(url);
 
-console.log(url);
-
 ws.onopen = (): void => {
   console.log('WebSocket connected');
   // Simulate authentication or subscription
   ws.send(
     JSON.stringify({
-      type: 'subscribeEvents',
-      event_type: 'stateChanged'
+      subscriptionType: 'valueChange'
     })
   );
 };
@@ -26,8 +23,8 @@ ws.onmessage = (event): void => {
   }
 };
 
-ws.onclose = (): void => {
-  console.log('WebSocket closed');
+ws.onclose = (e): void => {
+  console.log('WebSocket closed', e);
 };
 
 ws.onerror = (error): void => {

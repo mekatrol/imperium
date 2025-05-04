@@ -1,18 +1,28 @@
 ﻿
+using Imperium.Common;
+using Imperium.Common.Events;
+using Imperium.Common.Extensions;
 using Imperium.Common.Services;
+using Imperium.Common.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 
 namespace Imperium.Server.Middleware;
 
-public class WebSocketMiddleware(ICancellationTokenSourceService cancellationTokenSourceService) : IMiddleware
+public class WebSocketMiddleware(
+    ICancellationTokenSourceService cancellationTokenSourceService,
+    IWebSocketClientManagerService webSocketManager,
+    ILogger<WebSocketMiddleware> logger)
+    : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         if (context.WebSockets.IsWebSocketRequest)
         {
             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            var client = new WebSocketClient(webSocket);
+            webSocketManager.Add(client);
 
             // Create a cancellable context for this connection
             var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
@@ -24,50 +34,58 @@ public class WebSocketMiddleware(ICancellationTokenSourceService cancellationTok
 
             try
             {
-                while (webSocket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
+                var socketClosing = false;
+                while (!socketClosing && webSocket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
                 {
                     var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-                    var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    Console.WriteLine($"[Task] Received: {message}");
 
-                    // Send updates every 5 seconds
-                    for (var i = 0; i < 5; i++)
+                    switch (result.MessageType)
                     {
-                        if (cancellationTokenSource.Token.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        var payload = JsonSerializer.Serialize(new
-                        {
-                            type = "event",
-                            event_type = "state_changed",
-                            data = new
+                        case WebSocketMessageType.Text:
+                            try
                             {
-                                entity_id = "sensor.temperature",
-                                new_state = new
-                                {
-                                    state = $"{20 + i} °C",
-                                    last_changed = DateTime.UtcNow
-                                }
+                                var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                                var message = JsonSerializer.Deserialize<EventSubscription>(json, JsonSerializerExtensions.ApiSerializerOptions);
                             }
-                        });
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex);
+                            }
+                            break;
 
-                        var bytes = Encoding.UTF8.GetBytes(payload);
-                        await webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cancellationToken);
-                        await Task.Delay(5000, cancellationToken);
+                        case WebSocketMessageType.Binary:
+                            logger.LogWarning("{Message}", $"Message type '{result.MessageType}' is not valid for this middleware.");
+                            break;
+
+                        case WebSocketMessageType.Close:
+                            socketClosing = true;
+                            break;
+
+                        default:
+                            logger.LogWarning("{Message}", $"Unknown message type '{result.MessageType}'.");
+                            break;
                     }
+
+                    var payload = JsonSerializer.Serialize(new ValueChangeEvent("device.point", 23.5));
+                    var bytes = Encoding.UTF8.GetBytes(payload);
+                    await webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cancellationToken);
                 }
 
-                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", cancellationToken);
+                webSocketManager.Remove(client);
+
+                try
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, ImperiumConstants.ServerShuttingDownMessage, cancellationToken);
+                }
+                catch { /* Ignore any close errors - we are exiting anyhow */ }
             }
             catch (OperationCanceledException)
             {
-                Console.WriteLine("[Task] Connection canceled.");
+                /* Ignore cancellation */
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Task] WebSocket error: {ex.Message}");
+                logger.LogWarning(ex);
             }
             finally
             {

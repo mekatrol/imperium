@@ -1,6 +1,7 @@
 ﻿using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
 using Imperium.Common.Extensions;
+using Imperium.Common.Models;
 using Imperium.Common.Points;
 using System.Reflection;
 

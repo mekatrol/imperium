@@ -1,4 +1,5 @@
-﻿using Imperium.Common.Points;
+﻿using Imperium.Common.Models;
+using Imperium.Common.Points;
 using System.Reflection;
 
 namespace Imperium.Common.Devices;
