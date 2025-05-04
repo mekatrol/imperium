@@ -75,6 +75,7 @@ public class MqttClientBackgroundService(
                 await Task.Delay(1000, stoppingToken);
             }
         }
+        catch (TaskCanceledException) { /* Server is shutting down, ignore this error */ }
         catch (Exception ex)
         {
             logger.LogError(ex);

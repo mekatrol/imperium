@@ -31,6 +31,18 @@ export const getApiBaseUrl = (): string => {
    * However, during development it will the value set in the local index.html
    */
 
-  const baseUrl = (document.getElementById('server-base-url') as HTMLInputElement)?.value ?? '/';
+  const baseUrl = (document.getElementById('api-base-url') as HTMLInputElement)?.value ?? '/';
+  return baseUrl;
+};
+
+export const getWebSocketBaseUrl = (): string => {
+  /*
+   * Get WebSocket base URL from hidden input in index.html, the hidden input is injected by
+   * the server so that it does not need to be compiled in to the SPA.
+   * This allows the server to inject the API URL when the SPA is loading on the server.
+   * However, during development it will the value set in the local index.html
+   */
+
+  const baseUrl = (document.getElementById('ws-base-url') as HTMLInputElement)?.value ?? '/';
   return baseUrl;
 };

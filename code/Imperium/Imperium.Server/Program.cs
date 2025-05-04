@@ -4,6 +4,7 @@ using Imperium.Common.DeviceControllers;
 using Imperium.Common.Directories;
 using Imperium.Common.Extensions;
 using Imperium.Common.Points;
+using Imperium.Common.Services;
 using Imperium.Common.Status;
 using Imperium.ScriptCompiler;
 using Imperium.Server.Background;
@@ -29,7 +30,28 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        var kestrelOptions = builder.Configuration.GetSection("Kestrel");
+
+        // Kestrel:Endpoints:WebSocket:Url
+        var webSocketUrl = kestrelOptions.GetSection("Endpoints:WebSocket:Url").Value;
+
+        if (string.IsNullOrEmpty(webSocketUrl))
+        {
+            throw new Exception("Configuration section 'Endpoints:WebSocket:Url' missing or the value is empty.");
+        }
+
+        if (!Uri.IsWellFormedUriString(webSocketUrl, UriKind.Absolute))
+        {
+            throw new Exception($"Configuration section 'Endpoints:WebSocket:Url' value '{webSocketUrl}' is not a wel formed absolute URL.");
+        }
+
+        // Convert to web socket URL
+        var webSocketUri = new Uri(webSocketUrl);
+
+        builder.WebHost.ConfigureKestrel(options =>
+                {
+                    options.Configure(kestrelOptions);
+                });
 
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
@@ -89,6 +111,7 @@ public class Program
             PooledConnectionLifetime = httpClientOptions.ConnectionLifeTime,
             ResponseDrainTimeout = httpClientOptions.ResponseDrainTimeout
         };
+
         var client = new HttpClient(handler)
         {
             Timeout = httpClientOptions.Timeout
@@ -110,13 +133,16 @@ public class Program
 
         var imperiumState = new ImperiumState
         {
-            IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode
+            IsReadOnlyMode = imperiumStateConfig.IsReadOnlyMode,
+            WebSocketUri = webSocketUri
         };
 
         builder.Services.AddSingleton(imperiumState);
         builder.Services.AddSingleton<IPointState>(imperiumState);
         builder.Services.AddSingleton<IImperiumState>(imperiumState);
         builder.Services.AddSingleton<IDeviceControllerFactory, DeviceControllerFactory>();
+
+        builder.Services.AddTransient<WebSocketMiddleware>();
 
         builder.Services.AddHostedService<TimerBackgroundService>();
         builder.Services.AddHostedService<DeviceControllerBackgroundService>();
@@ -134,12 +160,22 @@ public class Program
 
         var app = builder.Build();
 
+        var cancennationTokenSourceService = app.Services.GetRequiredService<ICancellationTokenSourceService>();
+        app.Lifetime.ApplicationStopping.Register(() =>
+        {
+            cancennationTokenSourceService.CancelAll();
+        });
+
         using (var cancellationTokenSouce = new CancellationTokenSource())
         {
             await InitialiseImperiumState(app.Services, cancellationTokenSouce.Token);
         }
 
         app.UseExceptionMiddleware();
+
+        app.UseWebSockets();
+        app.UseMiddleware<WebSocketMiddleware>();
+
         app.UseMiddleware<PrivateNetworkCorsHeaderMiddleware>();
 
         app.UseCors(AppCorsPolicy);
@@ -161,17 +197,6 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
-
-        if (!app.Environment.IsDevelopment())
-        {
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("Listening on URLs: {urls}", $"{string.Join(',', imperiumStateConfig.ApplicationUrls)}");
-
-            foreach (var url in imperiumStateConfig.ApplicationUrls)
-            {
-                app.Urls.Add(url);
-            }
-        }
 
         app.Run();
     }

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Imperium.Common.Points;
+using System.Text.RegularExpressions;
 
 namespace Imperium.Server.Middleware;
 
@@ -6,14 +7,12 @@ public static class MiddlewareExtensions
 {
     public static IApplicationBuilder UseInjectApiBaseUrl(this IApplicationBuilder app, IWebHostEnvironment env)
     {
+        var state = app.ApplicationServices.GetRequiredService<IImperiumState>();
+        var webSocketUri = state.WebSocketUri;
+
         app.Use(async (context, next) =>
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-
-            if (context.Request.Method == "OPTIONS")
-            {
-                context.Response.Headers["Access-Control-Allow-Private-Network"] = "true";
-            }
 
             if (context.Request.Path.HasValue && IsSpaIndexPage(context.Request.Path.Value))
             {
@@ -23,9 +22,11 @@ public static class MiddlewareExtensions
                 // Read the index.html file
                 var indexHtmlContent = await File.ReadAllTextAsync(Path.Combine(env.WebRootPath, "dashboard", "index.html"));
 
-                // Replace api base URL
+                // Replace base URLs
                 var apiBaseUrl = $"{context.Request.Scheme}://{context.Request.Host.Host}:{context.Request.Host.Port}/api";
-                indexHtmlContent = indexHtmlContent.Replace("https://localhost:7138/api", apiBaseUrl);
+                var webSocketBaseUrl = $"ws://{webSocketUri.Host}:{webSocketUri.Port}"; ;
+                indexHtmlContent = indexHtmlContent.Replace("https://localhost:5000/api", apiBaseUrl);
+                indexHtmlContent = indexHtmlContent.Replace("ws://localhost:5001", webSocketBaseUrl);
 
                 // Send the updated file
                 await context.Response.WriteAsync(indexHtmlContent);

@@ -10,6 +10,7 @@ public static class ServiceExtensions
     {
         services.AddSingleton<IPointService, PointService>();
         services.AddSingleton<IStatusService, StatusService>();
+        services.AddSingleton<ICancellationTokenSourceService, CancellationTokenSourceService>();
 
         services.AddScoped<IDeviceService, DeviceService>();
 

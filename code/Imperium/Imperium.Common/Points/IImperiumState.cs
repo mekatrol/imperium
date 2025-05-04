@@ -7,6 +7,8 @@ public interface IImperiumState
 {
     bool IsReadOnlyMode { get; }
 
+    Uri WebSocketUri { get; }
+
     IList<Point> GetAllPoints();
 
     IList<IDeviceInstance> GetAllDevices();

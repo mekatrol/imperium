@@ -26,6 +26,11 @@ internal class ImperiumState : IPointState, IImperiumState
     /// </summary>
     public bool IsReadOnlyMode { get; set; } = false;
 
+    /// <summary>
+    /// The websocket URL to listen on
+    /// </summary>
+    public Uri WebSocketUri { get; set; } = new Uri("ws://localhost");
+
     public void AddPoint(Point point)
     {
         if (string.IsNullOrWhiteSpace(point.DeviceKey))

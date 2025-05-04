@@ -50,6 +50,7 @@ internal abstract class BaseBackgroundService<T> : BackgroundService
                 // No exceptions so reset exception count
                 exceptionCount = 0;
             }
+            catch (TaskCanceledException) { /* Server is shutting down, ignore this error */ }
             catch (Exception ex)
             {
                 Logger.LogError(ex);
