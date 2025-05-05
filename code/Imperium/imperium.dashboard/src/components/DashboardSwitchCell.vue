@@ -70,8 +70,8 @@ const pointStore = usePointStore();
 
 const props = defineProps<Props>();
 
-const valuePoint = pointStore.initialisePointPoint(props.valueDeviceKey, props.valuePointKey);
-const countdownPoint: Ref<Point | undefined> = props.countDownDeviceKey ? pointStore.initialisePointPoint(props.valueDeviceKey, props.valuePointKey) : ref(undefined);
+const valuePoint = pointStore.getPoint(props.valueDeviceKey, props.valuePointKey, undefined);
+const countdownPoint: Ref<Point | undefined> = props.countDownDeviceKey ? pointStore.getPoint(props.valueDeviceKey, props.valuePointKey, undefined) : ref(undefined);
 
 const label = computed(() => valuePoint.value?.friendlyName ?? '<LABEL>');
 
@@ -133,7 +133,7 @@ const getCssClass = (): string => {
 };
 
 const isOffline = (): boolean => {
-  return valuePoint.value.value === null;
+  return valuePoint.value?.value === null;
 };
 
 const togglePointState = async (): Promise<void> => {

@@ -1,35 +1,21 @@
-import { PointState, PointType, type Point } from '@/models/point';
+import { type Point } from '@/models/point';
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
-
-const createDevicePointKeyFromPoint = (point: Point): string => {
-  return createDevicePointKey(point.deviceKey, point.key);
-};
 
 const createDevicePointKey = (deviceKey: string, pointKey: string): string => {
   return `${deviceKey}.${pointKey}`;
 };
 
 export const usePointStore = defineStore('point', () => {
-  const points: Record<string, Ref<Point>> = {};
+  const points: Record<string, Ref<Point | undefined>> = {};
 
-  const initialisePointPoint = (deviceKey: string, pointKey: string, pointType: PointType = PointType.Integer): Ref<Point> => {
-    const point: Point = {
-      deviceKey: deviceKey,
-      key: pointKey,
-      pointType: pointType,
-      pointState: PointState.Offline,
-      readonly: true
-    };
+  const updatePoint = (deviceKey: string, pointKey: string, point: Point | undefined): Ref<Point | undefined> => {
+    const key = createDevicePointKey(deviceKey, pointKey);
 
-    return addOrUpdatePoint(point);
-  };
+    const exists = key in points;
 
-  const addOrUpdatePoint = (point: Point): Ref<Point> => {
-    const key = createDevicePointKeyFromPoint(point);
-
-    if (points[key] === undefined) {
-      points[key] = ref(point);
+    if (!exists) {
+      points[key] = ref<Point | undefined>(point);
     } else {
       points[key].value = point;
     }
@@ -37,13 +23,20 @@ export const usePointStore = defineStore('point', () => {
     return points[key];
   };
 
-  const getPoint = (deviceKey: string, pointKey: string): Ref<Point> | undefined => {
-    return points[createDevicePointKey(deviceKey, pointKey)];
+  const getPoint = (deviceKey: string, pointKey: string): Ref<Point | undefined> => {
+    const key = createDevicePointKey(deviceKey, pointKey);
+
+    // If the key does not yet exist then add it as undefined point
+    const exists = key in points;
+    if (!exists) {
+      return updatePoint(deviceKey, pointKey, undefined);
+    }
+
+    return points[key];
   };
 
   return {
     getPoint,
-    initialisePointPoint,
-    addOrUpdatePoint
+    updatePoint
   };
 });
