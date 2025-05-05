@@ -69,12 +69,10 @@ internal class TimerBackgroundService(
         foreach (var point in points)
         {
             var payload = JsonSerializer.Serialize(
-                new SubscriptionEvent(
+                new PointSubscriptionEvent(
                     SubscriptionEventType.Refresh,
                     SubscriptionEventEntityType.Point,
-                    point.DeviceKey,
-                    point.Key,
-                    point.Value),
+                    point),
                 JsonSerializerExtensions.ApiSerializerOptions);
 
             var bytes = Encoding.UTF8.GetBytes(payload);
@@ -100,7 +98,7 @@ internal class TimerBackgroundService(
 
         if (state.ChangeEvents.TryDequeue(out var changeEvent))
         {
-            var payload = JsonSerializer.Serialize(changeEvent, JsonSerializerExtensions.ApiSerializerOptions);
+            var payload = JsonSerializer.Serialize(changeEvent, changeEvent.GetType(), JsonSerializerExtensions.ApiSerializerOptions);
             var bytes = Encoding.UTF8.GetBytes(payload);
             var clients = webSocketClientManager.GetAll();
 

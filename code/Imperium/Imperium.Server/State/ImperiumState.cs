@@ -288,7 +288,11 @@ internal class ImperiumState : IPointState, IImperiumState
             if (oldValue != point.Value)
             {
                 // The value has changed so notify any subscribers
-                var valueChangeEvent = new SubscriptionEvent(SubscriptionEventType.ValueChange, SubscriptionEventEntityType.Point, deviceKey, pointKey, value);
+                var valueChangeEvent = new PointSubscriptionEvent(
+                    SubscriptionEventType.ValueChange,
+                    SubscriptionEventEntityType.Point,
+                    point);
+
                 _changeEvents.Enqueue(valueChangeEvent);
             }
 

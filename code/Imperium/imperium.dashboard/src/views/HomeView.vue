@@ -42,7 +42,6 @@
         <component
           :is="cell.component"
           v-bind="{ ...cell.props }"
-          v-model="cell.model"
         />
       </div>
     </div>
@@ -52,69 +51,36 @@
 <script setup lang="ts">
 import { useIntervalTimer } from '@/composables/timer';
 import { getShortDateWithDay, getTimeWithMeridiem } from '@/services/date-helper';
-import { computed, ref, shallowRef, type Component, type Ref } from 'vue';
+import { computed, ref, shallowRef, type Component } from 'vue';
 import { useAppStore } from '@/stores/app-store';
-import { PointState, PointType, type CountdownPoint, type Point, type TemperatureControlPoint } from '@/models/point';
 import DashboardSwitchCell from '@/components/DashboardSwitchCell.vue';
-import DashboardTemperatureControllerCell from '@/components/DashboardTemperatureControllerCell.vue';
+import { usePointStore } from '@/stores/point-store';
 
 interface GridCellProps {
   id: number;
-  label: string;
   icon?: string;
   cssClass?: string;
-  state?: string | undefined;
+  valueDeviceKey: string;
+  valuePointKey: string;
+  countDownDeviceKey?: string;
+  countDownPointKey?: string;
 }
 
 interface GridCell {
   component: Component;
   props: GridCellProps;
-  model?: unknown;
 }
 
 const appStore = useAppStore();
+const pointStore = usePointStore();
 
 const timeDisplay = ref('');
 const dateDisplay = ref('');
 const gridCells = shallowRef<GridCell[]>([]);
-const allPoints = ref<Point[]>([]);
 
-const clotheslinePoint = ref<CountdownPoint | undefined>();
-const alfrescoLightPoint = ref<CountdownPoint | undefined>();
-const kitchenCabinetLightsPoint = ref<CountdownPoint | undefined>();
-const whiteStringLightsPoint = ref<CountdownPoint | undefined>();
-const aquaponicsPumpsPoint = ref<CountdownPoint | undefined>();
-const panicPoint = ref<CountdownPoint | undefined>();
-const carportLightsPoint = ref<CountdownPoint | undefined>();
-const frontDoorLightPoint = ref<CountdownPoint | undefined>();
-const houseNumberLightPoint = ref<CountdownPoint | undefined>();
-const dogRoomTemperaturePoint = ref<TemperatureControlPoint | undefined>();
-
-const isDaytimePoint = ref<Point | undefined>({
-  deviceKey: 'device.sunrisesunset',
-  key: 'IsDaytime',
-  pointType: PointType.Boolean,
-  pointState: PointState.Offline,
-  readonly: true
-});
-
-const sunsetPoint = ref<Point>({
-  deviceKey: 'device.sunrisesunset',
-  key: 'Sunset',
-  pointType: PointType.DateTime,
-  pointState: PointState.Offline,
-  readonly: true
-});
-
-const sunrisePoint = ref<Point | undefined>({
-  deviceKey: 'device.sunrisesunset',
-  key: 'Sunrise',
-  pointType: PointType.DateTime,
-  pointState: PointState.Offline,
-  readonly: true
-});
-
-const pointList: Ref<Point | undefined>[] = [sunsetPoint, sunrisePoint, isDaytimePoint];
+const isDaytimePoint = pointStore.initialisePointPoint('device.sunrisesunset', 'IsDaytime');
+const sunsetPoint = pointStore.initialisePointPoint('device.sunrisesunset', 'Sunset');
+const sunrisePoint = pointStore.initialisePointPoint('device.sunrisesunset', 'Sunrise');
 
 const serverStatusIcon = computed((): string => {
   return appStore.serverOnline ? 'devices' : 'devices_off';
@@ -134,18 +100,18 @@ const isDaytimeClass = computed((): string => {
 
 const createCells = (): void => {
   let id = 0;
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Carport', icon: 'garage', state: 'on' }, model: carportLightsPoint });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Front Door', icon: 'light', state: 'off' }, model: frontDoorLightPoint });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'House No.', icon: 'looks_6' }, model: houseNumberLightPoint });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Clothes Line', icon: 'checkroom' }, model: clotheslinePoint });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Water Pumps', icon: 'heat_pump_balance' }, model: aquaponicsPumpsPoint });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Alfresco', icon: 'light' }, model: alfrescoLightPoint });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Kitchen Cabinet', icon: 'light' }, model: kitchenCabinetLightsPoint });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'White String', icon: 'light' }, model: whiteStringLightsPoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'garage', valueDeviceKey: 'device.carport.powerboard', valuePointKey: 'Relay1' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'light', valueDeviceKey: 'device.frontdoorlight', valuePointKey: 'Relay' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'looks_6', valueDeviceKey: 'device.housenumberlight', valuePointKey: 'Relay' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'checkroom', valueDeviceKey: 'device.clothesline', valuePointKey: 'Relay' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'heat_pump_balance', valueDeviceKey: 'virtual', valuePointKey: 'water.pumps' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'light', valueDeviceKey: 'device.alfrescolight', valuePointKey: 'Relay' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'light', valueDeviceKey: 'device.kitchen.light', valuePointKey: 'Relay' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'light', valueDeviceKey: 'device.kitchenview.powerboard', valuePointKey: 'Relay1' } });
 
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'Garage', icon: 'handyman', cssClass: 'grid-two-row' } });
-  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, label: 'PANIC', icon: 'e911_emergency', cssClass: 'grid-two-col grid-two-row panic' }, model: panicPoint });
-  gridCells.value.push({ component: DashboardTemperatureControllerCell, props: { id: id++, label: 'Dogs room', icon: 'pets', cssClass: 'grid-two-row' }, model: dogRoomTemperaturePoint });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'handyman', valueDeviceKey: '', valuePointKey: '', cssClass: 'grid-two-row' } });
+  gridCells.value.push({ component: DashboardSwitchCell, props: { id: id++, icon: 'e911_emergency', valueDeviceKey: 'virtual', valuePointKey: 'panic', cssClass: 'grid-two-col grid-two-row panic' } });
+  // gridCells.value.push({ component: DashboardTemperatureControllerCell, props: { id: id++, icon: 'pets', valueDeviceKey: '', valuePointKey: '', cssClass: 'grid-two-row' } });
 };
 
 createCells();
@@ -156,146 +122,9 @@ const updateDateTime = (): void => {
   dateDisplay.value = getShortDateWithDay(dt);
 };
 
-const updatePoint = (deviceKey: string | null, pointKey: string, point: Ref<Point | undefined>): void => {
-  const points = allPoints.value.filter((p) => p.deviceKey === deviceKey && p.key === pointKey);
-  if (points.length === 1) {
-    point.value = points[0];
-  } else {
-    point.value = undefined;
-  }
-};
-
-const updateCountdownPoint = (
-  valueDeviceKey: string | null,
-  valuePointKey: string,
-  countdownDeviceKey: string | null,
-  countdownPointKey: string | undefined,
-  point: Ref<CountdownPoint | undefined>
-): void => {
-  const valuePoints = allPoints.value.filter((p) => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
-  const countdownPoints = countdownPointKey ? allPoints.value.filter((p) => p.deviceKey == countdownDeviceKey && p.key === countdownPointKey) : [];
-
-  let valuePoint: Point | undefined = undefined;
-  let countdownPoint: Point | undefined = undefined;
-
-  if (valuePoints.length === 1) {
-    valuePoint = valuePoints[0];
-  } else {
-    point.value = undefined;
-  }
-
-  if (countdownPoints.length === 1) {
-    countdownPoint = countdownPoints[0];
-  } else {
-    point.value = undefined;
-  }
-
-  if (!valuePoint) {
-    point.value = undefined;
-    return;
-  }
-
-  point.value = {
-    valuePoint: valuePoint,
-    countdownPoint: countdownPoint
-  };
-};
-
-const updateTemperatureControlPoint = (
-  valueDeviceKey: string,
-  valuePointKey: string,
-  setpointDeviceKey: string,
-  setpointPointKey: string,
-  proportionalBandDeviceKey: string,
-  proportionalBandPointKey: string,
-  enabledDeviceKey: string,
-  enabledPointKey: string,
-  onDeviceKey: string,
-  onPointKey: string,
-  point: Ref<TemperatureControlPoint | undefined>
-): void => {
-  const valuePoints = allPoints.value.filter((p) => p.deviceKey === valueDeviceKey && p.key === valuePointKey);
-  const setpointPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == setpointDeviceKey && p.key === setpointPointKey) : [];
-  const proportionalBandPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == proportionalBandDeviceKey && p.key === proportionalBandPointKey) : [];
-  const enabledPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == enabledDeviceKey && p.key === enabledPointKey) : [];
-  const onPoints = setpointPointKey ? allPoints.value.filter((p) => p.deviceKey == onDeviceKey && p.key === onPointKey) : [];
-
-  let valuePoint: Point | undefined = undefined;
-  let setpointPoint: Point | undefined = undefined;
-  let proportionalBandPoint: Point | undefined = undefined;
-  let enabledPoint: Point | undefined = undefined;
-  let onPoint: Point | undefined = undefined;
-
-  if (valuePoints.length === 1) {
-    valuePoint = valuePoints[0];
-  } else {
-    point.value = undefined;
-  }
-
-  if (setpointPoints.length === 1) {
-    setpointPoint = setpointPoints[0];
-  } else {
-    point.value = undefined;
-  }
-
-  if (proportionalBandPoints.length === 1) {
-    proportionalBandPoint = proportionalBandPoints[0];
-  } else {
-    point.value = undefined;
-  }
-
-  if (enabledPoints.length === 1) {
-    enabledPoint = enabledPoints[0];
-  } else {
-    point.value = undefined;
-  }
-
-  if (onPoints.length === 1) {
-    onPoint = onPoints[0];
-  } else {
-    point.value = undefined;
-  }
-
-  if (!valuePoint || !setpointPoint || !proportionalBandPoint || !enabledPoint || !onPoint) {
-    point.value = undefined;
-    return;
-  }
-
-  point.value = {
-    valuePoint: valuePoint,
-    setpointPoint: setpointPoint,
-    proportionalBandPoint: proportionalBandPoint,
-    enabledPoint: enabledPoint,
-    onPoint: onPoint
-  };
-};
-
-const updatePoints = (): void => {
-  updateCountdownPoint('device.clothesline', 'Relay', null, undefined, clotheslinePoint);
-  updateCountdownPoint('device.alfrescolight', 'Relay', null, undefined, alfrescoLightPoint);
-  updateCountdownPoint('device.kitchen.light', 'Relay', null, 'kitchen.light.timer', kitchenCabinetLightsPoint);
-  updateCountdownPoint('device.kitchenview.powerboard', 'Relay1', null, undefined, whiteStringLightsPoint);
-  updateCountdownPoint('device.carport.powerboard', 'Relay1', null, undefined, carportLightsPoint);
-  updateCountdownPoint('device.frontdoorlight', 'Relay', null, undefined, frontDoorLightPoint);
-  updateCountdownPoint('device.housenumberlight', 'Relay', null, undefined, houseNumberLightPoint);
-  updateCountdownPoint('virtual', 'water.pumps', null, undefined, aquaponicsPumpsPoint);
-  updateCountdownPoint('virtual', 'panic', null, undefined, panicPoint);
-  updateTemperatureControlPoint('dogheater', 'temp.avg', 'dogheater', 'temp.sp', 'dogheater', 'temp.pb', 'dogheater', 'heater.enabled', 'dogheater', 'heater.on', dogRoomTemperaturePoint);
-  updatePoint('device.sunrisesunset', 'IsDaytime', isDaytimePoint);
-};
-
 useIntervalTimer(async () => {
   // Update the date and time
   updateDateTime();
-
-  while (!appStore.subscriptionEvents.isEmpty()) {
-    const event = appStore.subscriptionEvents.dequeue()!;
-    const point = pointList.find((p) => p.value != undefined && p.value.deviceKey === event.deviceKey && p.value.key === event.pointKey);
-
-    if (point != undefined) {
-      point.value!.value = event.value;
-    }
-  }
 
   // Keep timer running
   return true;
@@ -327,7 +156,6 @@ useIntervalTimer(async () => {
 // }, 5000);
 
 updateDateTime();
-updatePoints();
 </script>
 
 <style lang="css">

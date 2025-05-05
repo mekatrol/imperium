@@ -1,5 +1,6 @@
-import { useAppStore } from '@/stores/app-store';
+import { EntityType } from '@/models/subscription-event';
 import { getWebSocketBaseUrl } from './url';
+import { usePointStore } from '@/stores/point-store';
 
 const url = getWebSocketBaseUrl();
 const ws = new WebSocket(url);
@@ -14,10 +15,13 @@ ws.onopen = (): void => {
 };
 
 ws.onmessage = (event): void => {
-  const { subscriptionEvents } = useAppStore();
+  const pointStore = usePointStore();
 
   const data = JSON.parse(event.data);
-  subscriptionEvents.enqueue(data);
+
+  if (data.entityType === EntityType.point) {
+    pointStore.addOrUpdatePoint(data.point);
+  }
 };
 
 ws.onclose = (e): void => {

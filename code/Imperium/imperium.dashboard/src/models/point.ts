@@ -38,11 +38,6 @@ export interface Point {
   readonly: boolean;
 }
 
-export interface CountdownPoint {
-  valuePoint: Point;
-  countdownPoint: Point | undefined;
-}
-
 export interface TemperatureControlPoint {
   valuePoint: Point;
   setpointPoint: Point;

@@ -50,29 +50,37 @@
 </template>
 
 <script setup lang="ts">
-import { type CountdownPoint } from '@/models/point';
+import { type Point } from '@/models/point';
 import { useAppStore } from '@/stores/app-store';
-import { computed, type Ref } from 'vue';
+import { usePointStore } from '@/stores/point-store';
+import { computed, ref, type Ref } from 'vue';
 
 interface Props {
-  id: number;
-  label: string;
   icon?: string;
   cssClass?: string;
-  state?: string | undefined;
+
+  valueDeviceKey: string;
+  valuePointKey: string;
+  countDownDeviceKey?: string;
+  countDownPointKey?: string;
 }
 
 const appStore = useAppStore();
+const pointStore = usePointStore();
 
-const model = defineModel<Ref<CountdownPoint>>();
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const valuePoint = pointStore.initialisePointPoint(props.valueDeviceKey, props.valuePointKey);
+const countdownPoint: Ref<Point | undefined> = props.countDownDeviceKey ? pointStore.initialisePointPoint(props.valueDeviceKey, props.valuePointKey) : ref(undefined);
+
+const label = computed(() => valuePoint.value?.friendlyName ?? '<LABEL>');
 
 const getOverrideIconVisible = (): boolean => {
-  return !!(model.value?.value && model.value.value.valuePoint.overrideValue != null);
+  return !!(valuePoint?.value && valuePoint.value.overrideValue != null);
 };
 
 const getControlIconVisible = (): boolean => {
-  return !!(model.value?.value && model.value.value.valuePoint.controlValue != null);
+  return !!(valuePoint.value && valuePoint.value.controlValue != null);
 };
 
 const getDeviceIconVisible = (): boolean => {
@@ -81,17 +89,17 @@ const getDeviceIconVisible = (): boolean => {
     return true;
   }
 
-  if (!model.value?.value?.valuePoint) {
+  if (!valuePoint.value) {
     return false;
   }
 
   // If neither values are defined then the device value must be correct!
-  if (model.value.value.valuePoint.controlValue == undefined && !model.value.value.valuePoint.overrideValue == undefined) {
+  if (valuePoint.value.controlValue == undefined && !valuePoint.value.overrideValue == undefined) {
     return false;
   }
 
   // The current value should match the device value
-  return !!(model.value?.value && model.value.value.valuePoint.value != model.value.value.valuePoint.deviceValue);
+  return !!(valuePoint.value && valuePoint.value.value != valuePoint.value.deviceValue);
 };
 
 const timeLeft = (countdownExpiry: Date): string => {
@@ -107,34 +115,34 @@ const timeLeft = (countdownExpiry: Date): string => {
 };
 
 const countdown = computed((): string | undefined => {
-  if (!model.value?.value?.countdownPoint?.value) {
+  if (!countdownPoint.value?.value) {
     return undefined;
   }
 
-  const countdownExpiry = new Date(model.value.value.countdownPoint.value as Date);
+  const countdownExpiry = new Date(countdownPoint.value.value as Date);
 
   return `${timeLeft(countdownExpiry)}`;
 });
 
 const getCssClass = (): string => {
-  if (model.value?.value === undefined) {
+  if (valuePoint.value === undefined) {
     return 'state-offline';
   }
 
-  return model.value.value.valuePoint.value === 1 || model.value.value.valuePoint.value === true ? 'state-on' : 'state-off';
+  return valuePoint.value.value === 1 || valuePoint.value.value === true ? 'state-on' : 'state-off';
 };
 
 const isOffline = (): boolean => {
-  return model.value?.value?.valuePoint.value === null;
+  return valuePoint.value.value === null;
 };
 
 const togglePointState = async (): Promise<void> => {
-  if (!model.value?.value?.valuePoint.deviceKey) {
+  if (!valuePoint.value.deviceKey) {
     return;
   }
 
   try {
-    await appStore.togglePointState(model.value.value.valuePoint.deviceKey, model.value.value.valuePoint.key);
+    await appStore.togglePointState(valuePoint.value.deviceKey, valuePoint.value.key);
 
     appStore.setServerOnlineStatus(true);
   } catch {
