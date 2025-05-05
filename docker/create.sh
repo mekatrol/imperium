@@ -88,3 +88,5 @@ docker run \
     --volume="$PWD/volumes/imperium/data:/imperium/data" \
     --restart unless-stopped \
     "$IMAGE_NAME"
+
+echo "docker exec -it imperium bash"
