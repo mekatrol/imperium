@@ -301,30 +301,30 @@ useIntervalTimer(async () => {
   return true;
 }, 1000);
 
-const getApplicationExecutionVersion = async (): Promise<string> => {
-  const appVersion = await appStore.getApplicationVersion(() => {
-    return true;
-  }, false);
+// const getApplicationExecutionVersion = async (): Promise<string> => {
+//   const appVersion = await appStore.getApplicationVersion(() => {
+//     return true;
+//   }, false);
 
-  return appVersion.executionVersion;
-};
+//   return appVersion.executionVersion;
+// };
 
-useIntervalTimer(async () => {
-  // Get any updated application exectuion version
-  const serverApplicationExecutionVersion = await getApplicationExecutionVersion();
+// useIntervalTimer(async () => {
+//   // Get any updated application exectuion version
+//   const serverApplicationExecutionVersion = await getApplicationExecutionVersion();
 
-  const params = new URLSearchParams(window.location.search);
-  const applicationExecutionVersion = params.get('v');
+//   const params = new URLSearchParams(window.location.search);
+//   const applicationExecutionVersion = params.get('v');
 
-  if (serverApplicationExecutionVersion != applicationExecutionVersion) {
-    // Reload the page using the new version
-    const updatedUrl = location.protocol + '//' + location.host + location.pathname + `?v=${serverApplicationExecutionVersion}`;
-    window.location.replace(updatedUrl);
-  }
+//   if (serverApplicationExecutionVersion != applicationExecutionVersion) {
+//     // Reload the page using the new version
+//     const updatedUrl = location.protocol + '//' + location.host + location.pathname + `?v=${serverApplicationExecutionVersion}`;
+//     window.location.replace(updatedUrl);
+//   }
 
-  // Keep timer running
-  return true;
-}, 5000);
+//   // Keep timer running
+//   return true;
+// }, 5000);
 
 updateDateTime();
 updatePoints();
