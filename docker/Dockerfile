@@ -84,7 +84,7 @@ RUN dotnet publish /imperium/code/Imperium/Imperium.Server/Imperium.Server.cspro
 RUN rm -r /app/publish/appsettings.Development.json
 
 RUN sed -i 's|http://0.0.0.0:5000|http://home-automation.lan:5000|g' /app/publish/appsettings.json
-RUN sed -i 's|http://0.0.0.0:5001|http://home-automation.lan:5000|g' /app/publish/appsettings.json
+RUN sed -i 's|http://0.0.0.0:5001|http://home-automation.lan:5001|g' /app/publish/appsettings.json
 
 # Start SSH and the .NET app
 CMD ["/entry-point.sh"]
