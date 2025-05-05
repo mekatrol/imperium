@@ -78,9 +78,9 @@ const timeDisplay = ref('');
 const dateDisplay = ref('');
 const gridCells = shallowRef<GridCell[]>([]);
 
-const isDaytimePoint = pointStore.getPoint('device.sunrisesunset', 'IsDaytime', undefined);
-const sunsetPoint = pointStore.getPoint('device.sunrisesunset', 'Sunset', undefined);
-const sunrisePoint = pointStore.getPoint('device.sunrisesunset', 'Sunrise', undefined);
+const isDaytimePoint = pointStore.getPoint('device.sunrisesunset', 'IsDaytime');
+const sunsetPoint = pointStore.getPoint('device.sunrisesunset', 'Sunset');
+const sunrisePoint = pointStore.getPoint('device.sunrisesunset', 'Sunrise');
 
 const serverStatusIcon = computed((): string => {
   return appStore.serverOnline ? 'devices' : 'devices_off';

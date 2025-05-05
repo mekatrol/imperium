@@ -70,8 +70,8 @@ const pointStore = usePointStore();
 
 const props = defineProps<Props>();
 
-const valuePoint = pointStore.getPoint(props.valueDeviceKey, props.valuePointKey, undefined);
-const countdownPoint: Ref<Point | undefined> = props.countDownDeviceKey ? pointStore.getPoint(props.valueDeviceKey, props.valuePointKey, undefined) : ref(undefined);
+const valuePoint = pointStore.getPoint(props.valueDeviceKey, props.valuePointKey);
+const countdownPoint: Ref<Point | undefined> = props.countDownDeviceKey ? pointStore.getPoint(props.valueDeviceKey, props.valuePointKey) : ref(undefined);
 
 const label = computed(() => valuePoint.value?.friendlyName ?? '<LABEL>');
 
@@ -137,7 +137,7 @@ const isOffline = (): boolean => {
 };
 
 const togglePointState = async (): Promise<void> => {
-  if (!valuePoint.value.deviceKey) {
+  if (!valuePoint.value) {
     return;
   }
 
