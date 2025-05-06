@@ -2,7 +2,7 @@
 
 namespace Imperium.Common.Events;
 
-public abstract class SubscriptionEvent(SubscriptionEventType eventType, SubscriptionEventEntityType entityType)
+public class SubscriptionEvent(SubscriptionEventType eventType, SubscriptionEventEntityType entityType)
 {
     public SubscriptionEventType EventType => eventType;
 

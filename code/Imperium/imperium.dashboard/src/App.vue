@@ -47,10 +47,11 @@ useIntervalTimer(async () => {
 
   const params = new URLSearchParams(window.location.search);
   const applicationExecutionVersion = params.get('v');
+  const viewName = params.get('n');
 
   if (serverApplicationExecutionVersion != applicationExecutionVersion) {
     // Reload the page using the new version
-    const updatedUrl = location.protocol + '//' + location.host + location.pathname + `?v=${serverApplicationExecutionVersion}`;
+    const updatedUrl = location.protocol + '//' + location.host + location.pathname + `?n=${viewName ?? ''}&v=${serverApplicationExecutionVersion}`;
     window.location.replace(updatedUrl);
   }
 
