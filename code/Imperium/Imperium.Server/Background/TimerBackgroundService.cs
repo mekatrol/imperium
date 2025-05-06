@@ -32,7 +32,7 @@ internal class TimerBackgroundService(
         var now = DateTime.Now;
 
         // Are we in the same hour as last tick?
-        if (_lastTickDateTime.Minute != now.Minute)
+        if (_lastTickDateTime.Hour != now.Hour)
         {
             _lastTickDateTime = now;
 
