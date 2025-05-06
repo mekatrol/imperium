@@ -19,8 +19,10 @@ import BusyOverlay from '@/components/BusyOverlay.vue';
 import MessageOverlay from '@/components/MessageOverlay.vue';
 import { onBeforeUnmount, onMounted } from 'vue';
 import { closeWebSocket, useServerUpdateWebSocket } from './services/web-socket';
+import { useIntervalTimer } from './composables/timer';
 
-const { messageData, isBusy } = storeToRefs(useAppStore());
+const appStore = useAppStore();
+const { messageData, isBusy } = storeToRefs(appStore);
 
 onMounted(() => {
   // Make sure websockets active
@@ -30,4 +32,29 @@ onMounted(() => {
 onBeforeUnmount(() => {
   closeWebSocket();
 });
+
+const getApplicationExecutionVersion = async (): Promise<string> => {
+  const appVersion = await appStore.getApplicationVersion(() => {
+    return true;
+  }, false);
+
+  return appVersion.executionVersion;
+};
+
+useIntervalTimer(async () => {
+  // Get any updated application exectuion version
+  const serverApplicationExecutionVersion = await getApplicationExecutionVersion();
+
+  const params = new URLSearchParams(window.location.search);
+  const applicationExecutionVersion = params.get('v');
+
+  if (serverApplicationExecutionVersion != applicationExecutionVersion) {
+    // Reload the page using the new version
+    const updatedUrl = location.protocol + '//' + location.host + location.pathname + `?v=${serverApplicationExecutionVersion}`;
+    window.location.replace(updatedUrl);
+  }
+
+  // Keep timer running
+  return true;
+}, 5000);
 </script>

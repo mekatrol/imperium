@@ -25,10 +25,11 @@ public static class MiddlewareExtensions
                 // Replace base URLs
                 var apiBaseUrl = $"{context.Request.Scheme}://{context.Request.Host.Host}:{context.Request.Host.Port}/api";
                 var webSocketBaseUrl = $"ws://{webSocketUri.Host}:{webSocketUri.Port}"; ;
-                indexHtmlContent = indexHtmlContent.Replace("https://localhost:5000/api", apiBaseUrl);
+                indexHtmlContent = indexHtmlContent.Replace("http://localhost:5000/api", apiBaseUrl);
                 indexHtmlContent = indexHtmlContent.Replace("ws://localhost:5001", webSocketBaseUrl);
 
                 // Send the updated file
+
                 await context.Response.WriteAsync(indexHtmlContent);
                 return;
             }
