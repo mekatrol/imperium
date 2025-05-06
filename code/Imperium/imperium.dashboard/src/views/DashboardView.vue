@@ -1,4 +1,5 @@
 <template>
+  {{ appStore.serverOnline }}
   <DashboardGrid
     :gap="0"
     :columns="16"
@@ -13,9 +14,12 @@ import { useAppStore } from '@/stores/app-store';
 import { usePointStore } from '@/stores/point-store';
 
 import DashboardGrid from '@/components/DashboardGrid.vue';
+import { storeToRefs } from 'pinia';
 
 const appStore = useAppStore();
 const pointStore = usePointStore();
+
+const { serverOnline } = storeToRefs(appStore);
 
 const isDaytimePoint = pointStore.getPoint('device.sunrisesunset', 'IsDaytime');
 
@@ -30,7 +34,7 @@ const gridItems: GridItem[] = [
       iconOff: 'devices_off',
       iconOn: 'devices',
       colorOff: '#991503',
-      state: () => appStore.serverOnline
+      state: () => serverOnline.value
     }
   },
   {

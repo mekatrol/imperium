@@ -18,24 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GridItem } from '@/models/grid';
-
-import StatusIconCard from '@/components/StatusIconCard.vue';
-import TimeCard from '@/components/TimeCard.vue';
-import DashboardSwitchCell from '@/components/DashboardSwitchCell.vue';
-import type { Component } from 'vue';
-
-const componentMap = {
-  StatusIconCard,
-  TimeCard,
-  DashboardSwitchCell
-} as const;
-
-type ComponentName = keyof typeof componentMap;
-
-const resolveComponent = (name: ComponentName): Component => {
-  return componentMap[name] ?? null;
-};
+import { resolveComponent, type GridItem } from '@/models/grid';
 
 interface Props {
   gap?: number;

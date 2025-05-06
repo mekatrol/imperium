@@ -85,8 +85,6 @@ const handleApiResponseError = (err: unknown, url: string): ApiError => {
     // net::ERR_NETWORK
     apiError.errorType = ApiErrorType.ConnectionFailed;
     apiError.errors = [{ property: null, errorMessage: `Failed to connect to the server at URL '${combinePathWithBaseUrl(url)}'.` }];
-
-    useAppStore().setServerOnlineStatus(false);
   }
 
   // Only call this bit if API errors not already set
@@ -188,7 +186,6 @@ export const httpGet = async <T>(url: string, errorHandlerCallback?: HandleError
 
   try {
     const response = await axiosApi.get(url, config);
-    appStore.setServerOnlineStatus(true);
     return response.data;
   } catch (err: unknown) {
     const apiError = handleApiError(err, url, 'GET', errorHandlerCallback, !retrying);
@@ -212,7 +209,6 @@ export const httpPost = async <TRequest, TResponse>(requestData: TRequest, url: 
 
   try {
     const response = await axiosApi.post<TResponse>(url, requestData, config);
-    appStore.setServerOnlineStatus(true);
     return response?.data ?? ({} as TResponse);
   } catch (err: unknown) {
     const apiError = handleApiError(err, url, 'POST', errorHandlerCallback, !retrying);
@@ -234,7 +230,6 @@ export const httpPut = async <TRequest, TResponse>(requestData: TRequest, url: s
 
   try {
     const response = await axiosApi.put<TResponse>(url, requestData, config);
-    appStore.setServerOnlineStatus(true);
     return response?.data ?? ({} as TResponse);
   } catch (err: unknown) {
     const apiError = handleApiError(err, url, 'PUT', errorHandlerCallback, !retrying);
@@ -256,7 +251,6 @@ export const httpPatch = async <TRequest, TResponse>(requestData: TRequest, url:
 
   try {
     const response = await axiosApi.patch<TResponse>(url, requestData, config);
-    appStore.setServerOnlineStatus(true);
     return response?.data ?? ({} as TResponse);
   } catch (err: unknown) {
     const apiError = handleApiError(err, url, 'PATCH', errorHandlerCallback, !retrying);
@@ -278,7 +272,6 @@ export const httpDelete = async (url: string, errorHandlerCallback?: HandleError
 
   try {
     await axiosApi.delete(url, config);
-    appStore.setServerOnlineStatus(true);
     return true;
   } catch (err: unknown) {
     const apiError = handleApiError(err, url, 'DELETE', errorHandlerCallback, !retrying);

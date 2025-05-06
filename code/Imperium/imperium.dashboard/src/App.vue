@@ -34,10 +34,12 @@ onBeforeUnmount(() => {
 });
 
 const getApplicationExecutionVersion = async (): Promise<string> => {
-  const appVersion = await appStore.getApplicationVersion(() => {
+  const appVersion = await appStore.getApplicationVersion((error) => {
+    appStore.setServerOnlineStatus(false);
     return true;
   }, false);
 
+  appStore.setServerOnlineStatus(true);
   return appVersion.executionVersion;
 };
 
@@ -57,5 +59,5 @@ useIntervalTimer(async () => {
 
   // Keep timer running
   return true;
-}, 60000);
+}, 5000);
 </script>

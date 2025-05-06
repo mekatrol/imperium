@@ -141,13 +141,7 @@ const togglePointState = async (): Promise<void> => {
     return;
   }
 
-  try {
-    await appStore.togglePointState(valuePoint.value.deviceKey, valuePoint.value.key);
-
-    appStore.setServerOnlineStatus(true);
-  } catch {
-    appStore.setServerOnlineStatus(false);
-  }
+  await appStore.togglePointState(valuePoint.value.deviceKey, valuePoint.value.key);
 };
 </script>
 
