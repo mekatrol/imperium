@@ -56,5 +56,5 @@ useIntervalTimer(async () => {
 
   // Keep timer running
   return true;
-}, 5000);
+}, 60000);
 </script>

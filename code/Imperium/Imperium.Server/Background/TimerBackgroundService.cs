@@ -31,8 +31,8 @@ internal class TimerBackgroundService(
     {
         var now = DateTime.Now;
 
-        // Are we in the same hour as last tick?
-        if (_lastTickDateTime.Hour != now.Hour)
+        // Are we in the same day as last tick?
+        if (_lastTickDateTime.Hour == 23 && now.Hour == 0)
         {
             _lastTickDateTime = now;
 
