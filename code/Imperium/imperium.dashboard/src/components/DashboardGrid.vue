@@ -10,7 +10,7 @@
       :style="`${getSpan(item.col, item.colSpan, item.row, item.rowSpan)}`"
     >
       <component
-        :is="item.component"
+        :is="resolveComponent(item.component)"
         v-bind="{ ...item.props }"
       />
     </div>
@@ -19,6 +19,23 @@
 
 <script setup lang="ts">
 import type { GridItem } from '@/models/grid';
+
+import StatusIconCard from '@/components/StatusIconCard.vue';
+import TimeCard from '@/components/TimeCard.vue';
+import DashboardSwitchCell from '@/components/DashboardSwitchCell.vue';
+import type { Component } from 'vue';
+
+const componentMap = {
+  StatusIconCard,
+  TimeCard,
+  DashboardSwitchCell
+} as const;
+
+type ComponentName = keyof typeof componentMap;
+
+const resolveComponent = (name: ComponentName): Component => {
+  return componentMap[name] ?? null;
+};
 
 interface Props {
   gap?: number;

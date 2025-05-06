@@ -13,9 +13,6 @@ import { useAppStore } from '@/stores/app-store';
 import { usePointStore } from '@/stores/point-store';
 
 import DashboardGrid from '@/components/DashboardGrid.vue';
-import DashboardSwitchCell from '@/components/DashboardSwitchCell.vue';
-import TimeCard from '@/components/TimeCard.vue';
-import StatusIconCard from '@/components/StatusIconCard.vue';
 
 const appStore = useAppStore();
 const pointStore = usePointStore();
@@ -24,7 +21,7 @@ const isDaytimePoint = pointStore.getPoint('device.sunrisesunset', 'IsDaytime');
 
 const gridItems: GridItem[] = [
   {
-    component: StatusIconCard,
+    component: 'StatusIconCard',
     col: 1,
     colSpan: 2,
     row: 1,
@@ -37,7 +34,7 @@ const gridItems: GridItem[] = [
     }
   },
   {
-    component: TimeCard,
+    component: 'TimeCard',
     col: 3,
     colSpan: 12,
     row: 1,
@@ -45,7 +42,7 @@ const gridItems: GridItem[] = [
     cssClass: 'time-card-cell'
   },
   {
-    component: StatusIconCard,
+    component: 'StatusIconCard',
     col: 15,
     colSpan: 2,
     row: 1,
@@ -59,7 +56,7 @@ const gridItems: GridItem[] = [
     }
   },
   {
-    component: DashboardSwitchCell,
+    component: 'DashboardSwitchCell',
     col: 1,
     colSpan: 4,
     row: 11,
@@ -72,7 +69,7 @@ const gridItems: GridItem[] = [
     }
   },
   {
-    component: DashboardSwitchCell,
+    component: 'DashboardSwitchCell',
     col: 5,
     colSpan: 8,
     row: 11,
@@ -85,7 +82,7 @@ const gridItems: GridItem[] = [
     }
   },
   {
-    component: DashboardSwitchCell,
+    component: 'DashboardSwitchCell',
     col: 13,
     colSpan: 4,
     row: 11,
@@ -104,7 +101,7 @@ let cellRow = 5;
 
 const addNextCell = (icon: string, deviceKey: string, pointKey: string): void => {
   gridItems.push({
-    component: DashboardSwitchCell,
+    component: 'DashboardSwitchCell',
     col: cellCol,
     colSpan: 4,
     row: cellRow,

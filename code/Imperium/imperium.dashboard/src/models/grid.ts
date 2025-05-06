@@ -1,7 +1,5 @@
-import type { Component } from 'vue';
-
 export interface GridItem {
-  component: Component;
+  component: string;
   col: number;
   colSpan: number;
   row: number;
