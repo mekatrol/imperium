@@ -41,11 +41,6 @@ internal class TimerBackgroundService(
             appVersionService.ExecutionVersion = Guid.NewGuid();
         }
 
-        if (_nextPublishAllDateTime < (now - TimeSpan.FromSeconds(10)))
-        {
-
-        }
-
         await UpdateMqttHostConfiguration(services, stoppingToken);
         await ProcessEvents(services, stoppingToken);
 
