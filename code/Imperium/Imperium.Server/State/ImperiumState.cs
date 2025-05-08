@@ -1,6 +1,7 @@
 ﻿using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
 using Imperium.Common.Events;
+using Imperium.Common.Exceptions;
 using Imperium.Common.Extensions;
 using Imperium.Common.Models;
 using Imperium.Common.Points;
@@ -23,7 +24,145 @@ internal class ImperiumState : IPointState, IImperiumState
     // The list of device instances currently being managed, this is typically the definition of the device along with state (but not point state)
     private readonly Dictionary<string, Point> _points = new(StringComparer.OrdinalIgnoreCase);
 
+    private readonly Dictionary<string, Dashboard> _dashboards;
+
     private readonly ConcurrentQueue<SubscriptionEvent> _changeEvents = new();
+
+    public ImperiumState()
+    {
+        _dashboards = new Dictionary<string, Dashboard>(StringComparer.OrdinalIgnoreCase)
+        {
+            {
+                "main",
+                new Dashboard
+                {
+                    Name = "main",
+                    Items = [
+                        new DashboardItem {
+                            ComponentName = "StatusIconCard",
+                            Column = 1,
+                            ColumnSpan = 2,
+                            Row = 1,
+                            RowSpan = 4,
+                            Props = new {
+                                IconOff = "devices_off",
+                                IconOn = "devices",
+                                ColorOff = "#991503",
+                                DeviceKey = "browser",
+                                PointKey = "server.status"
+                            }
+                        },
+                        new DashboardItem {
+                            ComponentName = "TimeCard",
+                            Column = 3,
+                            ColumnSpan = 12,
+                            Row = 1,
+                            RowSpan = 4,
+                            CssClass = "time-card-cell"
+                        },
+                        new DashboardItem {
+                            ComponentName = "StatusIconCard",
+                            Column = 15,
+                            ColumnSpan = 2,
+                            Row = 1,
+                            RowSpan = 4,
+                            Props = new {
+                                IconOff = "dark_mode",
+                                IconOn = "wb_sunny",
+                                ColorOn = "#ffff00",
+                                ColorOff = "#aaa",
+                                DeviceKey = "browser",
+                                PointKey = "server.status"
+                            }
+                        },
+                        new DashboardItem{
+                            ComponentName =  "DashboardSwitchCell",
+                            Column = 1,
+                            ColumnSpan = 4,
+                            Row = 11,
+                            RowSpan = 4,
+                            CssClass = "padded-cell",
+                            Props= new {
+                                Icon = "handyman",
+                                ValueDeviceKey = "virtual",
+                                ValuePointKey = "panic"
+                            }
+                        },
+                        new DashboardItem
+                        {
+                            ComponentName = "DashboardSwitchCell",
+                            Column = 5,
+                            ColumnSpan = 8,
+                            Row = 11,
+                            RowSpan = 4,
+                            CssClass = "padded-cell",
+                            Props= new
+                            {
+                                Icon = "e911_emergency",
+                                ValueDeviceKey = "virtual",
+                                ValuePointKey = "panic"
+                            }
+                          },
+                        new DashboardItem
+                        {
+                            ComponentName = "DashboardSwitchCell",
+                            Column = 13,
+                            ColumnSpan = 4,
+                            Row = 11,
+                            RowSpan = 4,
+                            CssClass = "padded-cell",
+                            Props = new
+                            {
+                                Icon = "pets",
+                                ValueDeviceKey = "virtual",
+                                ValuePointKey = "panic"
+                            }
+                         }
+                    ]
+                }
+            }
+        };
+
+        var cellCol = 1;
+        var cellRow = 5;
+
+        void addNextCell(string icon, string deviceKey, string pointKey)
+        {
+            _dashboards["main"].Items.Add(
+                new DashboardItem
+                {
+                    ComponentName = "DashboardSwitchCell",
+                    Column = cellCol,
+                    ColumnSpan = 4,
+                    Row = cellRow,
+                    RowSpan = 3,
+                    CssClass = "padded-cell",
+                    Props = new
+                    {
+                        Icon = icon,
+                        ValueDeviceKey = deviceKey,
+                        ValuePointKey = pointKey
+                    }
+                });
+
+            cellCol += 4;
+
+            if (cellCol > 16)
+            {
+                cellCol = 1;
+                cellRow += 3;
+            }
+        }
+
+        addNextCell("garage", "device.carport.powerboard", "Relay1");
+        addNextCell("light", "device.frontdoorlight", "Relay");
+        addNextCell("looks_6", "device.housenumberlight", "Relay");
+        addNextCell("checkroom", "device.clothesline", "Relay");
+        addNextCell("heat_pump_balance", "virtual", "water.pumps");
+        addNextCell("light", "device.alfrescolight", "Relay");
+        addNextCell("light", "device.kitchen.light", "Relay");
+        addNextCell("light", "device.kitchenview.powerboard", "Relay1");
+    }
 
     /// <summary>
     /// When the server read only mode is true then the server will read IO, but not update IO. Useful when testing a running server 
@@ -346,5 +485,20 @@ internal class ImperiumState : IPointState, IImperiumState
             // We serialize and deserialize to ensure we add a copy
             deviceInstance.Points.Add(point);
         }
+    }
+
+    public IList<Dashboard> GetAllDashboards()
+    {
+        return _dashboards.Values.ToList();
+    }
+
+    public Dashboard GetDashboard(string name)
+    {
+        if (!_dashboards.TryGetValue(name, out var dashboard))
+        {
+            throw new NotFoundException($"A dashboard with the name '{name}' was not found");
+        }
+
+        return dashboard;
     }
 }

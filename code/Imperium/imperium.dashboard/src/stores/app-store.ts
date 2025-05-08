@@ -7,12 +7,14 @@ import { httpGet, httpPost } from '@/services/http';
 import type { ApplicationVersion } from '@/models/application-version';
 import { FifoQueue } from '@/utils/fifi-queue';
 import { type SubscriptionEvent } from '@/models/subscription-event';
+import type { Dashboard } from '@/models/dashboard';
 
 export const useAppStore = defineStore('app', () => {
   const isBusyCount = ref(0);
   const messageData = ref<MessageData | undefined>(undefined);
   const serverOnline = ref(false);
   const subscriptionEvents = ref<FifoQueue<SubscriptionEvent>>(new FifoQueue<SubscriptionEvent>());
+  const dashboard = ref<Dashboard | undefined>();
 
   const isBusy = computed(() => isBusyCount.value > 0);
 
@@ -34,6 +36,22 @@ export const useAppStore = defineStore('app', () => {
 
   const getApplicationVersion = async (errorHandlerCallback?: HandleErrorCallback, showBusy: boolean = true): Promise<ApplicationVersion> => {
     return await httpGet<ApplicationVersion>('/app/version', errorHandlerCallback, false, showBusy);
+  };
+
+  const updateDashboard = async (errorHandlerCallback?: HandleErrorCallback, showBusy: boolean = true): Promise<Dashboard> => {
+    dashboard.value = await httpGet<Dashboard>('/dashboards/main', errorHandlerCallback, false, showBusy);
+
+    if (dashboard.value) {
+      dashboard.value.items.forEach((item) => {
+        if (item.props?.deviceKey && item.props.deviceKey === 'browser') {
+          item.props.state = (): boolean => {
+            return true;
+          };
+        }
+      });
+    }
+
+    return dashboard.value;
   };
 
   const getPoints = async (errorHandlerCallback?: HandleErrorCallback, showBusy: boolean = true): Promise<Point[]> => {
@@ -77,6 +95,9 @@ export const useAppStore = defineStore('app', () => {
     setServerOnlineStatus,
 
     getApplicationVersion,
+
+    dashboard,
+    updateDashboard,
 
     getPoints,
     togglePointState,

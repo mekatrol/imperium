@@ -7,10 +7,10 @@
       v-for="(item, i) in items"
       :key="i"
       :class="`item ${item.cssClass ?? ''}`"
-      :style="`${getSpan(item.col, item.colSpan, item.row, item.rowSpan)}`"
+      :style="`${getSpan(item.column, item.columnSpan, item.row, item.rowSpan)}`"
     >
       <component
-        :is="resolveComponent(item.component)"
+        :is="resolveComponent(item.componentName)"
         v-bind="{ ...item.props }"
       />
     </div>
@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { resolveComponent, type GridItem } from '@/models/grid';
+import { resolveComponent, type DashboardItem } from '@/models/dashboard';
 
 interface Props {
   gap?: number;
@@ -26,7 +26,7 @@ interface Props {
   height?: number;
   columns?: number;
   rows?: number;
-  items: GridItem[];
+  items: DashboardItem[];
 }
 
 const props = withDefaults(defineProps<Props>(), {

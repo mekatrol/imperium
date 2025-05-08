@@ -1,6 +1,7 @@
 ﻿using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
 using Imperium.Common.Events;
+using Imperium.Common.Models;
 using System.Collections.Concurrent;
 
 namespace Imperium.Common.Points;
@@ -26,4 +27,8 @@ public interface IImperiumState
     IDeviceController? GetDeviceController(string controllerKey);
 
     void AddDeviceAndPoints(IDeviceInstance deviceInstance);
+    
+    IList<Dashboard> GetAllDashboards();
+    
+    Dashboard GetDashboard(string name);
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
+using System.Buffers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -141,6 +142,7 @@ public class ScriptCompiler
         var additionalReferences = new List<PortableExecutableReference>
         {
             MetadataReference.CreateFromFile(systemRuntimePath), // System.Runtime
+            MetadataReference.CreateFromFile(typeof(ReadOnlySequence<>).Assembly.Location), // System.Memory
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location), // System.Private.CoreLib
             MetadataReference.CreateFromFile(typeof(IServiceProvider).Assembly.Location), // System.ComponentModel
             MetadataReference.CreateFromFile(typeof(IServiceCollection).Assembly.Location), // Microsoft.Extensions.DependencyInjection.Abstractions

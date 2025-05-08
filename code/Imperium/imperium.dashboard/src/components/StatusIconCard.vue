@@ -10,11 +10,8 @@
 </template>
 
 <script setup lang="ts">
+import type { StateUpdate } from '@/models/dashboard';
 import { computed } from 'vue';
-
-interface StateUpdate {
-  (): boolean;
-}
 
 interface Props {
   iconOff: string;

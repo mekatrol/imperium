@@ -14,6 +14,7 @@ public static class ServiceExtensions
         services.AddSingleton<IWebSocketClientManagerService, WebSocketClientManagerService>();
 
         services.AddScoped<IDeviceService, DeviceService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         services.AddTransient<IMqttClientService, MqttClientService>();
 

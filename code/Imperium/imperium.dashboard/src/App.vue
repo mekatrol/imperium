@@ -33,8 +33,17 @@ onBeforeUnmount(() => {
   closeWebSocket();
 });
 
+const updateDashboard = async (): Promise<void> => {
+  if (appStore.dashboard === undefined) {
+    await appStore.updateDashboard(() => {
+      appStore.setServerOnlineStatus(false);
+      return true;
+    }, false);
+  }
+};
+
 const getApplicationExecutionVersion = async (): Promise<string> => {
-  const appVersion = await appStore.getApplicationVersion((error) => {
+  const appVersion = await appStore.getApplicationVersion(() => {
     appStore.setServerOnlineStatus(false);
     return true;
   }, false);
@@ -44,6 +53,8 @@ const getApplicationExecutionVersion = async (): Promise<string> => {
 };
 
 useIntervalTimer(async () => {
+  await updateDashboard();
+
   // Get any updated application exectuion version
   const serverApplicationExecutionVersion = await getApplicationExecutionVersion();
 

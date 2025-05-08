@@ -22,6 +22,43 @@ internal class FlowExecutorBackgroundService(
          * START FLOW LOGIC
          *****************************************************************************/
 
+        var garagePerson = pointState.GetDevicePoint("camera.person", "garage.detect");
+        var clothesLine = pointState.GetDevicePoint("device.clothesline", "Relay");
+        var clothesLineTimer = pointState.GetDevicePoint(ImperiumConstants.VirtualKey, "clothesline.light.timer");
+
+        if (garagePerson != null && clothesLine != null && clothesLineTimer != null)
+        {
+            var prevValue = clothesLine.ControlValue;
+
+            if ((bool?)prevValue != true && (bool?)garagePerson.ControlValue == true)
+            {
+                // Turn off camera event
+                pointState.UpdatePointValue("camera.person", "garage.detect", false, PointValueType.Control);
+
+                // Turn on clothes line light
+                pointState.UpdatePointValue("device.clothesline", "Relay", true, PointValueType.Control);
+
+                // Start timer
+                pointState.UpdatePointValue(ImperiumConstants.VirtualKey, "clothesline.light.timer", DateTime.Now + new TimeSpan(0, 5, 0), PointValueType.Control);
+            }
+
+            var expiry = (DateTime?)clothesLineTimer.Value;
+
+            if (expiry != null && expiry <= DateTime.Now)
+            {
+                // Clear timer
+                pointState.UpdatePointValue(ImperiumConstants.VirtualKey, "clothesline.light.timer", null, PointValueType.Control);
+
+                // Turn off clothes line light
+                pointState.UpdatePointValue("device.clothesline", "Relay", false, PointValueType.Control);
+            }
+            else if (expiry == null)
+            {
+                // Turn off kitchen light
+                pointState.UpdatePointValue("device.kitchen.light", "Relay", false, PointValueType.Control);
+            }
+        }
+
         var isNighttime = (bool?)pointState.GetPointValue("device.sunrisesunset", "IsNighttime");
 
         if (isNighttime.HasValue)
