@@ -28,6 +28,16 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
         {
             var json = Encoding.UTF8.GetString(payload.First.Span);
 
+            //var fileName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
+            //var deviceDirectory = Path.Combine("E:\\imperium", deviceInstance.Key);
+
+            //if (!Directory.Exists(deviceDirectory))
+            //{
+            //    Directory.CreateDirectory(deviceDirectory);
+            //}
+
+            //await File.WriteAllTextAsync(Path.Combine(deviceDirectory, $"{fileName}.json"), json);
+
             // If the device has a script assembly then transform the JSON
             if (deviceInstance.ScriptAssembly != null)
             {

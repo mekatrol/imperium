@@ -13,6 +13,8 @@ internal class FlowExecutorBackgroundService(
         serviceProvider,
         logger)
 {
+    private int _garagePersonPrevValue = -1;
+
     protected override async Task<bool> ExecuteIteration(IServiceProvider services, CancellationToken stoppingToken)
     {
         var now = DateTime.Now;
@@ -22,18 +24,15 @@ internal class FlowExecutorBackgroundService(
          * START FLOW LOGIC
          *****************************************************************************/
 
-        var garagePerson = pointState.GetDevicePoint("camera.person", "garage.detect");
+        var garagePerson = pointState.GetDevicePoint("camera.person", "garage");
         var clothesLine = pointState.GetDevicePoint("device.clothesline", "Relay");
         var clothesLineTimer = pointState.GetDevicePoint(ImperiumConstants.VirtualKey, "clothesline.light.timer");
 
         if (garagePerson != null && clothesLine != null && clothesLineTimer != null)
         {
-            var prevValue = clothesLine.ControlValue;
-
-            if ((bool?)prevValue != true && (bool?)garagePerson.ControlValue == true)
+            if (garagePerson.ControlValue != null && _garagePersonPrevValue != (int?)garagePerson.ControlValue)
             {
-                // Turn off camera event
-                pointState.UpdatePointValue("camera.person", "garage.detect", false, PointValueType.Control);
+                _garagePersonPrevValue = (int)garagePerson.ControlValue;
 
                 // Turn on clothes line light
                 pointState.UpdatePointValue("device.clothesline", "Relay", true, PointValueType.Control);
