@@ -27,8 +27,8 @@ public interface IImperiumState
     IDeviceController? GetDeviceController(string controllerKey);
 
     void AddDeviceAndPoints(IDeviceInstance deviceInstance);
-    
+
     IList<Dashboard> GetAllDashboards();
-    
+
     Dashboard GetDashboard(string name);
 }
