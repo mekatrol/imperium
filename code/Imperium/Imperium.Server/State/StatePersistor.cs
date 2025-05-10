@@ -42,7 +42,7 @@ public class StatePersistor
 
             if (deviceControllerConfiguration == null)
             {
-                statusReporter.ReportItem(StatusItemSeverity.Error, $"Failed to deserialise file '{deviceControllerConfigurationFilename}'. Please ensure the file is valid JSON.");
+                statusReporter.ReportItem(StatusItemSeverity.Error, $"Failed to deserialize file '{deviceControllerConfigurationFilename}'. Please ensure the file is valid JSON.");
             }
             else
             {
@@ -50,6 +50,16 @@ public class StatePersistor
                 {
                     try
                     {
+                        // Is there already a device controller with this key?
+                        if (state.GetDeviceController(dc.Key) != null)
+                        {
+                            statusReporter.ReportItem(
+                                StatusItemSeverity.Error,
+                                $"A device controller with the key '{dc.Key}' has already been configured. A key can only be configured once. Please remove duplicates from your configuration file or if you are the author of a controller factory then please make sure your key is unique (e.g. mycompany.controllerkey).");
+
+                            continue;
+                        }
+
                         if (!string.IsNullOrWhiteSpace(dc.Library))
                         {
                             var libraryPath = dc.Library;

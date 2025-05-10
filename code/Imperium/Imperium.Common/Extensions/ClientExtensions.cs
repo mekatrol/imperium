@@ -18,7 +18,7 @@ public static class ClientExtensions
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        // Serialise model
+        // Serialize model
         var json = JsonSerializer.Serialize(model, options);
 
         // Convert to body content (this will correctly set content-length header)
