@@ -165,7 +165,7 @@ public class Program
 
         using (var cancellationTokenSouce = new CancellationTokenSource())
         {
-            await InitialiseImperiumState(app.Services, cancellationTokenSouce.Token);
+            await StatePersistor.LoadState(app.Services, cancellationTokenSouce.Token);
         }
 
         app.UseExceptionMiddleware();
@@ -206,11 +206,5 @@ public class Program
         Directory.CreateDirectory(imperiumDirectories.Devices);
         Directory.CreateDirectory(imperiumDirectories.Points);
         Directory.CreateDirectory(imperiumDirectories.Scripts);
-    }
-
-    private static async Task<IImperiumState> InitialiseImperiumState(IServiceProvider services, CancellationToken cancellationToken)
-    {
-        var state = await StatePersistor.LoadState(services, cancellationToken);
-        return state;
     }
 }
