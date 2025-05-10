@@ -1,4 +1,5 @@
-﻿using Imperium.Common.DeviceControllers;
+﻿using Imperium.Common.Configuration;
+using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
 using Imperium.Common.Events;
 using Imperium.Common.Exceptions;
@@ -23,6 +24,8 @@ internal class ImperiumState : IPointState, IImperiumState
 
     // The list of device instances currently being managed, this is typically the definition of the device along with state (but not point state)
     private readonly Dictionary<string, Point> _points = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly Dictionary<string, SwitchEntity> _switches = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly Dictionary<string, Dashboard> _dashboards;
 
@@ -277,6 +280,50 @@ internal class ImperiumState : IPointState, IImperiumState
     public IList<IDeviceInstance> GetAllDevices()
     {
         return _deviceInstances.Values.ToList();
+    }
+
+    public IList<SwitchEntity> GetSwitches(IList<string>? keys = null)
+    {
+        if (keys == null || keys.Count == 0)
+        {
+            // Return all switches if keys null or empty
+            return _switches.Values.ToList();
+        }
+
+        // Return filtered set of switches
+        return _switches.Values
+            .Where(s => keys.Contains(s.Key))
+            .ToList();
+    }
+
+    public SwitchEntity AddSwitch(SwitchConfiguration switchConfig)
+    {
+        // Key must be valid
+        if (string.IsNullOrWhiteSpace(switchConfig.Key))
+        {
+            throw new InvalidOperationException($"The switch key cannot be empty.");
+        }
+
+        // Remove surrounding whitespace
+        switchConfig.Key = switchConfig.Key.Trim();
+
+        // Make sure the key does not already exist
+        if (_switches.ContainsKey(switchConfig.Key))
+        {
+            throw new InvalidOperationException($"A switch with the key '{switchConfig.Key}' already exists.");
+        }
+
+        var switchEntity = new SwitchEntity
+        {
+            Key = switchConfig.Key,
+            Label = switchConfig.Label,
+            Description = switchConfig.Description,
+            State = switchConfig.State ?? SwitchState.Offline
+        };
+
+        _switches.Add(switchEntity.Key, switchEntity);
+
+        return switchEntity;
     }
 
     /// <summary>

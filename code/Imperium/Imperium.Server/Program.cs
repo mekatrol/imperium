@@ -205,5 +205,6 @@ public class Program
 
         Directory.CreateDirectory(imperiumDirectories.Devices);
         Directory.CreateDirectory(imperiumDirectories.Scripts);
+        Directory.CreateDirectory(imperiumDirectories.Switches);
     }
 }

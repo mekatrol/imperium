@@ -1,13 +1,13 @@
 import type { PointTypes } from './point';
 
 export enum EventType {
-  valueChange = 'ValueChange',
-  refresh = 'Refresh'
+  ValueChange = 'ValueChange',
+  Refresh = 'Refresh'
 }
 
 export enum EntityType {
-  device = 'Device',
-  point = 'Point'
+  Device = 'Device',
+  Point = 'Point'
 }
 
 export interface SubscriptionEvent {

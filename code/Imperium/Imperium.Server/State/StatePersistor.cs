@@ -144,7 +144,22 @@ public class StatePersistor
             }
         }
 
-        //state.AddMekatrolDeviceControllers(services);
+        var switchFiles = Directory.GetFiles(imperiumDirectories.Switches, "*.json");
+        foreach (var switchFile in switchFiles)
+        {
+            var json = await File.ReadAllTextAsync(switchFile, cancellationToken);
+            var switches = JsonSerializer.Deserialize<List<SwitchConfiguration>>(json, JsonSerializerExtensions.DefaultSerializerOptions)!;
+
+            foreach(var sw in switches)
+            {
+                if (string.IsNullOrWhiteSpace(sw.Key))
+                {
+                    throw new InvalidOperationException($"The file '{switchFile}' contains a switch with an empty key.");
+                }
+
+                state.AddSwitch(sw);
+            }
+        }
 
         // Get all device files
         var deviceFiles = Directory.GetFiles(imperiumDirectories.Devices, "*.json");
@@ -152,7 +167,7 @@ public class StatePersistor
         var deviceInstanceFactory = services.GetRequiredService<IDeviceInstanceFactory>();
         foreach (var deviceFile in deviceFiles)
         {
-            var correlationId = statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, deviceFile, $"Starting device initialisation.");
+            statusReporter.ReportItem(StatusItemSeverity.Information, $"Starting device initialisation '{deviceFile}'.");
 
             statusReporter.ReportItem(StatusItemSeverity.Debug, $"Loading configuration file '{deviceFile}'.");
             var json = await File.ReadAllTextAsync(deviceFile, cancellationToken);
@@ -177,7 +192,7 @@ public class StatePersistor
                         assemblyName,
                         imperiumDirectories.Scripts,
                         config.JsonTransformScriptFile,
-                        correlationId,
+                        statusReporter.CorrelationId,
                         cancellationToken);
                 }
 

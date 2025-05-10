@@ -15,6 +15,7 @@ public static class ServiceExtensions
 
         services.AddScoped<IDeviceService, DeviceService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<ISwitchService, SwitchService>();
 
         services.AddTransient<IMqttClientService, MqttClientService>();
 

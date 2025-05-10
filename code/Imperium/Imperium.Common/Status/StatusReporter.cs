@@ -5,10 +5,12 @@ internal class StatusReporter(IStatusService statusService, string category, str
     private readonly IStatusService _statusService = statusService;
     private readonly string _category = category;
     private readonly string _key = key;
-    private readonly Guid? _correlationId = correlationId ?? Guid.NewGuid();
+    private readonly Guid _correlationId = correlationId ?? Guid.NewGuid();
+
+    public Guid CorrelationId { get => _correlationId; }
 
     public StatusReporter(IStatusService statusService, KnownStatusCategories category, string key, Guid? correlationId = null)
-        : this(statusService, category.ToString(), key, correlationId)
+        : this(statusService, category.ToString(), key, correlationId ?? Guid.NewGuid())
     {
     }
 

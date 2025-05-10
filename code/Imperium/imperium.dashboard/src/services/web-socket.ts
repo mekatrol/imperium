@@ -39,7 +39,7 @@ const initWebSocket = (ws: WebSocket): void => {
 
     const data = JSON.parse(event.data);
 
-    if (data.entityType === EntityType.point) {
+    if (data.entityType === EntityType.Point) {
       pointStore.updatePoint(data.point.deviceKey, data.point.key, data.point);
     }
   };

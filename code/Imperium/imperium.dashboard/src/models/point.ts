@@ -1,25 +1,25 @@
 export enum PointType {
-  Integer = 'integer',
-  SingleFloat = 'singleFloat',
-  DoubleFloat = 'doubleFloat',
-  Boolean = 'boolean',
-  String = 'string',
-  DateTime = 'dateTime',
-  DateOnly = 'dateOnly',
-  TimeOnly = 'timeOnly',
-  TimeSpan = 'timeSpan'
+  Integer = 'Integer',
+  SingleFloat = 'SingleFloat',
+  DoubleFloat = 'DoubleFloat',
+  Boolean = 'Boolean',
+  String = 'String',
+  DateTime = 'DateTime',
+  DateOnly = 'DateOnly',
+  TimeOnly = 'TimeOnly',
+  TimeSpan = 'TimeSpan'
 }
 
 export enum PointState {
-  Offline = 'offline',
-  Online = 'online'
+  Offline = 'Offline',
+  Online = 'Online'
 }
 
 export enum PointUpdateAction {
-  Control = 'control',
-  Override = 'override',
-  OverrideRelease = 'overrideRelease',
-  Toggle = 'toggle'
+  Control = 'Control',
+  Override = 'Override',
+  OverrideRelease = 'OverrideRelease',
+  Toggle = 'Toggle'
 }
 
 export type PointTypes = object | string | number | boolean | Date | undefined | null;

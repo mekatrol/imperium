@@ -1,4 +1,5 @@
-﻿using Imperium.Common.DeviceControllers;
+﻿using Imperium.Common.Configuration;
+using Imperium.Common.DeviceControllers;
 using Imperium.Common.Devices;
 using Imperium.Common.Events;
 using Imperium.Common.Models;
@@ -18,6 +19,10 @@ public interface IImperiumState
 
     IList<IDeviceInstance> GetAllDevices();
 
+    IList<SwitchEntity> GetSwitches(IList<string>? keys = null);
+
+    SwitchEntity AddSwitch(SwitchConfiguration switchConfig);
+
     void AddDeviceController(string key, IDeviceController deviceController);
 
     IDeviceInstance? GetDeviceInstance(string key, bool includePoints);
@@ -30,5 +35,5 @@ public interface IImperiumState
 
     IList<Dashboard> GetAllDashboards();
 
-    Dashboard GetDashboard(string name);
+    Dashboard GetDashboard(string name);        
 }
