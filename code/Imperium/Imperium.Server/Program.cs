@@ -204,7 +204,6 @@ public class Program
         services.AddSingleton(imperiumDirectories);
 
         Directory.CreateDirectory(imperiumDirectories.Devices);
-        Directory.CreateDirectory(imperiumDirectories.Points);
         Directory.CreateDirectory(imperiumDirectories.Scripts);
     }
 }

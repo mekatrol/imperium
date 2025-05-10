@@ -80,7 +80,7 @@ const getOverrideIconVisible = (): boolean => {
 };
 
 const getControlIconVisible = (): boolean => {
-  return !!(valuePoint.value && valuePoint.value.controlValue != null);
+  return false; // !!(valuePoint.value && valuePoint.value.controlValue != null);
 };
 
 const getDeviceIconVisible = (): boolean => {
