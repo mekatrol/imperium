@@ -11,7 +11,7 @@ public static class JsonSerializerExtensions
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public static readonly JsonSerializerOptions ApiSerializerOptions = new()
+    public static readonly JsonSerializerOptions DefaultSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -23,6 +23,6 @@ public static class JsonSerializerExtensions
         ErrorSerializerOptions.Converters.Add(new ServiceErrorConverter());
         ErrorSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
-        ApiSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        DefaultSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
 }

@@ -8,6 +8,7 @@ using Imperium.Common.Services;
 using Imperium.Common.Status;
 using Imperium.Server.Options;
 using Imperium.Server.Services;
+using Imperium.Server.State;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -68,7 +69,7 @@ internal class TimerBackgroundService(
                     SubscriptionEventType.Refresh,
                     SubscriptionEventEntityType.Point,
                     point),
-                JsonSerializerExtensions.ApiSerializerOptions);
+                JsonSerializerExtensions.DefaultSerializerOptions);
 
             var bytes = Encoding.UTF8.GetBytes(payload);
 
@@ -93,7 +94,7 @@ internal class TimerBackgroundService(
 
         if (state.ChangeEvents.TryDequeue(out var changeEvent))
         {
-            var payload = JsonSerializer.Serialize(changeEvent, changeEvent.GetType(), JsonSerializerExtensions.ApiSerializerOptions);
+            var payload = JsonSerializer.Serialize(changeEvent, changeEvent.GetType(), JsonSerializerExtensions.DefaultSerializerOptions);
             var bytes = Encoding.UTF8.GetBytes(payload);
             var clients = webSocketClientManager.GetAll();
 
@@ -114,7 +115,7 @@ internal class TimerBackgroundService(
     private async Task UpdateMqttHostConfiguration(IServiceProvider services, CancellationToken stoppingToken)
     {
         var imperiumDirectories = services.GetRequiredService<ImperiumDirectories>();
-        var mqttHostConfigurationFile = Path.Combine(imperiumDirectories.Base, "mqtt.json");
+        var mqttHostConfigurationFile = Path.Combine(imperiumDirectories.Base, StatePersistor.MqttConfigurationFilename);
         var statusService = services.GetRequiredService<IStatusService>();
         var mqttHostConfiguration = services.GetRequiredService<MqttHostConfiguration>();
 
@@ -123,7 +124,7 @@ internal class TimerBackgroundService(
         try
         {
             var json = await File.ReadAllTextAsync(mqttHostConfigurationFile, stoppingToken);
-            mqttConfig = JsonSerializer.Deserialize<MqttConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions);
+            mqttConfig = JsonSerializer.Deserialize<MqttConfiguration>(json, JsonSerializerExtensions.DefaultSerializerOptions);
 
             // Reset have reported configuration error
             _mqttHostConfigurationErrorStatusReported = false;

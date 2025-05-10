@@ -1,23 +1,17 @@
-using Imperium.Common;
 using Imperium.Common.Configuration;
 using Imperium.Common.DeviceControllers;
 using Imperium.Common.Directories;
 using Imperium.Common.Extensions;
-using Imperium.Common.Models;
 using Imperium.Common.Points;
 using Imperium.Common.Services;
-using Imperium.Common.Status;
-using Imperium.ScriptCompiler;
 using Imperium.Server.Background;
 using Imperium.Server.DeviceControllers;
 using Imperium.Server.Middleware;
 using Imperium.Server.Options;
 using Imperium.Server.Services;
 using Imperium.Server.State;
-using Mekatrol.Devices;
 using Serilog;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -141,7 +135,7 @@ public class Program
         builder.Services.AddSingleton(imperiumState);
         builder.Services.AddSingleton<IPointState>(imperiumState);
         builder.Services.AddSingleton<IImperiumState>(imperiumState);
-        builder.Services.AddSingleton<IDeviceControllerFactory, DeviceControllerFactory>();
+        builder.Services.AddSingleton<IDeviceInstanceFactory, DeviceInstanceFactory>();
 
         builder.Services.AddTransient<WebSocketMiddleware>();
 
@@ -214,86 +208,9 @@ public class Program
         Directory.CreateDirectory(imperiumDirectories.Scripts);
     }
 
-    private static async Task<ImperiumState> InitialiseImperiumState(IServiceProvider services, CancellationToken cancellationToken)
+    private static async Task<IImperiumState> InitialiseImperiumState(IServiceProvider services, CancellationToken cancellationToken)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        var state = services.GetRequiredService<ImperiumState>();
-        var statusService = services.GetRequiredService<IStatusService>();
-        var imperiumDirectories = services.GetRequiredService<ImperiumDirectories>();
-
-        var deviceControllerFactory = services.GetRequiredService<IDeviceControllerFactory>();
-
-        state.AddMekatrolDeviceControllers(services);
-        state.AddDeviceController(ImperiumConstants.VirtualKey, new VirtualPointDeviceController());
-        state.AddDeviceController(ImperiumConstants.MqttKey, new MqttPointDeviceController(services));
-
-        // Get all device files
-        var deviceFiles = Directory.GetFiles(imperiumDirectories.Devices, "*.json");
-
-        foreach (var deviceFile in deviceFiles)
-        {
-            var correlationId = statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, deviceFile, $"Starting device initialisation.");
-
-            statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, "Loading configuration file.", correlationId);
-            var json = await File.ReadAllTextAsync(deviceFile, cancellationToken);
-
-            statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Debug, deviceFile, "Deserializing JSON.", correlationId);
-            var config = JsonSerializer.Deserialize<DeviceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions)!;
-
-            try
-            {
-                Assembly? assembly = null;
-
-                if (!string.IsNullOrWhiteSpace(config.JsonTransformScriptFile))
-                {
-                    statusService.ReportItem(
-                        KnownStatusCategories.Configuration,
-                        StatusItemSeverity.Debug,
-                        deviceFile,
-                        $"Compiling device script: '{config.JsonTransformScriptFile}'.",
-                        correlationId);
-
-                    var assemblyName = "Device_" + Path.GetFileNameWithoutExtension(config.JsonTransformScriptFile).Replace(".", "_");
-
-                    assembly = await ScriptHelper.CompileJsonTransformerScript(
-                        services,
-                        assemblyName,
-                        imperiumDirectories.Scripts,
-                        config.JsonTransformScriptFile,
-                        correlationId,
-                        cancellationToken);
-                }
-
-                // Only add if there are no scripts or no script errors
-                if (string.IsNullOrWhiteSpace(config.JsonTransformScriptFile) || assembly != null)
-                {
-                    var deviceInstance = deviceControllerFactory.AddDeviceInstance(
-                        config.DeviceKey,
-                        config.ControllerKey,
-                        config.ControllerKey == ImperiumConstants.VirtualKey ? DeviceType.Virtual : DeviceType.Physical,
-                        config.Data,
-                        config.Points,
-                        state,
-                        assembly);
-
-                    deviceInstance.OfflineStatusDuration = config.OfflineStatusDuration;
-
-                    statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Information, config.DeviceKey, $"Device initialisation success.", correlationId);
-                }
-                else
-                {
-                    statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Warning, config.DeviceKey, "Device initialisation failed.", correlationId);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogWarning(ex);
-
-                statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, config.DeviceKey, ex, correlationId);
-                statusService.ReportItem(KnownStatusCategories.Configuration, StatusItemSeverity.Error, config.DeviceKey, "Device initialisation failed.", correlationId);
-            }
-        }
-
+        var state = await StatePersistor.LoadState(services, cancellationToken);
         return state;
     }
 }

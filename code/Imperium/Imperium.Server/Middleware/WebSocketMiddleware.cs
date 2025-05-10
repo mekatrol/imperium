@@ -45,7 +45,7 @@ public class WebSocketMiddleware(
                             try
                             {
                                 var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                                var message = JsonSerializer.Deserialize<SubscriptionEvent>(json, JsonSerializerExtensions.ApiSerializerOptions);
+                                var message = JsonSerializer.Deserialize<SubscriptionEvent>(json, JsonSerializerExtensions.DefaultSerializerOptions);
                             }
                             catch (Exception ex)
                             {

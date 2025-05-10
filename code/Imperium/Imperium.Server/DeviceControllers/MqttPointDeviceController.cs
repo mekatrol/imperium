@@ -15,7 +15,7 @@ public class MqttPointDeviceController(IServiceProvider services) : IMqttDeviceC
 {
     public object? GetInstanceDataFromJson(string json)
     {
-        return JsonSerializer.Deserialize<MqttDataConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions);
+        return JsonSerializer.Deserialize<MqttDataConfiguration>(json, JsonSerializerExtensions.DefaultSerializerOptions);
     }
 
     public async Task ProcessPayload(

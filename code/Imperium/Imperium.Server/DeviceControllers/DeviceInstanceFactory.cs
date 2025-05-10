@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Imperium.Server.DeviceControllers;
 
-public class DeviceControllerFactory() : IDeviceControllerFactory
+public class DeviceInstanceFactory() : IDeviceInstanceFactory
 {
     public IDeviceInstance AddDeviceInstance(
         string deviceKey,

@@ -9,7 +9,7 @@ internal abstract class BaseOutputController : IDeviceController
 {
     public object? GetInstanceDataFromJson(string json)
     {
-        return JsonSerializer.Deserialize<InstanceConfiguration>(json, JsonSerializerExtensions.ApiSerializerOptions);
+        return JsonSerializer.Deserialize<InstanceConfiguration>(json, JsonSerializerExtensions.DefaultSerializerOptions);
     }
 
     public abstract Task Read(IDeviceInstance deviceInstance, CancellationToken stoppingToken);

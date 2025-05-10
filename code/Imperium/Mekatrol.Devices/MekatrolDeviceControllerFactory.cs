@@ -1,38 +1,56 @@
-﻿using Imperium.Common.Points;
+﻿using Imperium.Common.DeviceControllers;
+using Imperium.Common.Points;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Mekatrol.Devices;
 
-public static class MekatrolDeviceControllerFactory
+public class MekatrolDeviceControllerFactory : IDeviceControllerFactory
 {
     private const string SunriseSunsetControllerKey = "mekatrol.sunrise.sunset.controller";
     private const string SingleOutputControllerKey = "mekatrol.single.output.controller";
     private const string FourOutputControllerKey = "mekatrol.four.output.controller";
 
-    public static IImperiumState AddMekatrolDeviceControllers(this IImperiumState state, IServiceProvider services)
+    public IDeviceController? AddDeviceController(IServiceProvider services, string controllerKey)
     {
+        var state = services.GetRequiredService<IImperiumState>();
         var pointState = services.GetRequiredService<IPointState>();
 
-        var sunriseSunsetController = new SunriseSunsetController(
-            services.GetRequiredService<IHttpClientFactory>(),
-            pointState,
-            services.GetRequiredService<ILogger<SunriseSunsetController>>());
+        switch (controllerKey)
+        {
+            case SunriseSunsetControllerKey:
+                var sunriseSunsetController = new SunriseSunsetController(
+                    services.GetRequiredService<IHttpClientFactory>(),
+                    pointState,
+                    services.GetRequiredService<ILogger<SunriseSunsetController>>());
 
-        var singleOutputBoardController = new SingleOutputController(
-            services.GetRequiredService<IHttpClientFactory>(),
-            pointState,
-            services.GetRequiredService<ILogger<SingleOutputController>>());
+                state.AddDeviceController(SunriseSunsetControllerKey, sunriseSunsetController);
 
-        var fourOutputBoardController = new FourOutputController(
-            services.GetRequiredService<IHttpClientFactory>(),
-            pointState,
-            services.GetRequiredService<ILogger<FourOutputController>>());
+                return sunriseSunsetController;
 
-        state.AddDeviceController(SunriseSunsetControllerKey, sunriseSunsetController);
-        state.AddDeviceController(SingleOutputControllerKey, singleOutputBoardController);
-        state.AddDeviceController(FourOutputControllerKey, fourOutputBoardController);
+            case SingleOutputControllerKey:
+                var singleOutputBoardController = new SingleOutputController(
+                    services.GetRequiredService<IHttpClientFactory>(),
+                    pointState,
+                    services.GetRequiredService<ILogger<SingleOutputController>>());
 
-        return state;
+                state.AddDeviceController(SingleOutputControllerKey, singleOutputBoardController);
+
+                return singleOutputBoardController;
+
+            case FourOutputControllerKey:
+                var fourOutputBoardController = new FourOutputController(
+                    services.GetRequiredService<IHttpClientFactory>(),
+                    pointState,
+                    services.GetRequiredService<ILogger<FourOutputController>>());
+
+                state.AddDeviceController(FourOutputControllerKey, fourOutputBoardController);
+
+                return fourOutputBoardController;
+
+            default:
+                // Null means the device controller key is not valid
+                return null;
+        }
     }
 }
