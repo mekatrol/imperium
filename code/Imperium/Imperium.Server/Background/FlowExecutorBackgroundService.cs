@@ -28,17 +28,23 @@ internal class FlowExecutorBackgroundService(
         var clothesLine = pointState.GetDevicePoint("device.clothesline", "Relay");
         var clothesLineTimer = pointState.GetDevicePoint(ImperiumConstants.VirtualKey, "clothesline.light.timer");
 
+        var isNighttime = (bool?)pointState.GetPointValue("device.sunrisesunset", "IsNighttime");
+
         if (garagePerson != null && clothesLine != null && clothesLineTimer != null)
         {
             if (garagePerson.ControlValue != null && _garagePersonPrevValue != (int?)garagePerson.ControlValue)
             {
                 _garagePersonPrevValue = (int)garagePerson.ControlValue;
 
-                // Turn on clothes line light
-                pointState.UpdatePointValue("device.clothesline", "Relay", true, PointValueType.Control);
+                // Onliy turn on if night time
+                if (isNighttime != null && isNighttime.Value == true)
+                {
+                    // Turn on clothes line light
+                    pointState.UpdatePointValue("device.clothesline", "Relay", true, PointValueType.Control);
 
-                // Start timer
-                pointState.UpdatePointValue(ImperiumConstants.VirtualKey, "clothesline.light.timer", DateTime.Now + new TimeSpan(0, 5, 0), PointValueType.Control);
+                    // Start timer
+                    pointState.UpdatePointValue(ImperiumConstants.VirtualKey, "clothesline.light.timer", DateTime.Now + new TimeSpan(0, 5, 0), PointValueType.Control);
+                }
             }
 
             var expiry = (DateTime?)clothesLineTimer.Value;
@@ -57,8 +63,6 @@ internal class FlowExecutorBackgroundService(
                 pointState.UpdatePointValue("device.kitchen.light", "Relay", false, PointValueType.Control);
             }
         }
-
-        var isNighttime = (bool?)pointState.GetPointValue("device.sunrisesunset", "IsNighttime");
 
         if (isNighttime.HasValue)
         {
